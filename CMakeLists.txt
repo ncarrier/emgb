@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(gb)
 
+include(FindOpenGL)
+
 # includes cmake/FindSDL2.cmake
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -26,5 +28,5 @@ if (WIN32 OR MSYS OR MINGW )
 endif (WIN32 OR MSYS OR MINGW )
 
 if (UNIX)  
-   target_link_libraries(gb ${SDL2_LIBRARY})
+   target_link_libraries(gb ${SDL2_LIBRARY} ${OPENGL_LIBRARIES})
 endif (UNIX)
