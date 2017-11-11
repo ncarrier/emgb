@@ -1,6 +1,5 @@
 #ifndef __ROM__
 #define __ROM__
-#include "GB.h"
 
 #pragma pack(push, 1)
 
@@ -34,11 +33,7 @@ struct					s_rom
 
 #pragma pack(pop)
 
-int initRom(char *filename, struct s_gb *gb);
-int loadRom(char *romfile, struct s_gb *gb);
-void freeRom(struct s_rom *s_rom);
-void loadHeader(struct s_gb *gb);
-void displayHeader(struct s_romHeader romheader);
-
+int initRom(struct s_rom *rom, char *filename);
+void displayHeader(struct s_romHeader *romheader);
 
 #endif

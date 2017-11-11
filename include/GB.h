@@ -24,7 +24,7 @@ struct						s_gb
 	struct s_timer			gb_time;
 	struct s_register		gb_register;
 	struct s_io			gb_io;
-	struct s_rom			*gb_rom;
+	struct s_rom			gb_rom;
 	struct s_gpu			gb_gpu;
 	struct s_interupt		gb_interrupts;
 	struct s_memory			gb_mem;

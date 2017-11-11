@@ -1,43 +1,46 @@
-#include "rom.h"
+#include <SDL.h>
 
-int loadRom(char *romfile, struct s_gb *gb)
+#include "rom.h"
+#include "log.h"
+
+static int loadRom(struct s_rom *rom, char *romfile)
 {
 	unsigned int nb_read;
 
-	gb->gb_rom = malloc(sizeof(struct s_rom));
 	SDL_RWops *rw = SDL_RWFromFile(romfile, "rb");
 	if (rw == NULL)
 		ERR("Cannot open rom file");
-	gb->gb_rom->size = (unsigned int)SDL_RWsize(rw);
+	rom->size = (unsigned int)SDL_RWsize(rw);
 	//printf("rom size = %d\n", s_rom->size);
-	gb->gb_rom->rom = malloc(gb->gb_rom->size * sizeof(char));
-	if (gb->gb_rom->rom == NULL)
+	rom->rom = malloc(rom->size * sizeof(char));
+	if (rom->rom == NULL)
 		ERR("Cannot alloc s_rom");
-	nb_read = SDL_RWread(rw, gb->gb_rom->rom, sizeof(char), gb->gb_rom->size);
-	if (nb_read == gb->gb_rom->size)
+	nb_read = SDL_RWread(rw, rom->rom, sizeof(char), rom->size);
+	if (nb_read == rom->size)
 		return 0;
 	return -1;
 }
 
-void loadHeader(struct s_gb *gb)
+static void loadHeader(struct s_rom *rom)
 {
-	memcpy(&(gb->gb_rom->romheader), &(gb->gb_rom->rom[0x0100]), HEADER_OFFSET_E - HEADER_OFFSET_S);
+	size_t size;
+
+	size = HEADER_OFFSET_E - HEADER_OFFSET_S;
+	memcpy(&rom->romheader, rom->rom + 0x0100, size);
 }
 
-void displayHeader(struct s_romHeader romheader)
+void displayHeader(struct s_romHeader *romheader)
 {
-	printf("rom name: %s\n", romheader.title);
-	printf("cartridge type: %d\n", romheader.cartridgeType);
-	printf("rom size: %dKB\n", 32 << romheader.romSize);
-	printf("ram size: %d\n", romheader.ramSize << 2);
+	printf("rom name: %s\n", romheader->title);
+	printf("cartridge type: %d\n", romheader->cartridgeType);
+	printf("rom size: %dKB\n", 32 << romheader->romSize);
+	printf("ram size: %d\n", romheader->ramSize << 2);
 }
 
-int initRom(char *filename, struct s_gb *gb)
+int initRom(struct s_rom *rom, char *filename)
 {
-	if (loadRom(filename, gb) != 0)
+	if (loadRom(rom, filename) != 0)
 		ERR("error loading rom");
-	loadHeader(gb);
-	displayHeader(gb->gb_rom->romheader);
-	//freeRom(s_rom); woot
+	loadHeader(rom);
 	return 0;
 }
