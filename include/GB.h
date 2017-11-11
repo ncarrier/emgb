@@ -13,6 +13,7 @@
 #include "joypad.h"
 #include "timer.h"
 #include "memory.h"
+#include "log.h"
 
 //main struct
 
@@ -47,12 +48,6 @@ struct	s_gb	*initGb(char *fileName); //init
 void	initRegister(struct s_gb *s_gb);
 
 #define CLOCKSPEED 4194304
-
-
-
-#define ERR(s)  {printf("ERR:: %s ---- %s line %d\n", s, __FILE__, __LINE__); exit(0); }
-#define DBG(s)	{printf("DBG:: %s ---- %s line %d\n", s, __FILE__, __LINE__); }
-#define SUCC(s) printf("OK:: %s\n", s);
 
 enum FLAG { ZERO, NEG, HALF, CARRY };
 
