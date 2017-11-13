@@ -197,10 +197,10 @@ void rendering(struct s_gb *s_gb)
 
 	/* step 2 debug */
 	
-	memset(s_gb->gb_gpu.pixels_d, 0x00ff0000, 256 * 256 * sizeof(Uint32));
+	//	memset(s_gb->gb_gpu.pixels_d, 0x00ff0000, 256 * 256 * sizeof(Uint32));
 	SDL_RenderClear(s_gb->gb_gpu.renderer_d);
 	SDL_LockTexture(s_gb->gb_gpu.texture_d, NULL, &pixels, &pitch);
-	memcpy(s_gb->gb_gpu.pixels_d, pixels, 256 * 256 * 4);
+	//      memcpy(s_gb->gb_gpu.pixels_d, pixels, 256 * 256 * 4);
 
 	displayAll(s_gb);
 	memcpy(pixels, s_gb->gb_gpu.pixels_d, 256 * 256 * 4);
