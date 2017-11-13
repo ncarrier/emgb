@@ -3,6 +3,10 @@
 // main loop function
 // retrieve opcode & execute it. update gpu interupt & timer
 
+int imgui(void *p_s_gb);
+
+
+
 void gb(char *fileName)
 {
 	unsigned char	fopcode = 0;
@@ -23,7 +27,7 @@ void gb(char *fileName)
 #endif
 	while (s_gb->running)
 	{
-	  debug(s_gb);
+	  /* debug(s_gb); */
 	  handleEvent(s_gb);
 	  if (s_gb->gb_cpu.stopCpu == 0) 
 	    {
@@ -41,7 +45,7 @@ void gb(char *fileName)
 	if (thr != NULL)
 	{
 		s_gb->stopdbg = 1;
-		printf("waiting dbg thread to exit\n");
+		printf("Waiting dbg thread to exit\n");
 		SDL_WaitThread(thr, NULL);
 	}
 #endif
