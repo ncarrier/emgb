@@ -1,6 +1,7 @@
 #include "GB.h"
 #include "cpu.h"
-
+//ld matrix
+#include "ld.h"
 
 unsigned short read16(struct s_gb *s_gb)
 {
@@ -478,9 +479,6 @@ void inc_hl(struct s_gb *s_gb) { s_gb->gb_cpu.totalTick += 8; s_gb->gb_register.
 void inc_hl_addr(struct s_gb *s_gb) { s_gb->gb_cpu.totalTick += 12;  inc16(memoperation(s_gb->gb_register.hl, 1, s_gb)); }
 
 void halt_proc(struct s_gb *s_gb) { s_gb->gb_cpu.totalTick += 4;  s_gb->gb_cpu.stopCpu = 1;  printf("halt proc\n"); }
-
-//ld matrix
-#include "ld.c"
 
 void	ret_stack(struct s_gb *s_gb)
 {
