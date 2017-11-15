@@ -3,7 +3,7 @@
 #include "rom.h"
 #include "log.h"
 
-static int loadRom(struct s_rom *rom, char *romfile)
+static int loadRom(struct s_rom *rom, const char *romfile)
 {
 	unsigned int nb_read;
 
@@ -37,7 +37,7 @@ void displayHeader(struct s_romHeader *romheader)
 	printf("ram size: %d\n", romheader->ramSize << 2);
 }
 
-int initRom(struct s_rom *rom, char *filename)
+int initRom(struct s_rom *rom, const char *filename)
 {
 	if (loadRom(rom, filename) != 0)
 		ERR("error loading rom");

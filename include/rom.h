@@ -33,7 +33,7 @@ struct					s_rom
 
 #pragma pack(pop)
 
-int initRom(struct s_rom *rom, char *filename);
+int initRom(struct s_rom *rom, const char *filename);
 void displayHeader(struct s_romHeader *romheader);
 
 #endif
