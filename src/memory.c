@@ -28,12 +28,12 @@ unsigned char read8bit(unsigned short addr, struct s_gb *s_gb)
 	}
 	else if (addr < 0x4000)
 	{
-		return (s_gb->gb_rom->rom[addr]);
+		return (s_gb->gb_rom.rom[addr]);
 	}
 	else if (addr >= 0x4000 && addr < 0x8000)
 	{
 		//printf("MCB_romBanking value = %x\n", MCB_romBanking);
-		return (s_gb->gb_rom->rom[(addr - 0x4000) + (MCB_romBanking*0x4000)]);
+		return (s_gb->gb_rom.rom[(addr - 0x4000) + (MCB_romBanking*0x4000)]);
 	}
 	else if (addr >= 0x8000 && addr < 0xA000)
 	{
@@ -95,7 +95,7 @@ void	mcbHandleBanking(unsigned short addr, unsigned char value, struct s_gb *s_g
 	low5 = value & 0x1f;
 
 	if (addr >= 0x2000 && addr < 0x4000) {
-		if (s_gb->gb_rom->romheader.cartridgeType == 1) {
+		if (s_gb->gb_rom.romheader.cartridgeType == 1) {
 			MCB_romBanking &= 0xe0;
 			MCB_romBanking |= low5;
 			printf("Lo BANK change. value => %x\n", MCB_romBanking);
@@ -185,7 +185,7 @@ unsigned char memoperation(unsigned short addr, signed char value, struct s_gb *
 //		s_rom->rom[addr] += value;
 		printf("error memoperation on ROM space\n");
 		exit(-2);
-		return s_gb->gb_rom->rom[addr];
+		return s_gb->gb_rom.rom[addr];
 	}
 	if (addr >= 0x8000 && addr < 0xA000)
 	{

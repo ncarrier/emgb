@@ -9,7 +9,8 @@ struct s_gb	*initGb(char *fileName)
 	s_gb = malloc(sizeof(*s_gb));
 	if (s_gb == NULL)
 		ERR("Cannot allocate s_gb");
-	initRom(fileName, s_gb);
+	initRom(&s_gb->gb_rom, fileName);
+	displayHeader(&s_gb->gb_rom.romheader);
 	initRegister(s_gb);
 	initDisplay(s_gb);
 	initGpu(s_gb);

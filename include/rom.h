@@ -1,14 +1,18 @@
 #ifndef __ROM__
 #define __ROM__
-#include "GB.h"
+
+#define MAX_TITLE_LENGTH 16
+#define LOGO_LENGTH 48
+#define HEADER_OFFSET_S 0x0100
+#define HEADER_OFFSET_E 0x014F
 
 #pragma pack(push, 1)
 
 struct              s_romHeader
 {
 	int		entrypoint;
-	char		nlogo[48];
-	char		title[16];
+	char		nlogo[LOGO_LENGTH];
+	char		title[MAX_TITLE_LENGTH];
 	unsigned short	manufacturerCode;
 	unsigned char	cgbFlag;
 	unsigned char	cartridgeType;
@@ -28,17 +32,9 @@ struct					s_rom
 	struct s_romHeader		romheader;
 };
 
-
-#define HEADER_OFFSET_S 0x0100
-#define HEADER_OFFSET_E 0x014F
-
 #pragma pack(pop)
 
-int initRom(char *filename, struct s_gb *gb);
-int loadRom(char *romfile, struct s_gb *gb);
-void freeRom(struct s_rom *s_rom);
-void loadHeader(struct s_gb *gb);
-void displayHeader(struct s_romHeader romheader);
-
+int initRom(struct s_rom *rom, const char *filename);
+void displayHeader(struct s_romHeader *romheader);
 
 #endif

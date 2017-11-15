@@ -1303,7 +1303,7 @@ void initCpu(struct s_gb * gb_s)
 		{ 0xf2, "undefined", op_undefined, 0 },
 		{ 0xf3, "disable voiderrupt", di, 0},
 		{ 0xf4, "undefined", op_undefined, 0},
-		{ 0xf5, "rst 0", push_af, 0 },
+		{ 0xf5, "push af", push_af, 0 },
 		{ 0xf6, "or a n", or_a_n, 1},
 		{ 0xf7, "rst 30", rst_30, 0 },
 		{ 0xf8, "ld hl sp+r8", ld_hl_sp_8, 1 },
