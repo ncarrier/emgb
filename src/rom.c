@@ -31,7 +31,7 @@ static void loadHeader(struct s_rom *rom)
 
 void displayHeader(struct s_romHeader *romheader)
 {
-	printf("rom name: %s\n", romheader->title);
+	printf("rom name: %.*s\n", MAX_TITLE_LENGTH, romheader->title);
 	printf("cartridge type: %d\n", romheader->cartridgeType);
 	printf("rom size: %dKB\n", 32 << romheader->romSize);
 	printf("ram size: %d\n", romheader->ramSize << 2);
