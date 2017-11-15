@@ -1,23 +1,45 @@
 #include <assert.h>
-
-#include <SDL.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 #include "rom.h"
 #include "log.h"
 
+static long get_file_size(FILE *f)
+{
+	int ret;
+	long size;
+
+	if (f == NULL)
+		return -EINVAL;
+
+	ret = fseek(f, 0, SEEK_END);
+	if (ret != 0)
+		ERR("fseek SEEK_END: %m");
+	size = ftell(f);
+	if (size == -1)
+		ERR("fopen: %m");
+	ret = fseek(f, 0, SEEK_SET);
+	if (ret != 0)
+		ERR("fseek SEEK_CUR: %m");
+
+	return size;
+}
+
 static int loadRom(struct s_rom *rom, const char *romfile)
 {
 	unsigned int nb_read;
+	FILE *f;
 
-	SDL_RWops *rw = SDL_RWFromFile(romfile, "rb");
-	if (rw == NULL)
+	f = fopen(romfile, "rb");
+	if (f == NULL)
 		ERR("Cannot open rom file");
-	rom->size = (unsigned int)SDL_RWsize(rw);
-	//printf("rom size = %d\n", s_rom->size);
+	rom->size = get_file_size(f);
 	rom->rom = malloc(rom->size * sizeof(char));
 	if (rom->rom == NULL)
 		ERR("Cannot alloc s_rom");
-	nb_read = SDL_RWread(rw, rom->rom, sizeof(char), rom->size);
+	nb_read = fread(rom->rom, sizeof(char), rom->size, f);
 	if (nb_read == rom->size)
 		return 0;
 	return -1;
