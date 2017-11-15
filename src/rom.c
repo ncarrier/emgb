@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include <SDL.h>
 
 #include "rom.h"
@@ -39,6 +41,8 @@ void displayHeader(struct s_romHeader *romheader)
 
 int initRom(struct s_rom *rom, const char *filename)
 {
+	assert(sizeof(struct s_romHeader) == 80 || "sizeof(s_romHeader) != 80" == NULL);
+
 	if (loadRom(rom, filename) != 0)
 		ERR("error loading rom");
 	loadHeader(rom);
