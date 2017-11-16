@@ -551,7 +551,7 @@ unsigned short pop16(struct s_gb *s_gb)
 void	pop_hl(struct s_gb *s_gb) { s_gb->gb_register.hl = pop16(s_gb);}
 void	pop_bc(struct s_gb *s_gb) { s_gb->gb_register.bc = pop16(s_gb);}
 void	pop_de(struct s_gb *s_gb) { s_gb->gb_register.de = pop16(s_gb);}
-void	pop_af(struct s_gb *s_gb) { s_gb->gb_register.af = pop16(s_gb);}
+void	pop_af(struct s_gb *s_gb) { s_gb->gb_register.af = pop16(s_gb); s_gb->gb_register.f &= 0xf0;}
 
 //push
 void push16(unsigned short value, struct s_gb *s_gb)
