@@ -17,7 +17,7 @@ file(GLOB_RECURSE SOURCES_CXX ${CMAKE_SOURCE_DIR}/src/*.cpp)
 set(SOURCE_FILES ${SOURCES_C} ${SOURCES_CXX})
 
 if (UNIX)
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 endif (UNIX)
 
 
