@@ -1,4 +1,8 @@
 #include "GB.h"
+#if EMGB_CONSOLE_DEBUGGER
+#include "console_debugger.h"
+#include "log.h"
+#endif /* EMGB_CONSOLE_DEBUGGER */
 
 // main loop function
 // retrieve opcode & execute it. update gpu interupt & timer
@@ -14,9 +18,18 @@ void gb(char *fileName)
 #ifdef IMDBG
 	SDL_Thread		*thr = NULL;
 #endif
+#if EMGB_CONSOLE_DEBUGGER
+	struct console_debugger debugger;
+	int ret;
+#endif /* EMGB_CONSOLE_DEBUGGER */
 
 	s_gb = initGb(fileName);
 	s_gb->stopdbg = 0;
+#if EMGB_CONSOLE_DEBUGGER
+	ret = console_debugger_init(&debugger);
+	if (ret < 0)
+		ERR("console_debugger_init: %s", strerror(-ret));
+#endif /* EMGB_CONSOLE_DEBUGGER */
 #ifdef IMDBG
 	s_gb->stopdbg = 0;
 	thr = SDL_CreateThread(imgui, "dbg", s_gb);
