@@ -28,6 +28,12 @@ if (WIN32 OR MSYS OR MINGW )
     target_link_libraries(gb -lmingw32 -lSDL2main -lSDL2  opengl32  glu32 m dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 version uuid)
 endif (WIN32 OR MSYS OR MINGW )
 
+option(USE_CONSOLE_DEBUGGER
+        "Connect stdin and stdout to a command-line debugger" OFF)
+if (USE_CONSOLE_DEBUGGER)
+    add_definitions(-DEMGB_CONSOLE_DEBUGGER)
+endif (USE_CONSOLE_DEBUGGER)
+
 if (UNIX)  
    target_link_libraries(gb ${SDL2_LIBRARY} ${OPENGL_LIBRARIES})
    target_link_libraries(rom_info ${SDL2_LIBRARY})
