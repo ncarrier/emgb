@@ -23,13 +23,13 @@ void gb(char *fileName)
 	int ret;
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-	s_gb = initGb(fileName);
-	s_gb->stopdbg = 0;
 #if EMGB_CONSOLE_DEBUGGER
 	ret = console_debugger_init(&debugger);
 	if (ret < 0)
 		ERR("console_debugger_init: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
+	s_gb = initGb(fileName);
+	s_gb->stopdbg = 0;
 #ifdef IMDBG
 	s_gb->stopdbg = 0;
 	thr = SDL_CreateThread(imgui, "dbg", s_gb);
@@ -40,6 +40,11 @@ void gb(char *fileName)
 #endif
 	while (s_gb->running)
 	{
+#if EMGB_CONSOLE_DEBUGGER
+          ret = console_debugger_update(&debugger);
+          if (ret < 0)
+            ERR("console_debugger_update: %s", strerror(-ret));
+#endif /* EMGB_CONSOLE_DEBUGGER */
 	  /* debug(s_gb); */
 	  handleEvent(s_gb);
 	  if (s_gb->gb_cpu.stopCpu == 0) 

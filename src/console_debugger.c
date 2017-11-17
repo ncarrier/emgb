@@ -4,6 +4,9 @@
 #include <signal.h>
 #include <stdbool.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include "console_debugger.h"
 #include "log.h"
 
@@ -11,13 +14,16 @@ struct command {
 	char *line;
 };
 
-static sig_atomic_t signal_received;
+static volatile sig_atomic_t signal_received = 0;
 
 static void console_debugger_init_signal_handler(int signum)
 {
-	printf("%s received, stopping\n", strsignal(signum));
+	if (signal_received)
+		return;
 
-	signal_received = true;
+	printf("%s received, entering debugger\n", strsignal(signum));
+
+	signal_received = 1;
 }
 
 int console_debugger_init(struct console_debugger *debugger)
@@ -31,12 +37,18 @@ int console_debugger_init(struct console_debugger *debugger)
 static int console_debugger_read(struct console_debugger *debugger,
 		struct command *command)
 {
-	return 0; // TODO stub
+	command->line = readline(EMGB_CONSOLE_DEBUGGER_PROMPT);
+	if (command->line == NULL)
+		ERR("EOF received, quitting now");
+
+	return 0;
 }
 
 static int console_debugger_execute(struct console_debugger *debugger,
 		const struct command *command)
 {
+	printf("Execute command %s\n", command->line);
+
 	return 0; // TODO stub
 }
 

@@ -32,6 +32,7 @@ option(USE_CONSOLE_DEBUGGER
         "Connect stdin and stdout to a command-line debugger" OFF)
 if (USE_CONSOLE_DEBUGGER)
     add_definitions(-DEMGB_CONSOLE_DEBUGGER)
+    target_link_libraries(gb -lreadline)
 endif (USE_CONSOLE_DEBUGGER)
 
 if (UNIX)  
