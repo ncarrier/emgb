@@ -42,6 +42,7 @@ static unsigned char console_debugger_continue(struct editline *el, int ch)
 
 int console_debugger_init(struct console_debugger *debugger)
 {
+	int ret;
 	struct editline *el = debugger->editline;
 
 	memset(debugger, 0, sizeof(*debugger));
@@ -56,7 +57,13 @@ int console_debugger_init(struct console_debugger *debugger)
 	debugger->history = history_init();
 	if (debugger-> history == NULL)
 		ERR("history_init");
+	snprintf(debugger->path, EMGB_CONSOLE_DEBUGGER_PATH_MAX,
+			"%s/"EMGB_CONSOLE_DEBUGGER_HISTORY_FILE,
+			getenv("HOME"));
+	printf("loading history from %s\n", debugger->path);
 	history(debugger->history, &debugger->histevent, H_SETSIZE, 100);
+	ret = history(debugger->history, &debugger->histevent, H_LOAD,
+			debugger->path);
 	el_set(el, EL_HIST, history, debugger->history);
 
 	/* line edition setup */
@@ -74,8 +81,11 @@ static int console_debugger_read(struct console_debugger *debugger,
 		struct command *command)
 {
 	command->line = el_gets(debugger->editline, &debugger->length);
-	if (command->line == NULL)
+	if (command->line == NULL) {
+		history(debugger->history, &debugger->histevent, H_SAVE,
+				debugger->path);
 		ERR("EOF received, quitting now");
+	}
 
 	history(debugger->history, &debugger->histevent, H_ENTER,
 			command->line);
