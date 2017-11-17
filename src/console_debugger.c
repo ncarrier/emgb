@@ -13,16 +13,11 @@ struct command {
 	const char *line;
 };
 
-static volatile sig_atomic_t signal_received = false;
+static volatile sig_atomic_t signal_received;
 
 static void console_debugger_init_signal_handler(int signum)
 {
-	if (signal_received)
-		return;
-
-	printf("%s received, entering debugger\n", strsignal(signum));
-
-	signal_received = true;
+	signal_received = signum;
 }
 
 static char *console_debugger_prompt(struct editline *el)
@@ -42,11 +37,11 @@ static unsigned char console_debugger_continue(struct editline *el, int ch)
 
 int console_debugger_init(struct console_debugger *debugger)
 {
-	int ret;
 	struct editline *el = debugger->editline;
 
 	memset(debugger, 0, sizeof(*debugger));
 	signal(SIGINT, console_debugger_init_signal_handler);
+	signal(SIGWINCH, console_debugger_init_signal_handler);
 	// TODO how to perform a cleanup ?
 	debugger->editline = el = el_init("emgb", stdin, stdout, stderr);
 	if (el == NULL)
@@ -62,7 +57,7 @@ int console_debugger_init(struct console_debugger *debugger)
 			getenv("HOME"));
 	printf("loading history from %s\n", debugger->path);
 	history(debugger->history, &debugger->histevent, H_SETSIZE, 100);
-	ret = history(debugger->history, &debugger->histevent, H_LOAD,
+	history(debugger->history, &debugger->histevent, H_LOAD,
 			debugger->path);
 	el_set(el, EL_HIST, history, debugger->history);
 
@@ -108,18 +103,30 @@ int console_debugger_update(struct console_debugger *debugger)
 	struct command command;
 
 	if (signal_received) {
-		debugger->active = true;
-		signal_received = false;
+		switch (signal_received) {
+			case SIGWINCH:
+				el_resize(debugger->editline);
+				break;
+
+			case SIGINT:
+				if (!debugger->active)
+					puts("entering debugger");
+				debugger->active = true;
+				signal_received = 0;
+				break;
+		}
 	}
 
-	if (debugger->active) {
-		ret = console_debugger_read(debugger, &command);
-		if (ret < 0)
-			ERR("console_debugger_read: %s", strerror(-ret));
-		ret = console_debugger_execute(debugger, &command);
-		if (ret < 0)
-			ERR("console_debugger_execute: %s", strerror(-ret));
-	}
+	if (!debugger->active)
+		return 0;
+
+	ret = console_debugger_read(debugger, &command);
+	if (ret < 0)
+		ERR("console_debugger_read: %s", strerror(-ret));
+	ret = console_debugger_execute(debugger, &command);
+	if (ret < 0)
+		ERR("console_debugger_execute: %s", strerror(-ret));
 
 	return 0;
 }
+
