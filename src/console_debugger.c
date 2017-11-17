@@ -1,4 +1,5 @@
 #include <string.h>
+#include <assert.h>
 #include <stdio.h>
 #include <errno.h>
 #include <signal.h>
@@ -10,6 +11,51 @@
 #include "log.h"
 
 static volatile sig_atomic_t signal_received;
+
+typedef void (*debugger_command_fn)(struct console_debugger *debugger);
+
+struct debugger_command {
+	debugger_command_fn fn;
+	const char *name;
+	const char *help;
+	int argc;
+	int status;
+};
+
+static void console_debugger_continue(struct console_debugger *debugger)
+{
+	debugger->active = false;
+
+	puts("continuing execution");
+}
+
+static struct debugger_command commands[];
+static void console_debugger_help(struct console_debugger *debugger)
+{
+	struct debugger_command *dc;
+
+	puts("Available commands:");
+	for (dc = commands; dc->name != NULL; dc++)
+		printf("\t%s: %d argument%s\n\t\t%s\n", dc->name, dc->argc,
+				dc->argc > 1 ? "s" : "", dc->help);
+}
+
+static struct debugger_command commands[] = {
+	{
+		.fn = console_debugger_continue,
+		.name = "continue",
+		.help = "Continues the execution of the gb rom.",
+		.argc = 1,
+	},
+	{
+		.fn = console_debugger_help,
+		.name = "help",
+		.help = "Shows a little help about available commands.",
+		.argc = 1,
+	},
+
+	{ .name = NULL } /* NULL guard */
+};
 
 static void console_debugger_init_signal_handler(int signum)
 {
@@ -25,16 +71,6 @@ static char *console_debugger_prompt(struct editline *el)
 		return EMGB_CONSOLE_DEBUGGER_PROMPT;
 	else
 		return EMGB_CONSOLE_DEBUGGER_PROMPT2;
-}
-
-static unsigned char console_debugger_continue(struct editline *el, int ch)
-{
-	struct console_debugger *debugger;
-
-	el_get(el, EL_CLIENTDATA, &debugger);
-	debugger->active = false;
-
-	return CC_REFRESH;
 }
 
 int console_debugger_init(struct console_debugger *debugger)
@@ -67,10 +103,6 @@ int console_debugger_init(struct console_debugger *debugger)
 	el_set(el, EL_EDITOR, "emacs");
 	el_set(el, EL_PROMPT, console_debugger_prompt);
 
-	/* built-in functions */
-	el_set(el, EL_ADDFN, "continue", "Continue program execution",
-			console_debugger_continue);
-
 	/* configure tokenizer */
 	debugger->tokenizer = tok_init(NULL);
 	if (debugger->tokenizer == NULL)
@@ -93,29 +125,52 @@ static int console_debugger_read(struct console_debugger *debugger)
 
 	history(debugger->history, &debugger->histevent, H_ENTER,
 			command->line);
-	command->continuation_status = tok_str(debugger->tokenizer,
-			command->line, &command->argc,  &command->argv);
 
 	return 0;
 }
 
 static int console_debugger_execute(struct console_debugger *debugger)
 {
-	int i;
+	struct command *command;
+	struct debugger_command *dc;
+
+	command = &debugger->command;
+	assert(command->argc >= 0);
+
+	for (dc = commands; dc->name != NULL; dc++) {
+		if (strcmp(dc->name, command->argv[0]) != 0)
+			continue;
+
+		if (command->argc != dc->argc) {
+			printf("got %d arguments, when \"%s\" requires %d\n",
+					command->argc, dc->name, dc->argc);
+			return 0;
+		}
+		dc->fn(debugger);
+
+		return 0;
+	}
+
+	printf("\"%s\": command not found\n", command->argv[0]);
+
+	return 0;
+}
+
+static int console_debugger_parse(struct console_debugger *debugger)
+{
 	struct command *command;
 
 	command = &debugger->command;
-	printf("last line entered: \"%.*s\"\n", strlen(command->line) - 1,
-			command->line);
+
+	command->continuation_status = tok_str(debugger->tokenizer,
+			command->line, &command->argc,  &command->argv);
 	/* line isn't finished, nothing to do */
 	if (command->continuation_status != 0)
 		return 0;
-	for (i = 0; i < command->argc; i++)
-		printf("arg[%d]: %s\n", i, command->argv[i]);
 
 	tok_reset(debugger->tokenizer);
 
-	return 0;
+	return console_debugger_execute(debugger);
 }
 
 int console_debugger_update(struct console_debugger *debugger)
@@ -143,9 +198,9 @@ int console_debugger_update(struct console_debugger *debugger)
 	ret = console_debugger_read(debugger);
 	if (ret < 0)
 		ERR("console_debugger_read: %s", strerror(-ret));
-	ret = console_debugger_execute(debugger);
+	ret = console_debugger_parse(debugger);
 	if (ret < 0)
-		ERR("console_debugger_execute: %s", strerror(-ret));
+		ERR("console_debugger_parse: %s", strerror(-ret));
 
 	return 0;
 }
