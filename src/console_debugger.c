@@ -78,6 +78,41 @@ static void console_debugger_continue(struct console_debugger *debugger)
 	puts("continuing execution");
 }
 
+static void console_debugger_disable_enable(struct console_debugger *debugger,
+		bool enable)
+{
+	long id;
+	struct command *command;
+	char *endptr;
+	const char *id_str;
+	struct breakpoint *breakpoint;
+
+	command = &debugger->command;
+
+	id_str = command->argv[1];
+	id = strtol(id_str, &endptr, 0);
+	if (*id_str == '\0' || *endptr != '\0') {
+		printf("Invalid breakpoint id \"%s\"\n", id_str);
+		return;
+	}
+	if (id < 0 || id >= EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS) {
+		printf("Breakpoint id must be in range [0, %"PRIu16"]\n",
+				EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS);
+		return;
+	}
+	breakpoint = debugger->breakpoints + id;
+	breakpoint->status = enable ? BREAKPOINT_STATUS_ENABLED :
+		BREAKPOINT_STATUS_DISABLED;
+
+	printf("%sabled breakpoint %ld at address %#"PRIx16")\n",
+			enable ? "En" : "Dis", id, breakpoint->pc);
+}
+
+static void console_debugger_enable(struct console_debugger *debugger)
+{
+	console_debugger_disable_enable(debugger, true);
+}
+
 static void console_debugger_delete(struct console_debugger *debugger)
 {
 	long id;
@@ -110,6 +145,11 @@ static void console_debugger_delete(struct console_debugger *debugger)
 
 	printf("Deleted breakpoint %ld (was %#"PRIx16")\n", id,
 			breakpoint->pc);
+}
+
+static void console_debugger_disable(struct console_debugger *debugger)
+{
+	console_debugger_disable_enable(debugger, false);
 }
 
 static struct debugger_command commands[];
@@ -147,11 +187,25 @@ static struct debugger_command commands[] = {
 		.argc = 1,
 	},
 	{
+		.fn = console_debugger_enable,
+		.name = "enable",
+		.help = "Enables a breakpoint.\n"
+			"\tusage: enable breakpoint_id.",
+		.argc = 2,
+	},
+	{
 		.fn = console_debugger_delete,
 		.name = "delete",
 		.help = "Deletes an item, item type must be: breakpoint.\n"
-			"usage: delete item item_id.",
+			"\tusage: delete item item_id.",
 		.argc = 3,
+	},
+	{
+		.fn = console_debugger_disable,
+		.name = "disable",
+		.help = "Disables a breakpoint.\n"
+			"\tusage: disable breakpoint_id.",
+		.argc = 2,
 	},
 	{
 		.fn = console_debugger_help,
