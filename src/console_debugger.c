@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include <histedit.h>
 
@@ -21,6 +22,54 @@ struct debugger_command {
 	int argc;
 	int status;
 };
+
+static struct breakpoint *get_unused_breakpoint(
+		struct console_debugger *debugger)
+{
+	unsigned i;
+
+	for (i = 0; i < EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS; i++)
+		if (debugger->breakpoints[i].status == BREAKPOINT_STATUS_UNUSED)
+			return debugger->breakpoints + i;
+
+	return NULL;
+}
+
+static void console_debugger_breakpoint(struct console_debugger *debugger)
+{
+	long adress;
+	struct command *command;
+	char *endptr;
+	const char *adress_str;
+	struct breakpoint *breakpoint;
+
+	command = &debugger->command;
+	adress_str = command->argv[1];
+
+	adress = strtol(adress_str, &endptr, 0);
+	if (*adress_str == '\0' || *endptr != '\0') {
+		printf("Invalid pointer adress \"%s\"\n", adress_str);
+		return;
+	}
+	if (adress < 0 || adress > UINT16_MAX) {
+		printf("Breakpoint adress must be in range [0, %"PRIu16"]\n",
+				UINT16_MAX);
+		return;
+	}
+	breakpoint = get_unused_breakpoint(debugger);
+	if (breakpoint == NULL) {
+		puts("No more breakpoints available, delete one to proceed.");
+		return;
+	}
+
+	printf("Breakpoint %d set at adress %ld\n",
+			breakpoint - debugger->breakpoints, adress);
+
+	*breakpoint = (struct breakpoint) {
+		.pc = adress,
+		.status = BREAKPOINT_STATUS_ENABLED,
+	};
+}
 
 static void console_debugger_continue(struct console_debugger *debugger)
 {
@@ -41,6 +90,12 @@ static void console_debugger_help(struct console_debugger *debugger)
 }
 
 static struct debugger_command commands[] = {
+	{
+		.fn = console_debugger_breakpoint,
+		.name = "breakpoint",
+		.help = "Places a breakpoint at the given pc value.",
+		.argc = 2,
+	},
 	{
 		.fn = console_debugger_continue,
 		.name = "continue",
@@ -73,11 +128,13 @@ static char *console_debugger_prompt(struct editline *el)
 		return EMGB_CONSOLE_DEBUGGER_PROMPT2;
 }
 
-int console_debugger_init(struct console_debugger *debugger)
+int console_debugger_init(struct console_debugger *debugger,
+		struct s_register *registers)
 {
 	struct editline *el = debugger->editline;
 
 	memset(debugger, 0, sizeof(*debugger));
+	debugger->registers = registers;
 	signal(SIGINT, console_debugger_init_signal_handler);
 	signal(SIGWINCH, console_debugger_init_signal_handler);
 	// TODO how to perform a cleanup ?

@@ -23,12 +23,12 @@ void gb(char *fileName)
 	int ret;
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
+	s_gb = initGb(fileName);
 #if EMGB_CONSOLE_DEBUGGER
-	ret = console_debugger_init(&debugger);
+	ret = console_debugger_init(&debugger, &s_gb->gb_register);
 	if (ret < 0)
 		ERR("console_debugger_init: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
-	s_gb = initGb(fileName);
 	s_gb->stopdbg = 0;
 #ifdef IMDBG
 	s_gb->stopdbg = 0;
