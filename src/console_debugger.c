@@ -78,6 +78,40 @@ static void console_debugger_continue(struct console_debugger *debugger)
 	puts("continuing execution");
 }
 
+static void console_debugger_delete(struct console_debugger *debugger)
+{
+	long id;
+	struct command *command;
+	char *endptr;
+	const char *id_str;
+	const char *item;
+	struct breakpoint *breakpoint;
+
+	command = &debugger->command;
+	item = command->argv[1];
+	id_str = command->argv[2];
+	if (strcmp(item, "breakpoint") != 0) {
+		puts("only delete breakpoint is supported");
+		return;
+	}
+
+	id = strtol(id_str, &endptr, 0);
+	if (*id_str == '\0' || *endptr != '\0') {
+		printf("Invalid breakpoint id \"%s\"\n", id_str);
+		return;
+	}
+	if (id < 0 || id >= EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS) {
+		printf("Breakpoint id must be in range [0, %"PRIu16"]\n",
+				EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS);
+		return;
+	}
+	breakpoint = debugger->breakpoints + id;
+	breakpoint->status = BREAKPOINT_STATUS_UNUSED;
+
+	printf("Deleted breakpoint %ld (was %#"PRIx16")\n", id,
+			breakpoint->pc);
+}
+
 static struct debugger_command commands[];
 static void console_debugger_help(struct console_debugger *debugger)
 {
@@ -111,6 +145,13 @@ static struct debugger_command commands[] = {
 		.name = "continue",
 		.help = "Continues the execution of the gb rom.",
 		.argc = 1,
+	},
+	{
+		.fn = console_debugger_delete,
+		.name = "delete",
+		.help = "Deletes an item, item type must be: breakpoint.\n"
+			"usage: delete item item_id.",
+		.argc = 3,
 	},
 	{
 		.fn = console_debugger_help,
