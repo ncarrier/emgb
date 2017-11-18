@@ -89,6 +89,16 @@ static void console_debugger_help(struct console_debugger *debugger)
 				dc->argc > 1 ? "s" : "", dc->help);
 }
 
+static void console_debugger_print(struct console_debugger *debugger)
+{
+	const char *expression;
+
+	expression = debugger->command.argv[1];
+	if (strcmp(expression, "pc") == 0) {
+		printf("pc = %#"PRIx16"\n", debugger->registers->pc);
+	}
+}
+
 static struct debugger_command commands[] = {
 	{
 		.fn = console_debugger_breakpoint,
@@ -107,6 +117,12 @@ static struct debugger_command commands[] = {
 		.name = "help",
 		.help = "Shows a little help about available commands.",
 		.argc = 1,
+	},
+	{
+		.fn = console_debugger_print,
+		.name = "print",
+		.help = "Prints internal values, memory, registers...",
+		.argc = 2,
 	},
 
 	{ .name = NULL } /* NULL guard */
