@@ -166,10 +166,43 @@ static void console_debugger_help(struct console_debugger *debugger)
 static void console_debugger_print(struct console_debugger *debugger)
 {
 	const char *expression;
+	struct s_register *registers;
+	uint16_t f;
 
+	registers = debugger->registers;
 	expression = debugger->command.argv[1];
-	if (strcmp(expression, "pc") == 0) {
-		printf("pc = %#"PRIx16"\n", debugger->registers->pc);
+	if (strcmp(expression, "af") == 0) {
+		printf("af = %#"PRIx16"\n", registers->af);
+	} else if (strcmp(expression, "a") == 0) {
+		printf("a = %#"PRIx8"\n", registers->a);
+	} else if (strcmp(expression, "f") == 0) {
+		f = registers->f;
+		printf("f = %#"PRIx8" (z = %d, n = %d, h = %d, c = %d\n",
+				f, BIT(7, f), BIT(6, f), BIT(5, f), BIT(4, f));
+	} else if (strcmp(expression, "bc") == 0) {
+		printf("bc = %#"PRIx16"\n", registers->bc);
+	} else if (strcmp(expression, "b") == 0) {
+		printf("b = %#"PRIx8"\n", registers->b);
+	} else if (strcmp(expression, "c") == 0) {
+		printf("c = %#"PRIx8"\n", registers->c);
+	} else if (strcmp(expression, "de") == 0) {
+		printf("de = %#"PRIx16"\n", registers->de);
+	} else if (strcmp(expression, "d") == 0) {
+		printf("d = %#"PRIx8"\n", registers->d);
+	} else if (strcmp(expression, "e") == 0) {
+		printf("e = %#"PRIx8"\n", registers->e);
+	} else if (strcmp(expression, "hl") == 0) {
+		printf("hl = %#"PRIx16"\n", registers->hl);
+	} else if (strcmp(expression, "h") == 0) {
+		printf("h = %#"PRIx8"\n", registers->h);
+	} else if (strcmp(expression, "l") == 0) {
+		printf("l = %#"PRIx8"\n", registers->l);
+	} else if (strcmp(expression, "pc") == 0) {
+		printf("pc = %#"PRIx16"\n", registers->pc);
+	} else if (strcmp(expression, "sp") == 0) {
+		printf("sp = %#"PRIx16"\n", registers->sp);
+	} else {
+		printf("Unable to print \"%s\".\n", expression);
 	}
 }
 
@@ -190,21 +223,21 @@ static struct debugger_command commands[] = {
 		.fn = console_debugger_enable,
 		.name = "enable",
 		.help = "Enables a breakpoint.\n"
-			"\tusage: enable breakpoint_id.",
+			"\t\t\tusage: enable breakpoint_id.",
 		.argc = 2,
 	},
 	{
 		.fn = console_debugger_delete,
 		.name = "delete",
 		.help = "Deletes an item, item type must be: breakpoint.\n"
-			"\tusage: delete item item_id.",
+			"\t\t\tusage: delete item item_id.",
 		.argc = 3,
 	},
 	{
 		.fn = console_debugger_disable,
 		.name = "disable",
 		.help = "Disables a breakpoint.\n"
-			"\tusage: disable breakpoint_id.",
+			"\t\t\tusage: disable breakpoint_id.",
 		.argc = 2,
 	},
 	{
