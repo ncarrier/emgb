@@ -62,7 +62,7 @@ static void console_debugger_breakpoint(struct console_debugger *debugger)
 		return;
 	}
 
-	printf("Breakpoint %d set at adress %ld\n",
+	printf("Breakpoint %d set at adress %#lx\n",
 			breakpoint - debugger->breakpoints, adress);
 
 	*breakpoint = (struct breakpoint) {
@@ -165,6 +165,12 @@ int console_debugger_init(struct console_debugger *debugger,
 	if (debugger->tokenizer == NULL)
 		ERR("tok_init");
 
+	/*
+	 * TODO enable debugger by default, this should be decided with a
+	 * command-line switch
+	 */
+	debugger->active = true;
+
 	return 0;
 }
 
@@ -230,6 +236,26 @@ static int console_debugger_parse(struct console_debugger *debugger)
 	return console_debugger_execute(debugger);
 }
 
+static bool breakpoint_hit(const struct breakpoint *b, uint16_t pc)
+{
+	return b->pc == pc && b->status == BREAKPOINT_STATUS_ENABLED;
+}
+
+static void console_debugger_check_breakpoints(
+		struct console_debugger *debugger)
+{
+	unsigned i;
+	uint16_t pc;
+
+	for (i = 0; i < EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS; i++) {
+		pc = debugger->registers->pc;
+		if (breakpoint_hit(debugger->breakpoints + i, pc)) {
+			debugger->active = true;
+			printf("Breakpoint %d hit (pc = %#"PRIx16")\n", i, pc);
+		}
+	}
+}
+
 int console_debugger_update(struct console_debugger *debugger)
 {
 	int ret;
@@ -249,15 +275,16 @@ int console_debugger_update(struct console_debugger *debugger)
 		}
 	}
 
-	if (!debugger->active)
-		return 0;
+	console_debugger_check_breakpoints(debugger);
 
-	ret = console_debugger_read(debugger);
-	if (ret < 0)
-		ERR("console_debugger_read: %s", strerror(-ret));
-	ret = console_debugger_parse(debugger);
-	if (ret < 0)
-		ERR("console_debugger_parse: %s", strerror(-ret));
+	while (debugger->active) {
+		ret = console_debugger_read(debugger);
+		if (ret < 0)
+			ERR("console_debugger_read: %s", strerror(-ret));
+		ret = console_debugger_parse(debugger);
+		if (ret < 0)
+			ERR("console_debugger_parse: %s", strerror(-ret));
+	}
 
 	return 0;
 }
