@@ -125,7 +125,7 @@ static void console_debugger_delete(struct console_debugger *debugger)
 	command = &debugger->command;
 	item = command->argv[1];
 	id_str = command->argv[2];
-	if (strcmp(item, "breakpoint") != 0) {
+	if (!str_matches(item, "breakpoint")) {
 		puts("only delete breakpoint is supported");
 		return;
 	}
@@ -171,35 +171,35 @@ static void console_debugger_print(struct console_debugger *debugger)
 
 	registers = debugger->registers;
 	expression = debugger->command.argv[1];
-	if (strcmp(expression, "af") == 0) {
+	if (str_matches(expression, "af")) {
 		printf("af = %#"PRIx16"\n", registers->af);
-	} else if (strcmp(expression, "a") == 0) {
+	} else if (str_matches(expression, "a")) {
 		printf("a = %#"PRIx8"\n", registers->a);
-	} else if (strcmp(expression, "f") == 0) {
+	} else if (str_matches(expression, "f")) {
 		f = registers->f;
 		printf("f = %#"PRIx8" (z = %d, n = %d, h = %d, c = %d\n",
 				f, BIT(7, f), BIT(6, f), BIT(5, f), BIT(4, f));
-	} else if (strcmp(expression, "bc") == 0) {
+	} else if (str_matches(expression, "bc")) {
 		printf("bc = %#"PRIx16"\n", registers->bc);
-	} else if (strcmp(expression, "b") == 0) {
+	} else if (str_matches(expression, "b")) {
 		printf("b = %#"PRIx8"\n", registers->b);
-	} else if (strcmp(expression, "c") == 0) {
+	} else if (str_matches(expression, "c")) {
 		printf("c = %#"PRIx8"\n", registers->c);
-	} else if (strcmp(expression, "de") == 0) {
+	} else if (str_matches(expression, "de")) {
 		printf("de = %#"PRIx16"\n", registers->de);
-	} else if (strcmp(expression, "d") == 0) {
+	} else if (str_matches(expression, "d")) {
 		printf("d = %#"PRIx8"\n", registers->d);
-	} else if (strcmp(expression, "e") == 0) {
+	} else if (str_matches(expression, "e")) {
 		printf("e = %#"PRIx8"\n", registers->e);
-	} else if (strcmp(expression, "hl") == 0) {
+	} else if (str_matches(expression, "hl")) {
 		printf("hl = %#"PRIx16"\n", registers->hl);
-	} else if (strcmp(expression, "h") == 0) {
+	} else if (str_matches(expression, "h")) {
 		printf("h = %#"PRIx8"\n", registers->h);
-	} else if (strcmp(expression, "l") == 0) {
+	} else if (str_matches(expression, "l")) {
 		printf("l = %#"PRIx8"\n", registers->l);
-	} else if (strcmp(expression, "pc") == 0) {
+	} else if (str_matches(expression, "pc")) {
 		printf("pc = %#"PRIx16"\n", registers->pc);
-	} else if (strcmp(expression, "sp") == 0) {
+	} else if (str_matches(expression, "sp")) {
 		printf("sp = %#"PRIx16"\n", registers->sp);
 	} else {
 		printf("Unable to print \"%s\".\n", expression);
@@ -336,17 +336,50 @@ static int console_debugger_read(struct console_debugger *debugger)
 	return 0;
 }
 
+static bool is_ambiguous(const char *name, const struct debugger_command *dc,
+		const struct console_debugger *debugger)
+{
+	const struct debugger_command *cur;
+	unsigned count;
+	const char *diff_char;
+
+	for (cur = dc + 1, count = 0; cur->name != NULL; cur++) {
+		diff_char = str_diff_chr(name, cur->name);
+		if (*diff_char == '\0') {
+			count++;
+			if (count == 1)
+				printf("Command \"%s\" is ambiguous, "
+						"candidates: %s", name,
+						dc->name);
+			printf(", %s", cur->name);
+		}
+	}
+
+	if (count > 0) {
+		puts("");
+		return true;
+	}
+
+	return false;
+}
+
 static int console_debugger_execute(struct console_debugger *debugger)
 {
 	struct command *command;
 	struct debugger_command *dc;
+	char *diff_char;
+	const char *name;
 
 	command = &debugger->command;
 	assert(command->argc >= 0);
 
 	for (dc = commands; dc->name != NULL; dc++) {
-		if (strcmp(dc->name, command->argv[0]) != 0)
+		name = command->argv[0];
+		diff_char = str_diff_chr(name, dc->name);
+		if (*diff_char != '\0')
 			continue;
+		if (is_ambiguous(name, dc, debugger))
+			return 0;
 
 		if (command->argc != dc->argc) {
 			printf("got %d arguments, when \"%s\" requires %d\n",
@@ -368,6 +401,9 @@ static int console_debugger_parse(struct console_debugger *debugger)
 	struct command *command;
 
 	command = &debugger->command;
+	/* reexecute last command */
+	if (*command->line == '\n')
+		return console_debugger_execute(debugger);
 
 	command->continuation_status = tok_str(debugger->tokenizer,
 			command->line, &command->argc,  &command->argv);
@@ -431,5 +467,26 @@ int console_debugger_update(struct console_debugger *debugger)
 	}
 
 	return 0;
+}
+
+bool str_matches(const char *s1, const char *s2)
+{
+	return strcmp(s1, s2) == 0;
+}
+
+bool str_matches_prefix(const char *s, const char *prefix)
+{
+	return strncmp(s, prefix, strlen(prefix)) == 0;
+}
+
+/* returns an adress inside string s1 */
+char *str_diff_chr(const char *s1, const char *s2)
+{
+	while (*s1 && *s1 == *s2) {
+		s1++;
+		s2++;
+	}
+
+	return (char *)s1;
 }
 
