@@ -417,9 +417,13 @@ static int console_debugger_parse(struct console_debugger *debugger)
 	struct command *command;
 
 	command = &debugger->command;
-	/* reexecute last command */
-	if (*command->line == '\n')
-		return console_debugger_execute(debugger);
+	if (*command->line == '\n') {
+		/* reexecute last command */
+		if (command->argc != 0)
+			return console_debugger_execute(debugger);
+		else
+			return 0; /* no previous command */
+	}
 
 	command->continuation_status = tok_str(debugger->tokenizer,
 			command->line, &command->argc,  &command->argv);
