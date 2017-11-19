@@ -345,7 +345,7 @@ int console_debugger_init(struct console_debugger *debugger,
 	 * TODO enable debugger by default, this should be decided with a
 	 * command-line switch
 	 */
-	debugger->active = true;
+//	debugger->active = true;
 
 	return 0;
 }
