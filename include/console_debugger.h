@@ -36,6 +36,7 @@ struct breakpoint {
 struct console_debugger {
 	char path[EMGB_CONSOLE_DEBUGGER_PATH_MAX];
 	bool active;
+	bool next;
 	struct editline *editline;
 	struct history *history;
 	struct HistEvent histevent;

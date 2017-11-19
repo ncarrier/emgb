@@ -163,6 +163,11 @@ static void console_debugger_help(struct console_debugger *debugger)
 				dc->argc > 1 ? "s" : "", dc->help);
 }
 
+static void console_debugger_next(struct console_debugger *debugger)
+{
+	debugger->next = true;
+}
+
 static void console_debugger_print(struct console_debugger *debugger)
 {
 	const char *expression;
@@ -260,6 +265,12 @@ static struct debugger_command commands[] = {
 		.fn = console_debugger_help,
 		.name = "help",
 		.help = "Shows a little help about available commands.",
+		.argc = 1,
+	},
+	{
+		.fn = console_debugger_next,
+		.name = "next",
+		.help = "Execute until next instruction.",
 		.argc = 1,
 	},
 	{
@@ -453,7 +464,7 @@ static void console_debugger_check_breakpoints(
 		pc = debugger->registers->pc;
 		if (breakpoint_hit(debugger->breakpoints + i, pc)) {
 			debugger->active = true;
-			printf("Breakpoint %d hit (pc = %#"PRIx16")\n", i, pc);
+			printf("Breakpoint %d hit (pc = %#.04"PRIx16")\n", i, pc);
 		}
 	}
 }
@@ -479,7 +490,11 @@ int console_debugger_update(struct console_debugger *debugger)
 
 	console_debugger_check_breakpoints(debugger);
 
-	while (debugger->active) {
+	if (debugger->next) {
+		debugger->next = false;
+		printf("pc = %#.04"PRIx16"\n", debugger->registers->pc);
+	}
+	while (debugger->active && !debugger->next) {
 		ret = console_debugger_read(debugger);
 		if (ret < 0)
 			ERR("console_debugger_read: %s", strerror(-ret));
