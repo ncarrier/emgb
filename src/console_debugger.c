@@ -161,6 +161,7 @@ static void console_debugger_help(struct console_debugger *debugger)
 	for (dc = commands; dc->name != NULL; dc++)
 		printf("\t%s: %d argument%s\n\t\t%s\n", dc->name, dc->argc,
 				dc->argc > 1 ? "s" : "", dc->help);
+	puts("\nCommand name can be entered partially, if non ambiguous.");
 }
 
 static void console_debugger_next(struct console_debugger *debugger)
@@ -276,7 +277,10 @@ static struct debugger_command commands[] = {
 	{
 		.fn = console_debugger_print,
 		.name = "print",
-		.help = "Prints internal values, memory, registers...",
+		.help = "Prints internal values, memory, registers...\n"
+			"\t\tValues printable so far: registers, a, f, af, sp"
+			"...\n"
+			"\t\t\texample: print registers.",
 		.argc = 2,
 	},
 
