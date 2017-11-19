@@ -312,6 +312,7 @@ int console_debugger_init(struct console_debugger *debugger,
 			getenv("HOME"));
 	printf("loading history from %s\n", debugger->path);
 	history(debugger->history, &debugger->histevent, H_SETSIZE, 100);
+	history(debugger->history, &debugger->histevent, H_SETUNIQUE, true);
 	history(debugger->history, &debugger->histevent, H_LOAD,
 			debugger->path);
 	el_set(el, EL_HIST, history, debugger->history);
@@ -346,8 +347,9 @@ static int console_debugger_read(struct console_debugger *debugger)
 		ERR("EOF received, quitting now");
 	}
 
-	history(debugger->history, &debugger->histevent, H_ENTER,
-			command->line);
+	if (command->line[0] != '\n')
+		history(debugger->history, &debugger->histevent, H_ENTER,
+				command->line);
 
 	return 0;
 }
