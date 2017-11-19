@@ -470,7 +470,7 @@ int console_debugger_update(struct console_debugger *debugger)
 
 			case SIGINT:
 				if (!debugger->active)
-					puts("entering debugger");
+					puts("\rentering debugger, type help");
 				debugger->active = true;
 				signal_received = 0;
 				break;
