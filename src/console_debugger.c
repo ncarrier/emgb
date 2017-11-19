@@ -172,35 +172,51 @@ static void console_debugger_print(struct console_debugger *debugger)
 	registers = debugger->registers;
 	expression = debugger->command.argv[1];
 	if (str_matches(expression, "af")) {
-		printf("af = %#"PRIx16"\n", registers->af);
+		printf("af = %#.04"PRIx16"\n", registers->af);
 	} else if (str_matches(expression, "a")) {
-		printf("a = %#"PRIx8"\n", registers->a);
+		printf("a = %#.02"PRIx8"\n", registers->a);
 	} else if (str_matches(expression, "f")) {
 		f = registers->f;
-		printf("f = %#"PRIx8" (z = %d, n = %d, h = %d, c = %d\n",
+		printf("f = %#.02"PRIx8" (z = %d, n = %d, h = %d, c = %d)\n",
 				f, BIT(7, f), BIT(6, f), BIT(5, f), BIT(4, f));
 	} else if (str_matches(expression, "bc")) {
-		printf("bc = %#"PRIx16"\n", registers->bc);
+		printf("bc = %#.04"PRIx16"\n", registers->bc);
 	} else if (str_matches(expression, "b")) {
-		printf("b = %#"PRIx8"\n", registers->b);
+		printf("b = %#.02"PRIx8"\n", registers->b);
 	} else if (str_matches(expression, "c")) {
-		printf("c = %#"PRIx8"\n", registers->c);
+		printf("c = %#.02"PRIx8"\n", registers->c);
 	} else if (str_matches(expression, "de")) {
-		printf("de = %#"PRIx16"\n", registers->de);
+		printf("de = %#.04"PRIx16"\n", registers->de);
 	} else if (str_matches(expression, "d")) {
-		printf("d = %#"PRIx8"\n", registers->d);
+		printf("d = %#.02"PRIx8"\n", registers->d);
 	} else if (str_matches(expression, "e")) {
-		printf("e = %#"PRIx8"\n", registers->e);
+		printf("e = %#.02"PRIx8"\n", registers->e);
 	} else if (str_matches(expression, "hl")) {
-		printf("hl = %#"PRIx16"\n", registers->hl);
+		printf("hl = %#.04"PRIx16"\n", registers->hl);
 	} else if (str_matches(expression, "h")) {
-		printf("h = %#"PRIx8"\n", registers->h);
+		printf("h = %#.02"PRIx8"\n", registers->h);
 	} else if (str_matches(expression, "l")) {
-		printf("l = %#"PRIx8"\n", registers->l);
+		printf("l = %#.02"PRIx8"\n", registers->l);
 	} else if (str_matches(expression, "pc")) {
-		printf("pc = %#"PRIx16"\n", registers->pc);
+		printf("pc = %#.04"PRIx16"\n", registers->pc);
 	} else if (str_matches(expression, "sp")) {
-		printf("sp = %#"PRIx16"\n", registers->sp);
+		printf("sp = %#.04"PRIx16"\n", registers->sp);
+	} else if (str_matches(expression, "registers")) {
+		printf("af = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->a,
+				registers->f);
+		printf("bc = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->b,
+				registers->c);
+		printf("pc = 0x%.04"PRIx16"\t", registers->pc);
+		f = registers->f;
+		printf("z (zero)       = %d  ", BIT(7, f));
+		printf("n (substract) = %d\n", BIT(6, f));
+		printf("hl = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->h,
+				registers->l);
+		printf("de = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->d,
+				registers->e);
+		printf("sp = 0x%.04"PRIx16"\t", registers->sp);
+		printf("h (half carry) = %d  ", BIT(5, f));
+		printf("c (carry)     = %d\n", BIT(4, f));
 	} else {
 		printf("Unable to print \"%s\".\n", expression);
 	}
