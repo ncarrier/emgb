@@ -188,8 +188,9 @@ static int get_register_value(const struct console_debugger *debugger,
 }
 
 /* prints an expression with the form "*reg_name[+offset|-offset]" */
-static bool print_expression(const struct console_debugger *debugger,
-		const struct s_register *registers, const char *expression)
+static bool compute_expression(const struct console_debugger *debugger,
+		const struct s_register *registers, const char *expression,
+		uint16_t *output)
 {
 	int nb_match;
 	char start_str[10];
@@ -234,8 +235,7 @@ static bool print_expression(const struct console_debugger *debugger,
 		return false;
 	}
 
-	printf("%s[%#.04x] = %#.04"PRIx16"\n", expression, address,
-			read8bit(address, debugger->gb));
+	*output = address;
 
 	return true;
 }
@@ -245,6 +245,7 @@ static void console_debugger_print(struct console_debugger *debugger)
 	const char *expression;
 	struct s_register *registers;
 	uint16_t f;
+	uint16_t address;
 
 	registers = debugger->registers;
 	expression = debugger->command.argv[1];
@@ -295,8 +296,13 @@ static void console_debugger_print(struct console_debugger *debugger)
 		printf("h (half carry) = %d  ", BIT(5, f));
 		printf("c (carry)     = %d\n", BIT(4, f));
 	} else {
-		if (!print_expression(debugger, registers, expression))
+		if (!compute_expression(debugger, registers, expression,
+					&address))
 			printf("Unable to print \"%s\".\n", expression);
+		else
+			printf("%s[%#.04x] = %#.04"PRIx16"\n",
+					expression, address,
+					read8bit(address, debugger->gb));
 	}
 }
 
