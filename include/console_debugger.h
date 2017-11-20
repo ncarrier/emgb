@@ -15,6 +15,8 @@
 #define EMGB_CONSOLE_DEBUGGER_PATH_MAX 500
 #define EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS 20
 
+#define NB_REGISTERS 14
+
 struct command {
 	const char *line;
 	int argc;
@@ -44,12 +46,20 @@ struct console_debugger {
 	int length;
 	struct command command;
 	struct breakpoint breakpoints[EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS];
-
+	struct s_gb *gb;
 	struct s_register *registers;
+	struct {
+		const char *name;
+		union {
+			uint8_t *v8;
+			uint16_t *v16;
+		} value;
+		size_t size;
+	} registers_map[NB_REGISTERS];
 };
 
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers);
+		struct s_register *registers, struct s_gb *gb);
 int console_debugger_update(struct console_debugger *debugger);
 
 bool str_matches(const char *s1, const char *s2);

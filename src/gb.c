@@ -25,7 +25,7 @@ void gb(char *fileName)
 
 	s_gb = initGb(fileName);
 #if EMGB_CONSOLE_DEBUGGER
-	ret = console_debugger_init(&debugger, &s_gb->gb_register);
+	ret = console_debugger_init(&debugger, &s_gb->gb_register, s_gb);
 	if (ret < 0)
 		ERR("console_debugger_init: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */

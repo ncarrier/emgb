@@ -10,6 +10,7 @@
 
 #include "console_debugger.h"
 #include "log.h"
+#include "memory.h"
 
 static volatile sig_atomic_t signal_received;
 
@@ -169,6 +170,76 @@ static void console_debugger_next(struct console_debugger *debugger)
 	debugger->next = true;
 }
 
+/* returns -1 if "name" doesn't name a register, the value fetched on success */
+static int get_register_value(const struct console_debugger *debugger,
+		const char *name)
+{
+	unsigned i;
+
+	for (i = 0; i < NB_REGISTERS; i++) {
+		if (str_matches(name, debugger->registers_map[i].name)) {
+			if (debugger->registers_map[i].size == 1)
+				return *debugger->registers_map[i].value.v8;
+			else
+				return *debugger->registers_map[i].value.v16;
+		}
+	}
+	return -1;
+}
+
+/* prints an expression with the form "*reg_name[+offset|-offset]" */
+static bool print_expression(const struct console_debugger *debugger,
+		const struct s_register *registers, const char *expression)
+{
+	int nb_match;
+	char start_str[10];
+	int offset;
+	int start;
+	int address;
+	int length;
+
+	if (*expression == '\0')
+		return false;
+
+	nb_match = sscanf(expression, "*%2s%d%n", start_str, &offset, &length);
+	if (nb_match < 1) {
+		printf("invalid value expression %s\n", expression);
+		return false;
+	}
+	start = get_register_value(debugger, start_str);
+	if (start == -1) {
+		printf("\"%s\" doesn't name a register\n", start_str);
+		return false;
+	}
+	if (nb_match == 1) {
+		if (strlen(expression) != strlen(start_str) + 1) {
+			printf("Spurious chars \"%s\" at the end of expression "
+					"\"%s\"\n",
+					expression + strlen(start_str) + 1,
+					expression);
+			return false;
+		}
+		address = start;
+	} else {
+		address = start + offset;
+		if ((unsigned)length != strlen(expression)) {
+			printf("Spurious chars \"%s\" at the end of expression "
+					"\"%s\"\n", expression + length,
+					expression);
+			return false;
+		}
+	}
+	if (address < 0 || address > UINT16_MAX) {
+		printf("address %s points outside the memory\n", expression);
+		return false;
+	}
+
+	printf("%s[%#.04x] = %#.04"PRIx16"\n", expression, address,
+			read8bit(address, debugger->gb));
+
+	return true;
+}
+
 static void console_debugger_print(struct console_debugger *debugger)
 {
 	const char *expression;
@@ -224,7 +295,8 @@ static void console_debugger_print(struct console_debugger *debugger)
 		printf("h (half carry) = %d  ", BIT(5, f));
 		printf("c (carry)     = %d\n", BIT(4, f));
 	} else {
-		printf("Unable to print \"%s\".\n", expression);
+		if (!print_expression(debugger, registers, expression))
+			printf("Unable to print \"%s\".\n", expression);
 	}
 }
 
@@ -278,9 +350,12 @@ static struct debugger_command commands[] = {
 		.fn = console_debugger_print,
 		.name = "print",
 		.help = "Prints internal values, memory, registers...\n"
-			"\t\tValues printable so far: registers, a, f, af, sp"
-			"...\n"
-			"\t\t\texample: print registers.",
+			"\t\t\tusage: print {af,a,f,bc,b,c,de,d,e,hl,h,l,sp,"
+			"pc}\n"
+			"\t\t\t       print registers\n"
+			"\t\t\t       print *REG_NAME[{+offset,-offset}]\n"
+		        "\t\t\texamples: print pc\n"
+		        "\t\t\t          print *sp-0x02\n",
 		.argc = 2,
 	},
 
@@ -303,13 +378,78 @@ static char *console_debugger_prompt(struct editline *el)
 		return EMGB_CONSOLE_DEBUGGER_PROMPT2;
 }
 
+static void init_registers_map(struct console_debugger *debugger)
+{
+	unsigned index;
+	struct s_register *registers;
+
+	registers = debugger->registers;
+	index = 0;
+	debugger->registers_map[index].name = "af";
+	debugger->registers_map[index].value.v16 = &registers->af;
+	debugger->registers_map[index++].size = sizeof(registers->af);
+
+	debugger->registers_map[index].name = "a";
+	debugger->registers_map[index].value.v8 = &registers->a;
+	debugger->registers_map[index++].size = sizeof(registers->a);
+
+	debugger->registers_map[index].name = "f";
+	debugger->registers_map[index].value.v8 = &registers->f;
+	debugger->registers_map[index++].size = sizeof(registers->f);
+
+	debugger->registers_map[index].name = "bc";
+	debugger->registers_map[index].value.v16 = &registers->bc;
+	debugger->registers_map[index++].size = sizeof(registers->bc);
+
+	debugger->registers_map[index].name = "b";
+	debugger->registers_map[index].value.v8 = &registers->b;
+	debugger->registers_map[index++].size = sizeof(registers->b);
+
+	debugger->registers_map[index].name = "c";
+	debugger->registers_map[index].value.v8 = &registers->c;
+	debugger->registers_map[index++].size = sizeof(registers->c);
+
+	debugger->registers_map[index].name = "de";
+	debugger->registers_map[index].value.v16 = &registers->de;
+	debugger->registers_map[index++].size = sizeof(registers->de);
+
+	debugger->registers_map[index].name = "d";
+	debugger->registers_map[index].value.v8 = &registers->d;
+	debugger->registers_map[index++].size = sizeof(registers->d);
+
+	debugger->registers_map[index].name = "e";
+	debugger->registers_map[index].value.v8 = &registers->e;
+	debugger->registers_map[index++].size = sizeof(registers->e);
+
+	debugger->registers_map[index].name = "hl";
+	debugger->registers_map[index].value.v16 = &registers->hl;
+	debugger->registers_map[index++].size = sizeof(registers->hl);
+
+	debugger->registers_map[index].name = "h";
+	debugger->registers_map[index].value.v8 = &registers->h;
+	debugger->registers_map[index++].size = sizeof(registers->h);
+
+	debugger->registers_map[index].name = "l";
+	debugger->registers_map[index].value.v8 = &registers->l;
+	debugger->registers_map[index++].size = sizeof(registers->l);
+
+	debugger->registers_map[index].name = "sp";
+	debugger->registers_map[index].value.v16 = &registers->sp;
+	debugger->registers_map[index++].size = sizeof(registers->sp);
+
+	debugger->registers_map[index].name = "pc";
+	debugger->registers_map[index].value.v16 = &registers->pc;
+	debugger->registers_map[index++].size = sizeof(registers->pc);
+}
+
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers)
+		struct s_register *registers, struct s_gb *gb)
 {
 	struct editline *el = debugger->editline;
 
 	memset(debugger, 0, sizeof(*debugger));
 	debugger->registers = registers;
+	debugger->gb = gb;
 	signal(SIGINT, console_debugger_init_signal_handler);
 	signal(SIGWINCH, console_debugger_init_signal_handler);
 	// TODO how to perform a cleanup ?
@@ -341,6 +481,7 @@ int console_debugger_init(struct console_debugger *debugger,
 	if (debugger->tokenizer == NULL)
 		ERR("tok_init");
 
+	init_registers_map(debugger);
 	/*
 	 * TODO enable debugger by default, this should be decided with a
 	 * command-line switch
