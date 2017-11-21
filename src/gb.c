@@ -50,9 +50,9 @@ void gb(char *fileName)
 	  if (s_gb->gb_cpu.stopCpu == 0) 
 	    {
 	      fopcode = read8bit(s_gb->gb_register.pc, s_gb); s_gb->gb_register.pc += 1; //retrieve func opcode
-	      s_gb->gb_cpu.gb_cpu_z80[fopcode].func(s_gb); //call opcode func pointer
+	      instructions[fopcode].func(s_gb); //call opcode func pointer
 	      if (s_gb->gb_cpu.jmpf == 0) //if jmp opcode was called, no need to incr PC
-		s_gb->gb_register.pc += s_gb->gb_cpu.gb_cpu_z80[fopcode].size;
+		s_gb->gb_register.pc += instructions[fopcode].size;
 	      s_gb->gb_cpu.jmpf = 0;
 	    }
 	  updateGpu(s_gb);

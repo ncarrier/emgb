@@ -61,8 +61,9 @@ struct s_register
   //unsigned char	flags;
 };
 
+extern const struct s_cpu_z80 instructions[256];
+
 struct	       			s_cpu {
-	struct	s_cpu_z80	gb_cpu_z80[256];
 	unsigned int		totalTick;
 	unsigned char		stopCpu;
 	unsigned char		jmpf;
