@@ -36,6 +36,123 @@ static struct breakpoint *get_unused_breakpoint(
 	return NULL;
 }
 
+/* returns -1 if "name" doesn't name a register, the value fetched on success */
+static int get_register_value(const struct console_debugger *debugger,
+		const char *name)
+{
+	unsigned i;
+
+	for (i = 0; i < NB_REGISTERS; i++) {
+		if (str_matches(name, debugger->registers_map[i].name)) {
+			if (debugger->registers_map[i].size == 1)
+				return *debugger->registers_map[i].value.v8;
+			else
+				return *debugger->registers_map[i].value.v16;
+		}
+	}
+
+	return -1;
+}
+
+/* computes the value of an expression of type "*reg_name[+offset|-offset]" */
+static bool compute_expression(const struct console_debugger *debugger,
+		const char *expression, uint16_t *output)
+{
+	int nb_match;
+	char start_str[10];
+	int offset;
+	int start;
+	int address;
+	int length;
+
+	if (*expression == '\0')
+		return false;
+
+	nb_match = sscanf(expression, "%2s%i%n", start_str, &offset, &length);
+	if (nb_match < 1) {
+		printf("invalid value expression %s\n", expression);
+		return false;
+	}
+	start = get_register_value(debugger, start_str);
+	if (start == -1) {
+		printf("\"%s\" doesn't name a register\n", start_str);
+		return false;
+	}
+	if (nb_match == 1) {
+		if (strlen(expression) != strlen(start_str)) {
+			printf("Spurious chars \"%s\" at the end of expression "
+					"\"%s\"\n",
+					expression + strlen(start_str),
+					expression);
+			return false;
+		}
+		address = start;
+	} else {
+		if ((unsigned)length != strlen(expression)) {
+			printf("Spurious chars \"%s\" at the end of expression "
+					"\"%s\"\n", expression + length,
+					expression);
+			return false;
+		}
+		address = start + offset;
+	}
+	if (address < 0 || address > UINT16_MAX) {
+		printf("address %s points outside the memory\n", expression);
+		return false;
+	}
+
+	*output = address;
+
+	return true;
+}
+
+static void console_debugger_assembler(struct console_debugger *debugger)
+{
+	const char *start_str;
+	const char *stop_str;
+	const char *tmp;
+	uint16_t start;
+	uint16_t stop;
+	uint16_t i;
+	uint16_t pc;
+	uint8_t opcode;
+	const struct s_cpu_z80 *instruction;
+	unsigned cur;
+
+	start_str = debugger->command.argv[1];
+	stop_str = debugger->command.argv[2];
+
+	if (!compute_expression(debugger, start_str, &start)) {
+		printf("Invalid start expression \"%s\"\n", start_str);
+		return;
+	}
+	if (!compute_expression(debugger, stop_str, &stop)) {
+		printf("Invalid stop expression \"%s\"\n", stop_str);
+		return;
+	}
+	/* swap if order is wrong */
+	if (start > stop) {
+		tmp = stop_str;
+		i = stop;
+		stop_str = start_str;
+		stop = start;
+		start_str = tmp;
+		start = i;
+	}
+	printf("%s = 0x%04"PRIx16"\n", start_str, start);
+	for (pc = start; pc <= stop; ) {
+		opcode = read8bit(pc, debugger->gb);
+		instruction = instructions + opcode;
+		printf("[0x%04"PRIx16"] (0x%02"PRIx8") %s", pc, opcode,
+				instruction->value);
+		printf("\033[%dG", 53);
+		for (cur = 1; cur <= instruction->size; cur++)
+			printf(" %02"PRIx8, read8bit(pc + cur, debugger->gb));
+		puts("");
+		pc += instruction->size + 1;
+	}
+}
+
 static void console_debugger_breakpoint(struct console_debugger *debugger)
 {
 	long adress;
@@ -165,76 +282,6 @@ static void console_debugger_help(struct console_debugger *debugger)
 	puts("\nCommand name can be entered partially, if non ambiguous.");
 }
 
-/* returns -1 if "name" doesn't name a register, the value fetched on success */
-static int get_register_value(const struct console_debugger *debugger,
-		const char *name)
-{
-	unsigned i;
-
-	for (i = 0; i < NB_REGISTERS; i++) {
-		if (str_matches(name, debugger->registers_map[i].name)) {
-			if (debugger->registers_map[i].size == 1)
-				return *debugger->registers_map[i].value.v8;
-			else
-				return *debugger->registers_map[i].value.v16;
-		}
-	}
-
-	return -1;
-}
-
-/* prints an expression with the form "*reg_name[+offset|-offset]" */
-static bool compute_expression(const struct console_debugger *debugger,
-		const char *expression, uint16_t *output)
-{
-	int nb_match;
-	char start_str[10];
-	int offset;
-	int start;
-	int address;
-	int length;
-
-	if (*expression == '\0')
-		return false;
-
-	nb_match = sscanf(expression, "*%2s%i%n", start_str, &offset, &length);
-	if (nb_match < 1) {
-		printf("invalid value expression %s\n", expression);
-		return false;
-	}
-	start = get_register_value(debugger, start_str);
-	if (start == -1) {
-		printf("\"%s\" doesn't name a register\n", start_str);
-		return false;
-	}
-	if (nb_match == 1) {
-		if (strlen(expression) != strlen(start_str) + 1) {
-			printf("Spurious chars \"%s\" at the end of expression "
-					"\"%s\"\n",
-					expression + strlen(start_str) + 1,
-					expression);
-			return false;
-		}
-		address = start;
-	} else {
-		address = start + offset;
-		if ((unsigned)length != strlen(expression)) {
-			printf("Spurious chars \"%s\" at the end of expression "
-					"\"%s\"\n", expression + length,
-					expression);
-			return false;
-		}
-	}
-	if (address < 0 || address > UINT16_MAX) {
-		printf("address %s points outside the memory\n", expression);
-		return false;
-	}
-
-	*output = address;
-
-	return true;
-}
-
 static void console_debugger_memory(struct console_debugger *debugger)
 {
 	const char *start_str;
@@ -341,7 +388,9 @@ static void console_debugger_print(struct console_debugger *debugger)
 		printf("h (half carry) = %d  ", BIT(5, f));
 		printf("c (carry)     = %d\n", BIT(4, f));
 	} else {
-		if (!compute_expression(debugger, expression, &address))
+		if (*expression != '*' ||
+				!compute_expression(debugger, expression + 1,
+					&address))
 			printf("Unable to print \"%s\".\n", expression);
 		else
 			printf("%s[%#.04x] = %#.02"PRIx16"\n", expression,
@@ -351,6 +400,12 @@ static void console_debugger_print(struct console_debugger *debugger)
 }
 
 static struct debugger_command commands[] = {
+	{
+		.fn = console_debugger_assembler,
+		.name = "assembler",
+		.help = "Shows the assembler code from one address to another.",
+		.argc = 3,
+	},
 	{
 		.fn = console_debugger_breakpoint,
 		.name = "breakpoint",
