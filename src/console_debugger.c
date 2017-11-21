@@ -364,13 +364,6 @@ static struct debugger_command commands[] = {
 		.argc = 1,
 	},
 	{
-		.fn = console_debugger_enable,
-		.name = "enable",
-		.help = "Enables a breakpoint.\n"
-			"\t\t\tusage: enable breakpoint_id.",
-		.argc = 2,
-	},
-	{
 		.fn = console_debugger_delete,
 		.name = "delete",
 		.help = "Deletes an item, item type must be: breakpoint.\n"
@@ -382,6 +375,13 @@ static struct debugger_command commands[] = {
 		.name = "disable",
 		.help = "Disables a breakpoint.\n"
 			"\t\t\tusage: disable breakpoint_id.",
+		.argc = 2,
+	},
+	{
+		.fn = console_debugger_enable,
+		.name = "enable",
+		.help = "Enables a breakpoint.\n"
+			"\t\t\tusage: enable breakpoint_id.",
 		.argc = 2,
 	},
 	{
