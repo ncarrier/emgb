@@ -165,11 +165,6 @@ static void console_debugger_help(struct console_debugger *debugger)
 	puts("\nCommand name can be entered partially, if non ambiguous.");
 }
 
-static void console_debugger_next(struct console_debugger *debugger)
-{
-	debugger->next = true;
-}
-
 /* returns -1 if "name" doesn't name a register, the value fetched on success */
 static int get_register_value(const struct console_debugger *debugger,
 		const char *name)
@@ -184,13 +179,13 @@ static int get_register_value(const struct console_debugger *debugger,
 				return *debugger->registers_map[i].value.v16;
 		}
 	}
+
 	return -1;
 }
 
 /* prints an expression with the form "*reg_name[+offset|-offset]" */
 static bool compute_expression(const struct console_debugger *debugger,
-		const struct s_register *registers, const char *expression,
-		uint16_t *output)
+		const char *expression, uint16_t *output)
 {
 	int nb_match;
 	char start_str[10];
@@ -202,7 +197,7 @@ static bool compute_expression(const struct console_debugger *debugger,
 	if (*expression == '\0')
 		return false;
 
-	nb_match = sscanf(expression, "*%2s%d%n", start_str, &offset, &length);
+	nb_match = sscanf(expression, "*%2s%i%n", start_str, &offset, &length);
 	if (nb_match < 1) {
 		printf("invalid value expression %s\n", expression);
 		return false;
@@ -238,6 +233,56 @@ static bool compute_expression(const struct console_debugger *debugger,
 	*output = address;
 
 	return true;
+}
+
+static void console_debugger_memory(struct console_debugger *debugger)
+{
+	const char *start_str;
+	const char *stop_str;
+	const char *tmp;
+	uint16_t start;
+	uint16_t stop;
+	uint16_t i;
+
+	start_str = debugger->command.argv[1];
+	stop_str = debugger->command.argv[2];
+
+	if (!compute_expression(debugger, start_str, &start)) {
+		printf("Invalid start expression \"%s\"\n", start_str);
+		return;
+	}
+	if (!compute_expression(debugger, stop_str, &stop)) {
+		printf("Invalid stop expression \"%s\"\n", stop_str);
+		return;
+	}
+	/* swap if order is wrong */
+	if (start > stop) {
+		tmp = stop_str;
+		i = stop;
+		stop_str = start_str;
+		stop = start;
+		start_str = tmp;
+		start = i;
+	}
+	if (start % 2) /* only allow aligned accesses */
+		start--;
+	if (stop % 2)
+		stop++;
+	for (i = start; i <= stop; i += 2) {
+		if (i == start)
+			printf(" %s = 0x%04"PRIx16, start_str, start);
+		else if (((i - start) % 0x10) == 0 && i != stop)
+			printf(" 0x%04"PRIx16, i);
+		if (i == stop)
+			printf(" %s = 0x%04"PRIx16, stop_str, stop);
+		printf("\033[%dG0x%04"PRIx16"\n", 40,
+				read16bit(i, debugger->gb));
+	}
+}
+
+static void console_debugger_next(struct console_debugger *debugger)
+{
+	debugger->next = true;
 }
 
 static void console_debugger_print(struct console_debugger *debugger)
@@ -296,12 +341,11 @@ static void console_debugger_print(struct console_debugger *debugger)
 		printf("h (half carry) = %d  ", BIT(5, f));
 		printf("c (carry)     = %d\n", BIT(4, f));
 	} else {
-		if (!compute_expression(debugger, registers, expression,
-					&address))
+		if (!compute_expression(debugger, expression, &address))
 			printf("Unable to print \"%s\".\n", expression);
 		else
-			printf("%s[%#.04x] = %#.04"PRIx16"\n",
-					expression, address,
+			printf("%s[%#.04x] = %#.02"PRIx16"\n", expression,
+					address,
 					read8bit(address, debugger->gb));
 	}
 }
@@ -347,6 +391,14 @@ static struct debugger_command commands[] = {
 		.argc = 1,
 	},
 	{
+		.fn = console_debugger_memory,
+		.name = "memory",
+		.help = "Prints a memory region.\n"
+			"\t\t\tusage: memory start stop\n"
+			"\t\t\texample: memory *sp+0x50 0x200",
+		.argc = 3,
+	},
+	{
 		.fn = console_debugger_next,
 		.name = "next",
 		.help = "Execute until next instruction.",
@@ -361,7 +413,7 @@ static struct debugger_command commands[] = {
 			"\t\t\t       print registers\n"
 			"\t\t\t       print *REG_NAME[{+offset,-offset}]\n"
 		        "\t\t\texamples: print pc\n"
-		        "\t\t\t          print *sp-0x02\n",
+		        "\t\t\t          print *sp-0x02",
 		.argc = 2,
 	},
 
