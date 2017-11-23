@@ -132,13 +132,13 @@ echo -e " */"
 echo -e "#include \"cpu.h\"\n"
 
 echo
-# only BC and base instruction sets are present on the GB, plus some
+# only CB and base instruction sets are present on the GB, plus some
 # modifications
 echo "/* base instruction set */"
 generate "${file}" "" definition_{header,body,footer}_gen
 generate "${file}" "" struct_{header,body,footer}_gen
 echo
-title=BC
+title=CB
 generate "${file}" ${title} definition_{header,body,footer}_gen
 generate "${file}" ${title} struct_{header,body,footer}_gen
 echo
