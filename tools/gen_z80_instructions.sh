@@ -27,13 +27,11 @@ function text_to_func() {
 }
 
 function generate() {
-	set -x
 	file=$1
 	title=${2//\"/}
 	header_gen=$3
 	body_gen=$4
 	footer_gen=$5
-	set +x
 
 	title_found=false
 	grep -E '</?tr|td|th|table' ${file} | while read line; do
