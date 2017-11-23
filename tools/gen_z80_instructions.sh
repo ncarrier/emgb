@@ -93,12 +93,12 @@ function definition_footer_gen() {
 }
 
 function struct_header_gen() {
-	title=$1
+	local title=$1
 
-	if [ -n "${title}" ]; then
-		title=_${title}
+	if [ -z "${title}" ]; then
+		title=base
 	fi
-	echo "const struct s_cpu_z80 instructions${title}[] = {"
+	echo "const struct s_cpu_z80 instructions_${title}[] = {"
 }
 
 function struct_body_gen() {
