@@ -43,7 +43,7 @@ void check_zero(unsigned char value, struct s_gb *s_gb)
 void	RDBG(struct s_gb *s_gb)
 {
 	/*printf("----------\npc value : %s pc: %x\nsp: %x\nopcode: %x\n----------\n",
-		s_gb->gb_cpu.gb_cpu_z80[read8bit(s_gb->gb_register.pc, s_gb)].value, s_gb->gb_register.pc, s_gb->gb_register.sp, read8bit(s_gb->gb_register.pc, s_gb));
+		instructions[read8bit(s_gb->gb_register.pc, s_gb)].value, s_gb->gb_register.pc, s_gb->gb_register.sp, read8bit(s_gb->gb_register.pc, s_gb));
 
 	printf("register a %x f %x af -- %x\n", s_gb->gb_register.a, s_gb->gb_register.f, s_gb->gb_register.af);
 	printf("register b %x c %x cb -- %x\n", s_gb->gb_register.b, s_gb->gb_register.c, s_gb->gb_register.bc);

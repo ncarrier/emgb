@@ -1,8 +1,14 @@
+#include <stdio.h>
+
 #include "GB.h"
 
 
 int main(int ac, char **av)
 {
+#if EMGB_CONSOLE_DEBUGGER
+	puts("console debugger enabled");
+#endif /* EMGB_CONSOLE_DEBUGGER */
+
 	if (ac == 1)
 	{
 		/* const char * mario = "C:\\proj\\GB_test\\emgb\\roms\\mario.gb"; */
