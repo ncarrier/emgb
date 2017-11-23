@@ -8,12 +8,13 @@ re_td='<td axis="(.*)">(.*)<.*'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
 
 function text_to_func() {
-	title=${1,,}
+	local title=${1,,}
+
 	title=${title%%\*\*}
 	shift
-	text=$*
+	local text=$*
 
-	ret=$(echo ${text} | \
+	local ret=$(echo ${text} | \
 		sed 's/(/p/g' | \
 		sed 's/[) ,]/_/g' | \
 		sed 's/[^_a-zA-Z0-9]/x/g' | \
@@ -27,13 +28,22 @@ function text_to_func() {
 }
 
 function generate() {
-	file=$1
-	title=${2//\"/}
-	header_gen=$3
-	body_gen=$4
-	footer_gen=$5
+	local file=$1
+	local title=${2//\"/}
+	local header_gen=$3
+	local body_gen=$4
+	local footer_gen=$5
+	local help
+	local text
+	local flags
+	local cycles
+	local doc
+	local opcode
+	local func
+	local high_nible
+	local low_nible
 
-	title_found=false
+	local title_found=false
 	grep -E '</?tr|td|th|table' ${file} | while read line; do
 		if [[ "${line}" =~ '<table title="'${title}'">' ]]; then
 			${header_gen} "${title}"
@@ -71,12 +81,12 @@ function definition_header_gen() {
 }
 
 function definition_body_gen() {
-	opcode=$1
-	text=$2
-	doc=$3
-	cycles=$4
-	size=$5
-	func=$6
+	local opcode=$1
+	local text=$2
+	local doc=$3
+	local cycles=$4
+	local size=$5
+	local func=$6
 
 	echo "/* ${text} [${opcode}] : ${doc} */"
 	echo "static void ${func}(struct s_gb *s_gb)"
@@ -102,12 +112,12 @@ function struct_header_gen() {
 }
 
 function struct_body_gen() {
-	opcode=$1
-	text=$2
-	doc=$3
-	cycles=$4
-	size=$5
-	func=$6
+	local opcode=$1
+	local text=$2
+	local doc=$3
+	local cycles=$4
+	local size=$5
+	local func=$6
 
 	echo -e "\t[${opcode}] = {"
 	echo -e "\t\t.opcode = ${opcode},"
