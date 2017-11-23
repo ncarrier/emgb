@@ -109,7 +109,7 @@ function struct_body_gen() {
 	size=$5
 	func=$6
 
-	echo -e "\t{"
+	echo -e "\t[${opcode}] = {"
 	echo -e "\t\t.opcode = ${opcode},"
 	echo -e "\t\t.value = \"${text}\","
 	echo -e "\t\t.doc = \"${doc}\","
