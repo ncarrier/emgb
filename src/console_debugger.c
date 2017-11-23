@@ -1,3 +1,4 @@
+#if EMGB_CONSOLE_DEBUGGER
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
@@ -797,4 +798,5 @@ char *str_diff_chr(const char *s1, const char *s2)
 
 	return (char *)s1;
 }
+#endif /* EMGB_CONSOLE_DEBUGGER */
 
