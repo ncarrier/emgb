@@ -3,6 +3,8 @@
 set -eu
 
 file=$1
+temp_file=$(mktemp)
+grep -E '</?tr|td|th|table' ${file} > ${temp_file}
 
 re_td='<td axis="(.*)">(.*)<.*'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
@@ -14,17 +16,16 @@ function text_to_func() {
 	shift
 	local text=$*
 
-	local ret=$(echo ${text} | \
-		sed 's/(/p/g' | \
-		sed 's/[) ,]/_/g' | \
-		sed 's/[^_a-zA-Z0-9]/x/g' | \
-		sed 's/__/_/g' | \
-		sed 's/_$//g')
+	ret=${text//(/p}
+	ret=${ret//[) ,]/_}
+	ret=${ret//[^_a-zA-Z0-9]/x}
+	ret=${ret//__/_}
+	ret=${ret/%_/}
 
 	if [ -n "${title}" ]; then
 		ret=${title}_${ret}
 	fi
-		echo ${ret}
+	echo ${ret}
 }
 
 function generate() {
@@ -44,7 +45,7 @@ function generate() {
 	local low_nible
 
 	local title_found=false
-	grep -E '</?tr|td|th|table' ${file} | while read line; do
+	while read line; do
 		if [[ "${line}" =~ '<table title="'${title}'">' ]]; then
 			${header_gen} "${title}"
 			title_found=true
@@ -73,7 +74,7 @@ function generate() {
 				break
 			fi
 		fi
-	done
+	done < ${file}
 }
 
 function definition_header_gen() {
@@ -145,11 +146,11 @@ echo
 # only CB and base instruction sets are present on the GB, plus some
 # modifications
 echo "/* base instruction set */"
-generate "${file}" "" definition_{header,body,footer}_gen
-generate "${file}" "" struct_{header,body,footer}_gen
+generate "${temp_file}" "" definition_{header,body,footer}_gen
+generate "${temp_file}" "" struct_{header,body,footer}_gen
 echo
 title=CB
-generate "${file}" ${title} definition_{header,body,footer}_gen
-generate "${file}" ${title} struct_{header,body,footer}_gen
+generate "${temp_file}" ${title} definition_{header,body,footer}_gen
+generate "${temp_file}" ${title} struct_{header,body,footer}_gen
 echo
 
