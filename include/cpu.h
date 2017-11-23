@@ -1,8 +1,11 @@
 #ifndef __CPU__
 #define __CPU__
+#include <stdbool.h>
+#include <inttypes.h>
 
 struct s_gb;
 void initCpu(struct s_gb * s_gb);
+bool is_opcode_undefined(uint8_t opcode);
 typedef void (*cpufunc)(struct s_gb*);
 
 struct		s_cpu_z80

@@ -1318,3 +1318,8 @@ void initCpu(struct s_gb * gb_s)
 {
 	// TODO, should the other fields be initialized here ?
 }
+
+bool is_opcode_undefined(uint8_t opcode)
+{
+	return instructions[opcode].func == op_undefined;
+}
