@@ -13,7 +13,9 @@ struct		s_cpu_z80
   unsigned char	opcode;
   char	       	*value;
   cpufunc       func;
-  unsigned char	size;
+  uint8_t size;
+  char *doc;
+  uint8_t cycles;
 };
 
 #pragma pack(push, 1)
