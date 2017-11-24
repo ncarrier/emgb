@@ -6,7 +6,7 @@ file=$1
 temp_file=$(mktemp)
 grep -E '</?tr|td|th|table' ${file} > ${temp_file}
 
-re_td='<td axis="(.*)">(.*)<.*'
+re_td='<td [^>]*axis="(.*)">(.*)<.*'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
 
 function text_to_func() {
