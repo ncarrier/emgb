@@ -5,9 +5,7 @@
 #include <histedit.h>
 
 #include "cpu.h"
-
-#define BIT0(v) ((v) & 1)
-#define BIT(i, v) BIT0((v) >> (i))
+#include "utils.h"
 
 #define EMGB_CONSOLE_DEBUGGER_PROMPT "egd > "
 #define EMGB_CONSOLE_DEBUGGER_PROMPT2 "... > "
