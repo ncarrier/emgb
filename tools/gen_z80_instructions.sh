@@ -10,6 +10,7 @@ re_td='<td [^>]*axis="(.*)">(.*)<.*'
 re_td_ln='<td class="ln">'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
 
+line_number=0
 function text_to_func() {
 	local title=${1,,}
 
@@ -29,6 +30,45 @@ function text_to_func() {
 	echo ${ret}
 }
 
+function parse_instruction_line() {
+	help=${BASH_REMATCH[1]}
+	opcode=0x${high_nibble}${low_nibble}
+	text=${BASH_REMATCH[2]}
+	[[ "${help}" =~ ${re_help} ]];
+	flags=${BASH_REMATCH[1]}
+	size=${BASH_REMATCH[2]}
+	cycles=${BASH_REMATCH[3]}
+	opcode=0x${high_nibble}${low_nibble}
+	doc=${BASH_REMATCH[4]}
+	func=$(set -f; text_to_func "${title}" ${text})
+}
+
+function parse_exec_line() {
+	opcode=0x${high_nibble}${low_nibble}
+	text="exec ${opcode}"
+	flags="------"
+	size=1
+	cycles=0
+	doc="execute instruction in subtable ${opcode}"
+	func="${title}jump_${opcode}"
+}
+
+parse_line() {
+	local line=$1
+	local regex=$2
+	local action=$3
+
+	if [[ "${line}" =~ ${regex} ]]; then
+		printf -v low_nibble "%X" ${line_number}
+
+		${action}
+		${body_gen} ${opcode} "${text}" "${doc}" ${cycles} ${size} \
+			${func}
+
+		line_number=$((${line_number} + 1))
+	fi
+}
+
 function generate() {
 	local file=$1
 	local title=${2//\"/}
@@ -45,7 +85,6 @@ function generate() {
 	local high_nible
 	local low_nible
 	local line
-	local line_number
 
 	local title_found=false
 	while read line; do
@@ -58,39 +97,8 @@ function generate() {
 				high_nibble=${BASH_REMATCH[1]}
 				line_number=0
 			fi
-			if [[ "${line}" =~ ${re_td} ]]; then
-				printf -v low_nibble "%X" ${line_number}
-
-				help=${BASH_REMATCH[1]}
-				opcode=0x${high_nibble}${low_nibble}
-				text=${BASH_REMATCH[2]}
-				[[ "${help}" =~ ${re_help} ]]; 
-				flags=${BASH_REMATCH[1]}
-				size=${BASH_REMATCH[2]}
-				cycles=${BASH_REMATCH[3]}
-				opcode=0x${high_nibble}${low_nibble}
-				doc=${BASH_REMATCH[4]}
-				func=$(set -f; text_to_func "${title}" ${text})
-				${body_gen} ${opcode} "${text}" "${doc}" \
-					${cycles} ${size} ${func}
-
-				line_number=$((${line_number} + 1))
-			fi
-			if [[ "${line}" =~ ${re_td_ln} ]]; then
-				printf -v low_nibble "%X" ${line_number}
-
-				opcode=0x${high_nibble}${low_nibble}
-				text="exec ${opcode}"
-				flags="------"
-				size=1
-				cycles=0
-				doc="execute instruction in subtable ${opcode}"
-				func="${title}jump_${opcode}"
-				${body_gen} ${opcode} "${text}" "${doc}" \
-					${cycles} ${size} ${func}
-
-				line_number=$((${line_number} + 1))
-			fi
+			parse_line "${line}" "${re_td}" parse_instruction_line
+			parse_line "${line}" "${re_td_ln}" parse_exec_line
 			if [[ "${line}" =~ '</table>' ]]; then
 				${footer_gen} "${title}"
 				break
