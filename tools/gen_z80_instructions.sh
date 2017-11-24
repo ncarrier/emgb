@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -euf
 
 file=$1
 temp_file=$(mktemp)
@@ -9,6 +9,11 @@ grep -E '</?tr|td|th|table' ${file} > ${temp_file}
 re_td='<td [^>]*axis="(.*)">(.*)<.*'
 re_td_ln='<td class="ln">'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
+
+CARRY=0
+NEG=1
+HALFC=3
+ZERO=4
 
 line_number=0
 function text_to_func() {
@@ -35,12 +40,12 @@ function parse_instruction_line() {
 	opcode=0x${high_nibble}${low_nibble}
 	text=${BASH_REMATCH[2]}
 	[[ "${help}" =~ ${re_help} ]];
-	flags=${BASH_REMATCH[1]}
+	flags="${BASH_REMATCH[1]}"
 	size=${BASH_REMATCH[2]}
 	cycles=${BASH_REMATCH[3]}
 	opcode=0x${high_nibble}${low_nibble}
 	doc=${BASH_REMATCH[4]}
-	func=$(set -f; text_to_func "${title}" ${text})
+	func=$(text_to_func "${title}" ${text})
 }
 
 function parse_exec_line() {
@@ -56,14 +61,15 @@ function parse_exec_line() {
 parse_line() {
 	local line=$1
 	local regex=$2
-	local action=$3
+	local title=$3
+	local action=$4
 
 	if [[ "${line}" =~ ${regex} ]]; then
 		printf -v low_nibble "%X" ${line_number}
 
 		${action}
 		${body_gen} ${opcode} "${text}" "${doc}" ${cycles} ${size} \
-			${func}
+			${func} "${title}" "${flags}"
 
 		line_number=$((${line_number} + 1))
 	fi
@@ -97,8 +103,8 @@ function generate() {
 				high_nibble=${BASH_REMATCH[1]}
 				line_number=0
 			fi
-			parse_line "${line}" "${re_td}" parse_instruction_line
-			parse_line "${line}" "${re_td_ln}" parse_exec_line
+			parse_line "${line}" "${re_td}" "${title}" parse_instruction_line
+			parse_line "${line}" "${re_td_ln}" "${title}" parse_exec_line
 			if [[ "${line}" =~ '</table>' ]]; then
 				${footer_gen} "${title}"
 				break
@@ -118,13 +124,36 @@ function definition_body_gen() {
 	local cycles=$4
 	local size=$5
 	local func=$6
+	local title=$7
+	local flags=$8
 
+	flags=( "${8:0:1}" "${8:1:1}" "${8:2:1}" "${8:3:1}" "${8:4:1}" "${8:5:1}" )
 	echo "/* ${text} [${opcode}] : ${doc} */"
 	echo "static void ${func}(struct s_gb *s_gb)"
 	echo "{"
 	echo "	/* start of ${func} manual code */"
 	echo
 	echo "	/* end of ${func} manual code */"
+	for f in ZERO NEG HALFC CARRY; do
+		case ${flags[${f}]} in
+		"-")
+		echo "	/* ${f} unaffected */"
+		;;
+		"+")
+		echo "	/* ${f} affected as defined */"
+		;;
+		"1")
+		echo "	/* ${f} set */"
+		echo "	SET_${f}();"
+		;;
+		"0")
+		echo "	/* ${f} reset */"
+		echo "	CLEAR_${f}();"
+		;;
+		*)
+		echo "	/* unknown action on ${f} */"
+		esac
+	done
 	echo "}"
 	echo
 }
@@ -171,6 +200,7 @@ echo -e " * \"end of xxx manual code\" comments."
 echo -e " */"
 
 echo -e "#include \"cpu.h\"\n"
+echo -e "#include \"GB.h\"\n"
 
 echo
 # only CB and base instruction sets are present on the GB, plus some
