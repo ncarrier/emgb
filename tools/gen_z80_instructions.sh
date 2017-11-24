@@ -43,6 +43,8 @@ function generate() {
 	local func
 	local high_nible
 	local low_nible
+	local line
+	local line_number
 
 	local title_found=false
 	while read line; do
@@ -53,9 +55,10 @@ function generate() {
 		if [ "${title_found}" = "true" ]; then
 			if [[ "${line}" =~ \<th\>(.*)\</th\> ]]; then
 				high_nibble=${BASH_REMATCH[1]}
-				low_nibble=0
+				line_number=0
 			fi
 			if [[ "${line}" =~ ${re_td} ]]; then
+				printf -v low_nibble "%X" ${line_number}
 				help=${BASH_REMATCH[1]}
 				text=${BASH_REMATCH[2]}
 				[[ "${help}" =~ ${re_help} ]]; 
@@ -63,11 +66,11 @@ function generate() {
 				size=${BASH_REMATCH[2]}
 				cycles=${BASH_REMATCH[3]}
 				doc=${BASH_REMATCH[4]}
-				opcode=0x${high_nibble}$(printf %X ${low_nibble})
+				opcode=0x${high_nibble}${low_nibble}
 				func=$(set -f; text_to_func "${title}" ${text})
 				${body_gen} ${opcode} "${text}" "${doc}" \
 					${cycles} ${size} ${func}
-				low_nibble=$((${low_nibble} + 1))
+				line_number=$((${line_number} + 1))
 			fi
 			if [[ "${line}" =~ '</table>' ]]; then
 				${footer_gen}
