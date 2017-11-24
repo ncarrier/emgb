@@ -7,6 +7,7 @@ temp_file=$(mktemp)
 grep -E '</?tr|td|th|table' ${file} > ${temp_file}
 
 re_td='<td [^>]*axis="(.*)">(.*)<.*'
+re_td_ln='<td class="ln">'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
 
 function text_to_func() {
@@ -59,21 +60,39 @@ function generate() {
 			fi
 			if [[ "${line}" =~ ${re_td} ]]; then
 				printf -v low_nibble "%X" ${line_number}
+
 				help=${BASH_REMATCH[1]}
+				opcode=0x${high_nibble}${low_nibble}
 				text=${BASH_REMATCH[2]}
 				[[ "${help}" =~ ${re_help} ]]; 
 				flags=${BASH_REMATCH[1]}
 				size=${BASH_REMATCH[2]}
 				cycles=${BASH_REMATCH[3]}
-				doc=${BASH_REMATCH[4]}
 				opcode=0x${high_nibble}${low_nibble}
+				doc=${BASH_REMATCH[4]}
 				func=$(set -f; text_to_func "${title}" ${text})
 				${body_gen} ${opcode} "${text}" "${doc}" \
 					${cycles} ${size} ${func}
+
+				line_number=$((${line_number} + 1))
+			fi
+			if [[ "${line}" =~ ${re_td_ln} ]]; then
+				printf -v low_nibble "%X" ${line_number}
+
+				opcode=0x${high_nibble}${low_nibble}
+				text="exec ${opcode}"
+				flags="------"
+				size=1
+				cycles=0
+				doc="execute instruction in subtable ${opcode}"
+				func="${title}jump_${opcode}"
+				${body_gen} ${opcode} "${text}" "${doc}" \
+					${cycles} ${size} ${func}
+
 				line_number=$((${line_number} + 1))
 			fi
 			if [[ "${line}" =~ '</table>' ]]; then
-				${footer_gen}
+				${footer_gen} "${title}"
 				break
 			fi
 		fi
