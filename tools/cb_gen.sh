@@ -147,11 +147,12 @@ function generate_cb_rrc_code() {
 function generate_cb_set_code() {
 	local op=set
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
+	local mask="(1 << ${operands[0]})"
 
 	if [ "${operands[1]}" = "(hl)" ]; then
-		:
+		echo -e "\twrite8bit(s_gb->gb_register.hl, read8bit(s_gb->gb_register.hl, s_gb) | ${mask}, s_gb);"
 	else
-		:
+		echo -e "\ts_gb->gb_register.${operands[1]} |= ${mask};"
 	fi
 }
 
