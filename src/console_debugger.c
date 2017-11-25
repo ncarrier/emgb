@@ -778,25 +778,5 @@ int console_debugger_update(struct console_debugger *debugger)
 	return 0;
 }
 
-bool str_matches(const char *s1, const char *s2)
-{
-	return strcmp(s1, s2) == 0;
-}
-
-bool str_matches_prefix(const char *s, const char *prefix)
-{
-	return strncmp(s, prefix, strlen(prefix)) == 0;
-}
-
-/* returns an adress inside string s1 */
-char *str_diff_chr(const char *s1, const char *s2)
-{
-	while (*s1 && *s1 == *s2) {
-		s1++;
-		s2++;
-	}
-
-	return (char *)s1;
-}
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
