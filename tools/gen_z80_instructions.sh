@@ -2,6 +2,8 @@
 
 set -euf
 
+source tools/cb_gen.sh
+
 file=$1
 temp_file=$(mktemp)
 grep -E '</?tr|td|th|table' ${file} > ${temp_file}
@@ -117,6 +119,16 @@ function definition_header_gen() {
 	echo "/* start of op code function definitions */"
 }
 
+function generate_cb_opcode () {
+	local text=( $1 )
+
+	op=${text[0]}
+	operands=${text[1]}
+
+#	echo "generate cb opcode: \"${op}\" \"${operands}\"" > /dev/stderr
+	generate_cb_${op}_code "${text[1]}"
+}
+
 function definition_body_gen() {
 	local opcode=$1
 	local text=$2
@@ -134,24 +146,27 @@ function definition_body_gen() {
 	echo "	/* start of ${func} manual code */"
 	echo
 	echo "	/* end of ${func} manual code */"
+	if [ "${title}" = "CB" ]; then
+		generate_cb_opcode "${text}"
+	fi
 	for f in ZERO NEG HALFC CARRY; do
 		case ${flags[${f}]} in
 		"-")
-		echo "	/* ${f} unaffected */"
-		;;
+			echo "	/* ${f} unaffected */"
+			;;
 		"+")
-		echo "	/* ${f} affected as defined */"
-		;;
+			echo "	/* ${f} affected as defined */"
+			;;
 		"1")
-		echo "	/* ${f} set */"
-		echo "	SET_${f}();"
-		;;
+			echo "	/* ${f} set */"
+			echo "	SET_${f}();"
+			;;
 		"0")
-		echo "	/* ${f} reset */"
-		echo "	CLEAR_${f}();"
-		;;
+			echo "	/* ${f} reset */"
+			echo "	CLEAR_${f}();"
+			;;
 		*)
-		echo "	/* unknown action on ${f} */"
+			echo "	/* unknown action on ${f} */"
 		esac
 	done
 	echo "}"
@@ -200,6 +215,7 @@ echo -e " * \"end of xxx manual code\" comments."
 echo -e " */"
 
 echo -e "#include \"cpu.h\"\n"
+echo -e "#include \"utils.h\"\n"
 echo -e "#include \"GB.h\"\n"
 
 echo
