@@ -54,10 +54,10 @@ function parse_exec_line() {
 	opcode=0x${high_nibble}${low_nibble}
 	text="exec ${opcode}"
 	flags="------"
-	size=1
+	size=2
 	cycles=0
 	doc="execute instruction in subtable ${opcode}"
-	func="${title}jump_${opcode}"
+	func="${title}exec_${opcode}"
 }
 
 parse_line() {
