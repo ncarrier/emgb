@@ -160,10 +160,26 @@ function generate_cb_sla_code() {
 	local op=sla
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
+	echo -e "\tuint8_t value;"
+	echo
 	if [ "${operands[0]}" = "(hl)" ]; then
-		:
+		echo -e "\tvalue = read8bit(s_gb->gb_register.hl, s_gb);"
 	else
-		:
+		echo -e "\tvalue = s_gb->gb_register.${operands[0]};"
+	fi
+	echo -e "\tif (BIT(7, value) != 0)"
+	echo -e "\t\tFLAGS_SET(s_gb->gb_register.f, FLAGS_CARRY);"
+	echo -e "\telse"
+	echo -e "\t\tFLAGS_CLEAR(s_gb->gb_register.f, FLAGS_CARRY);"
+	echo -e "\tvalue <<= 1;"
+	echo -e "\tif (value != 0)"
+	echo -e "\t\tFLAGS_CLEAR(s_gb->gb_register.f, FLAGS_ZERO);"
+	echo -e "\telse"
+	echo -e "\t\tFLAGS_SET(s_gb->gb_register.f, FLAGS_ZERO);"
+	if [ "${operands[0]}" = "(hl)" ]; then
+		echo -e "\twrite8bit(s_gb->gb_register.hl, value, s_gb);"
+	else
+		echo -e "\ts_gb->gb_register.${operands[0]} = value;"
 	fi
 }
 
