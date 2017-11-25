@@ -2,7 +2,6 @@ function generate_cb_bit_code() {
 	local op=bit
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
-	echo ${operands[@]} > /dev/stderr
 	if [ "${operands[1]}" = "(hl)" ]; then
 		echo -e "\tif (BIT(${operands[0]}, read8bit(s_gb->gb_register.hl, s_gb)))"
 	else
@@ -16,12 +15,12 @@ function generate_cb_bit_code() {
 function generate_cb_res_code() {
 	local op=res
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
+	local mask="~(1 << ${operands[0]})"
 
-	echo ${operands[@]} > /dev/stderr
 	if [ "${operands[1]}" = "(hl)" ]; then
-		:
+		echo -e "\twrite8bit(s_gb->gb_register.hl, read8bit(s_gb->gb_register.hl, s_gb) & ${mask}, s_gb);"
 	else
-		:
+		echo -e "\ts_gb->gb_register.${operands[1]} &= ${mask};"
 	fi
 }
 
