@@ -183,8 +183,8 @@ function generate_cb_sla_code() {
 	fi
 }
 
-function generate_cb_sll_code() {
-	local op=sll
+function generate_cb_swap_code() {
+	local op=swap
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	echo -e "\t/* sll opcodes are replaced with nibble swapping for gb */"

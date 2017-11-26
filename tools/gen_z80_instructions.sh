@@ -11,6 +11,7 @@ grep -E '</?tr|td|th|table' ${file} > ${temp_file}
 re_td='<td [^>]*axis="(.*)">(.*)<.*'
 re_td_ln='<td class="ln">'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
+re_sll='^sll (.*)'
 
 CARRY=0
 NEG=1
@@ -41,12 +42,19 @@ function parse_instruction_line() {
 	help=${BASH_REMATCH[1]}
 	opcode=0x${high_nibble}${low_nibble}
 	text=${BASH_REMATCH[2]}
+#	if [[ ${text} =~ ${re_sll} ]]; then
+#		text="swap${BASH_REMATCH[1]}"
+#	fi
 	[[ "${help}" =~ ${re_help} ]];
 	flags="${BASH_REMATCH[1]}"
 	size=${BASH_REMATCH[2]}
 	cycles=${BASH_REMATCH[3]}
 	opcode=0x${high_nibble}${low_nibble}
 	doc=${BASH_REMATCH[4]}
+	if [[ ${text} =~ ${re_sll} ]]; then
+		text="swap ${BASH_REMATCH[1]}"
+		doc="The high and low nibbles of ${BASH_REMATCH[1]} are swapped."
+	fi
 	func=$(text_to_func "${title}" ${text})
 }
 
