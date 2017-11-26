@@ -119,13 +119,12 @@ function definition_header_gen() {
 	echo "/* start of op code function definitions */"
 }
 
-function generate_cb_opcode () {
+function generate_cb_opcode() {
 	local text=( $1 )
 
 	op=${text[0]}
 	operands=${text[1]}
 
-#	echo "generate cb opcode: \"${op}\" \"${operands}\"" > /dev/stderr
 	generate_cb_${op}_code "${text[1]}"
 }
 
