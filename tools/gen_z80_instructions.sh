@@ -3,6 +3,7 @@
 set -euf
 
 source tools/cb_gen.sh
+source tools/base_gen.sh
 
 file=$1
 temp_file=$(mktemp)
@@ -42,9 +43,6 @@ function parse_instruction_line() {
 	help=${BASH_REMATCH[1]}
 	opcode=0x${high_nibble}${low_nibble}
 	text=${BASH_REMATCH[2]}
-#	if [[ ${text} =~ ${re_sll} ]]; then
-#		text="swap${BASH_REMATCH[1]}"
-#	fi
 	[[ "${help}" =~ ${re_help} ]];
 	flags="${BASH_REMATCH[1]}"
 	size=${BASH_REMATCH[2]}
@@ -136,6 +134,24 @@ function generate_cb_opcode() {
 	generate_cb_${op}_code "${text[1]}"
 }
 
+function generate_base_opcode() {
+	local text=( $1 )
+
+	if [ ${#text[*]} -eq 1 ]; then
+		operands=""
+	else
+		operands=${text[1]}
+	fi
+	op=${text[0]}
+
+	# call if function is defined
+	if type -t generate_base_${op}_code > /dev/null; then
+		generate_base_${op}_code "${operands}"
+	else
+		echo ${op} > /dev/stderr
+	fi
+}
+
 function definition_body_gen() {
 	local opcode=$1
 	local text=$2
@@ -155,6 +171,8 @@ function definition_body_gen() {
 	echo "	/* end of ${func} manual code */"
 	if [ "${title}" = "CB" ]; then
 		generate_cb_opcode "${text}"
+	else
+		generate_base_opcode "${text}"
 	fi
 	for f in ZERO NEG HALFC CARRY; do
 		case ${flags[${f}]} in
