@@ -18,6 +18,8 @@ struct		s_cpu_z80
   uint8_t cycles;
 };
 
+extern const struct s_cpu_z80 instructions_CB[];
+
 #pragma pack(push, 1)
 
 struct s_register

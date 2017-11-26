@@ -530,7 +530,13 @@ void and_hl(struct s_gb *s_gb) { and (read8bit(s_gb->gb_register.hl, s_gb), s_gb
 void and_a(struct s_gb *s_gb) { and (s_gb->gb_register.a, s_gb); }
 
 //cb
-void cb(struct s_gb *s_gb) { handleCB(read8(s_gb), s_gb); }
+static void handle_cb(unsigned char cbopcode, struct s_gb *s_gb)
+{
+	instructions_CB[cbopcode].func(s_gb);
+	s_gb->gb_cpu.totalTick += instructions_CB[cbopcode].cycles;
+}
+
+void cb(struct s_gb *s_gb) { handle_cb(read8(s_gb), s_gb); }
 
 //pop
 unsigned short pop16(struct s_gb *s_gb)
