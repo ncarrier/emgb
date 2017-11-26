@@ -532,8 +532,8 @@ void and_a(struct s_gb *s_gb) { and (s_gb->gb_register.a, s_gb); }
 //cb
 static void handle_cb(unsigned char cbopcode, struct s_gb *s_gb)
 {
-	instructions_CB[cbopcode].func(s_gb);
-	s_gb->gb_cpu.totalTick += instructions_CB[cbopcode].cycles;
+	instructions_cb[cbopcode].func(s_gb);
+	s_gb->gb_cpu.totalTick += instructions_cb[cbopcode].cycles;
 }
 
 void cb(struct s_gb *s_gb) { handle_cb(read8(s_gb), s_gb); }
