@@ -9911,7 +9911,7 @@ static void cb_set_7_a(struct s_gb *s_gb)
 	/* CARRY unaffected */
 }
 
-const struct s_cpu_z80 instructions_CB[] = {
+const struct s_cpu_z80 instructions_cb[] = {
 	[0x00] = {
 		.opcode = 0x00,
 		.value = "rlc b",
