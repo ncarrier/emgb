@@ -212,10 +212,34 @@ function generate_cb_sra_code() {
 	local op=sra
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
+	echo -e "\tuint8_t value;"
+	echo -e "\tbool bit7;"
+	echo
 	if [ "${operands[0]}" = "(hl)" ]; then
-		:
+		echo -e "\tvalue = read8bit(s_gb->gb_register.hl, s_gb);"
 	else
-		:
+		echo -e "\tvalue = s_gb->gb_register.${operands[0]};"
+	fi
+	echo -e "\tbit7 = BIT(7, value);"
+	echo -e "\tif (BIT(0, value) != 0)"
+	echo -e "\t\tFLAGS_SET(s_gb->gb_register.f, FLAGS_CARRY);"
+	echo -e "\telse"
+	echo -e "\t\tFLAGS_CLEAR(s_gb->gb_register.f, FLAGS_CARRY);"
+	echo -e "\tvalue >>= 1;"
+	echo -e "\tif (value != 0)"
+	echo -e "\t\tFLAGS_CLEAR(s_gb->gb_register.f, FLAGS_ZERO);"
+	echo -e "\telse"
+	echo -e "\t\tFLAGS_SET(s_gb->gb_register.f, FLAGS_ZERO);"
+
+	echo -e "\tif (bit7)"
+	echo -e "\t\tFLAGS_SET(value, (1 << 7));"
+	echo -e "\telse"
+	echo -e "\t\tFLAGS_CLEAR(value, (1 << 7));"
+
+	if [ "${operands[0]}" = "(hl)" ]; then
+		echo -e "\twrite8bit(s_gb->gb_register.hl, value, s_gb);"
+	else
+		echo -e "\ts_gb->gb_register.${operands[0]} = value;"
 	fi
 }
 
