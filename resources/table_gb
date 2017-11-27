@@ -373,7 +373,7 @@
 <td axis="------|1|4|The contents of e are loaded into b.">ld b,e</td>
 <td axis="------|1|4|The contents of h are loaded into b.">ld b,h</td>
 <td axis="------|1|4|The contents of l are loaded into b.">ld b,l</td>
-<td axis="------|1|7|The contents of (hl) are loaded into b.">ld b,(hl)</td>
+<td axis="------|1|8|The contents of (hl) are loaded into b.">ld b,(hl)</td>
 <td axis="------|1|4|The contents of a are loaded into b.">ld b,a</td>
 <td axis="------|1|4|The contents of b are loaded into c.">ld c,b</td>
 <td axis="------|1|4|The contents of c are loaded into c.">ld c,c</td>
@@ -381,11 +381,11 @@
 <td axis="------|1|4|The contents of e are loaded into c.">ld c,e</td>
 <td axis="------|1|4|The contents of h are loaded into c.">ld c,h</td>
 <td axis="------|1|4|The contents of l are loaded into c.">ld c,l</td>
-<td axis="------|1|7|The contents of (hl) are loaded into c.">ld c,(hl)</td>
+<td axis="------|1|8|The contents of (hl) are loaded into c.">ld c,(hl)</td>
 <td axis="------|1|4|The contents of a are loaded into c.">ld c,a</td>
 </tr>
 <tr>
-<th>5</th>
+<th>5</th><!-- here -->
 <td axis="------|1|4|The contents of b are loaded into d.">ld d,b</td>
 <td axis="------|1|4|The contents of c are loaded into d.">ld d,c</td>
 <td axis="------|1|4|The contents of d are loaded into d.">ld d,d</td>
