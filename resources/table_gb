@@ -411,7 +411,7 @@
 <td axis="------|1|4|The contents of e are loaded into h.">ld h,e</td>
 <td axis="------|1|4|The contents of h are loaded into h.">ld h,h</td>
 <td axis="------|1|4|The contents of l are loaded into h.">ld h,l</td>
-<td axis="------|1|7|The contents of (hl) are loaded into h.">ld h,(hl)</td>
+<td axis="------|1|8|The contents of (hl) are loaded into h.">ld h,(hl)</td>
 <td axis="------|1|4|The contents of a are loaded into h.">ld h,a</td>
 <td axis="------|1|4|The contents of b are loaded into l.">ld l,b</td>
 <td axis="------|1|4|The contents of c are loaded into l.">ld l,c</td>
@@ -419,7 +419,7 @@
 <td axis="------|1|4|The contents of e are loaded into l.">ld l,e</td>
 <td axis="------|1|4|The contents of h are loaded into l.">ld l,h</td>
 <td axis="------|1|4|The contents of l are loaded into l.">ld l,l</td>
-<td axis="------|1|7|The contents of (hl) are loaded into l.">ld l,(hl)</td>
+<td axis="------|1|8|The contents of (hl) are loaded into l.">ld l,(hl)</td>
 <td axis="------|1|4|The contents of a are loaded into l.">ld l,a</td>
 </tr>
 <tr>
