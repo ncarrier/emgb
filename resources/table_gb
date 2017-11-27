@@ -424,21 +424,21 @@
 </tr>
 <tr>
 <th>7</th>
-<td axis="------|1|7|The contents of b are loaded into (hl).">ld (hl),b</td>
-<td axis="------|1|7|The contents of c are loaded into (hl).">ld (hl),c</td>
-<td axis="------|1|7|The contents of d are loaded into (hl).">ld (hl),d</td>
-<td axis="------|1|7|The contents of e are loaded into (hl).">ld (hl),e</td>
-<td axis="------|1|7|The contents of h are loaded into (hl).">ld (hl),h</td>
-<td axis="------|1|7|The contents of l are loaded into (hl).">ld (hl),l</td>
+<td axis="------|1|8|The contents of b are loaded into (hl).">ld (hl),b</td>
+<td axis="------|1|8|The contents of c are loaded into (hl).">ld (hl),c</td>
+<td axis="------|1|8|The contents of d are loaded into (hl).">ld (hl),d</td>
+<td axis="------|1|8|The contents of e are loaded into (hl).">ld (hl),e</td>
+<td axis="------|1|8|The contents of h are loaded into (hl).">ld (hl),h</td>
+<td axis="------|1|8|The contents of l are loaded into (hl).">ld (hl),l</td>
 <td axis="------|1|4|Suspends CPU operation until an interrupt or reset occurs.">halt</td>
-<td axis="------|1|7|The contents of a are loaded into (hl).">ld (hl),a</td>
+<td axis="------|1|8|The contents of a are loaded into (hl).">ld (hl),a</td>
 <td axis="------|1|4|The contents of b are loaded into a.">ld a,b</td>
 <td axis="------|1|4|The contents of c are loaded into a.">ld a,c</td>
 <td axis="------|1|4|The contents of d are loaded into a.">ld a,d</td>
 <td axis="------|1|4|The contents of e are loaded into a.">ld a,e</td>
 <td axis="------|1|4|The contents of h are loaded into a.">ld a,h</td>
 <td axis="------|1|4|The contents of l are loaded into a.">ld a,l</td>
-<td axis="------|1|7|The contents of (hl) are loaded into a.">ld a,(hl)</td>
+<td axis="------|1|8|The contents of (hl) are loaded into a.">ld a,(hl)</td>
 <td axis="------|1|4|The contents of a are loaded into a.">ld a,a</td>
 </tr>
 <tr>
