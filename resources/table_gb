@@ -487,7 +487,7 @@
 <td axis="00P1++|1|4|Bitwise AND on a with e.">and e</td>
 <td axis="00P1++|1|4|Bitwise AND on a with h.">and h</td>
 <td axis="00P1++|1|4|Bitwise AND on a with l.">and l</td>
-<td axis="00P1++|1|7|Bitwise AND on a with (hl).">and (hl)</td>
+<td axis="00P1++|1|8|Bitwise AND on a with (hl).">and (hl)</td>
 <td axis="00P1++|1|4|Bitwise AND on a with a.">and a</td>
 <td axis="00P0++|1|4|Bitwise XOR on a with b.">xor b</td>
 <td axis="00P0++|1|4|Bitwise XOR on a with c.">xor c</td>
@@ -495,7 +495,7 @@
 <td axis="00P0++|1|4|Bitwise XOR on a with e.">xor e</td>
 <td axis="00P0++|1|4|Bitwise XOR on a with h.">xor h</td>
 <td axis="00P0++|1|4|Bitwise XOR on a with l.">xor l</td>
-<td axis="00P0++|1|7|Bitwise XOR on a with (hl).">xor (hl)</td>
+<td axis="00P0++|1|8|Bitwise XOR on a with (hl).">xor (hl)</td>
 <td axis="00P0++|1|4|Bitwise XOR on a with a.">xor a</td>
 </tr>
 <tr>
