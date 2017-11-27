@@ -310,21 +310,21 @@
 </tr>
 <tr>
 <th>1</th>
-<td axis="------|2|13/8|The b register is decremented, and if not zero, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">djnz *</td>
-<td axis="------|3|10|Loads ** into de.">ld de,**</td>
-<td axis="------|1|7|Stores a into the memory location pointed to by de.">ld (de),a</td>
-<td axis="------|1|6|Adds one to de.">inc de</td>
+<td axis="------|2|4|Halt CPU & LCD display until button pressed.">stop</td>
+<td axis="------|3|12|Loads ** into de.">ld de,**</td>
+<td axis="------|1|8|Stores a into the memory location pointed to by de.">ld (de),a</td>
+<td axis="------|1|8|Adds one to de.">inc de</td>
 <td axis="-+V+++|1|4|Adds one to d.">inc d</td>
 <td axis="-+V+++|1|4|Subtracts one from d.">dec d</td>
-<td axis="------|2|7|Loads * into d.">ld d,*</td>
+<td axis="------|2|8|Loads * into d.">ld d,*</td>
 <td axis="+0-0--|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rla</td>
-<td axis="------|2|12|The signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr *</td>
-<td axis="++-+--|1|11|The value of de is added to hl.">add hl,de</td>
-<td axis="------|1|7|Loads the value pointed to by de into a.">ld a,(de)</td>
-<td axis="------|1|6|Subtracts one from de.">dec de</td>
+<td axis="------|2|8|The signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr *</td>
+<td axis="++-+--|1|8|The value of de is added to hl.">add hl,de</td>
+<td axis="------|1|8|Loads the value pointed to by de into a.">ld a,(de)</td>
+<td axis="------|1|8|Subtracts one from de.">dec de</td>
 <td axis="-+V+++|1|4|Adds one to e.">inc e</td>
 <td axis="-+V+++|1|4|Subtracts one from e.">dec e</td>
-<td axis="------|2|7|Loads * into e.">ld e,*</td>
+<td axis="------|2|8|Loads * into e.">ld e,*</td>
 <td axis="+0-0--|1|4|The contents of a are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rra</td>
 </tr>
 <tr>
