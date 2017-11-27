@@ -152,6 +152,8 @@ function generate_base_opcode() {
 	fi
 }
 
+und_defined="false"
+
 function definition_body_gen() {
 	local opcode=$1
 	local text=$2
@@ -161,6 +163,14 @@ function definition_body_gen() {
 	local func=$6
 	local title=$7
 	local flags=$8
+
+	if [ "${func}" = "und" ]; then
+		if [ "${und_defined}" = "false" ]; then
+			und_defined="true"
+		else
+			return 0
+		fi
+	fi
 
 	flags=( "${8:0:1}" "${8:1:1}" "${8:2:1}" "${8:3:1}" "${8:4:1}" "${8:5:1}" )
 	echo "/* ${text} [${opcode}] : ${doc} */"
