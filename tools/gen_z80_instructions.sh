@@ -148,7 +148,7 @@ function generate_base_opcode() {
 	if type -t generate_base_${op}_code > /dev/null; then
 		generate_base_${op}_code "${operands}"
 	else
-		echo ${op} > /dev/stderr
+		:
 	fi
 }
 
