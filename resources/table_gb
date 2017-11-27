@@ -468,7 +468,7 @@
 <td axis="++V+++|1|4|Subtracts e from a.">sub e</td>
 <td axis="++V+++|1|4|Subtracts h from a.">sub h</td>
 <td axis="++V+++|1|4|Subtracts l from a.">sub l</td>
-<td axis="++V+++|1|7|Subtracts (hl) from a.">sub (hl)</td>
+<td axis="++V+++|1|8|Subtracts (hl) from a.">sub (hl)</td>
 <td axis="++V+++|1|4|Subtracts a from a.">sub a</td>
 <td axis="++V+++|1|4|Subtracts b and the carry flag from a.">sbc a,b</td>
 <td axis="++V+++|1|4|Subtracts c and the carry flag from a.">sbc a,c</td>
@@ -476,7 +476,7 @@
 <td axis="++V+++|1|4|Subtracts e and the carry flag from a.">sbc a,e</td>
 <td axis="++V+++|1|4|Subtracts h and the carry flag from a.">sbc a,h</td>
 <td axis="++V+++|1|4|Subtracts l and the carry flag from a.">sbc a,l</td>
-<td axis="++V+++|1|7|Subtracts (hl) and the carry flag from a.">sbc a,(hl)</td>
+<td axis="++V+++|1|8|Subtracts (hl) and the carry flag from a.">sbc a,(hl)</td>
 <td axis="++V+++|1|4|Subtracts a and the carry flag from a.">sbc a,a</td>
 </tr>
 <tr>
