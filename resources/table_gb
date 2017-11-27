@@ -449,7 +449,7 @@
 <td axis="++V+++|1|4|Adds e to a.">add a,e</td>
 <td axis="++V+++|1|4|Adds h to a.">add a,h</td>
 <td axis="++V+++|1|4|Adds l to a.">add a,l</td>
-<td axis="++V+++|1|7|Adds (hl) to a.">add a,(hl)</td>
+<td axis="++V+++|1|8|Adds (hl) to a.">add a,(hl)</td>
 <td axis="++V+++|1|4|Adds a to a.">add a,a</td>
 <td axis="++V+++|1|4|Adds b and the carry flag to a.">adc a,b</td>
 <td axis="++V+++|1|4|Adds c and the carry flag to a.">adc a,c</td>
@@ -457,7 +457,7 @@
 <td axis="++V+++|1|4|Adds e and the carry flag to a.">adc a,e</td>
 <td axis="++V+++|1|4|Adds h and the carry flag to a.">adc a,h</td>
 <td axis="++V+++|1|4|Adds l and the carry flag to a.">adc a,l</td>
-<td axis="++V+++|1|7|Adds (hl) and the carry flag to a.">adc a,(hl)</td>
+<td axis="++V+++|1|8|Adds (hl) and the carry flag to a.">adc a,(hl)</td>
 <td axis="++V+++|1|4|Adds a and the carry flag to a.">adc a,a</td>
 </tr>
 <tr>
