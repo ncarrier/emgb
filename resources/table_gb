@@ -292,20 +292,20 @@
 <tr>
 <th>0</th>
 <td axis="------|1|4|No operation is performed.">nop</td>
-<td axis="------|3|10|Loads ** into bc.">ld bc,**</td>
-<td axis="------|1|7|Stores a into the memory location pointed to by bc.">ld (bc),a</td>
-<td axis="------|1|6|Adds one to bc.">inc bc</td>
+<td axis="------|3|12|Loads ** into bc.">ld bc,**</td>
+<td axis="------|1|8|Stores a into the memory location pointed to by bc.">ld (bc),a</td>
+<td axis="------|1|8|Adds one to bc.">inc bc</td>
 <td axis="-+V+++|1|4|Adds one to b.">inc b</td>
 <td axis="-+V+++|1|4|Subtracts one from b.">dec b</td>
-<td axis="------|2|7|Loads * into b.">ld b,*</td>
+<td axis="------|2|8|Loads * into b.">ld b,*</td>
 <td axis="+0-0--|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlca</td>
-<td axis="------|1|4|Exchanges the 16-bit contents of af and af'.">ex af,af'</td>
-<td axis="++-+--|1|11|The value of bc is added to hl.">add hl,bc</td>
-<td axis="------|1|7|Loads the value pointed to by bc into a.">ld a,(bc)</td>
-<td axis="------|1|6|Subtracts one from bc.">dec bc</td>
+<td axis="------|3|20|Loads ** into sp.">ld (**),sp</td>
+<td axis="++-+--|1|8|The value of bc is added to hl.">add hl,bc</td>
+<td axis="------|1|8|Loads the value pointed to by bc into a.">ld a,(bc)</td>
+<td axis="------|1|8|Subtracts one from bc.">dec bc</td>
 <td axis="-+V+++|1|4|Adds one to c.">inc c</td>
 <td axis="-+V+++|1|4|Subtracts one from c.">dec c</td>
-<td axis="------|2|7|Loads * into c.">ld c,*</td>
+<td axis="------|2|8|Loads * into c.">ld c,*</td>
 <td axis="+0-0--|1|4|The contents of a are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrca</td>
 </tr>
 <tr>
