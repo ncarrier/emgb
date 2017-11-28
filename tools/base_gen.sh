@@ -124,3 +124,37 @@ here_doc_delim
 here_doc_delim
 	fi
 }
+
+function generate_base_dec_code() {
+	local operand=$1
+	local target
+
+	if [ "${operand}" = "(hl)" ]; then
+		target="value";
+	cat <<here_doc_delim
+	uint8_t value = read8bit(s_gb->gb_register.hl, s_gb);
+here_doc_delim
+	else
+		target="s_gb->gb_register.${operand}"
+	fi
+	cat <<here_doc_delim
+	if (${target} & 0x0f)
+		CLEAR_HALFC();
+	else
+		SET_HALFC();
+
+	${target}--;
+
+	if (${target})
+		CLEAR_ZERO();
+	else
+		SET_ZERO();
+
+	SET_NEG();
+here_doc_delim
+	if [ "${operand}" = "(hl)" ]; then
+	cat <<here_doc_delim
+	write8bit(s_gb->gb_register.hl, value, s_gb);
+here_doc_delim
+	fi
+}
