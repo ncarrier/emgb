@@ -49,10 +49,6 @@ function parse_instruction_line() {
 	cycles=${BASH_REMATCH[3]}
 	opcode=0x${high_nibble}${low_nibble}
 	doc=${BASH_REMATCH[4]}
-	if [[ ${text} =~ ${re_sll} ]]; then
-		text="swap ${BASH_REMATCH[1]}"
-		doc="The high and low nibbles of ${BASH_REMATCH[1]} are swapped."
-	fi
 	func=$(text_to_func "${title}" ${text})
 }
 
