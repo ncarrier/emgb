@@ -625,7 +625,7 @@
 <td axis="+0P0++|2|8|The contents of e are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlc e</td>
 <td axis="+0P0++|2|8|The contents of h are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlc h</td>
 <td axis="+0P0++|2|8|The contents of l are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlc l</td>
-<td axis="+0P0++|2|15|The contents of (hl) are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlc (hl)</td>
+<td axis="+0P0++|2|16|The contents of (hl) are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlc (hl)</td>
 <td axis="+0P0++|2|8|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlc a</td>
 <td axis="+0P0++|2|8|The contents of b are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrc b</td>
 <td axis="+0P0++|2|8|The contents of c are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrc c</td>
@@ -633,7 +633,7 @@
 <td axis="+0P0++|2|8|The contents of e are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrc e</td>
 <td axis="+0P0++|2|8|The contents of h are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrc h</td>
 <td axis="+0P0++|2|8|The contents of l are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrc l</td>
-<td axis="+0P0++|2|15|The contents of (hl) are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrc (hl)</td>
+<td axis="+0P0++|2|16|The contents of (hl) are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrc (hl)</td>
 <td axis="+0P0++|2|8|The contents of a are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrc a</td>
 </tr>
 <tr>
@@ -644,7 +644,7 @@
 <td axis="+0P0++|2|8|The contents of e are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rl e</td>
 <td axis="+0P0++|2|8|The contents of h are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rl h</td>
 <td axis="+0P0++|2|8|The contents of l are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rl l</td>
-<td axis="+0P0++|2|15|The contents of (hl) are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rl (hl)</td>
+<td axis="+0P0++|2|16|The contents of (hl) are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rl (hl)</td>
 <td axis="+0P0++|2|8|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rl a</td>
 <td axis="+0P0++|2|8|The contents of b are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rr b</td>
 <td axis="+0P0++|2|8|The contents of c are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rr c</td>
@@ -652,7 +652,7 @@
 <td axis="+0P0++|2|8|The contents of e are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rr e</td>
 <td axis="+0P0++|2|8|The contents of h are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rr h</td>
 <td axis="+0P0++|2|8|The contents of l are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rr l</td>
-<td axis="+0P0++|2|15|The contents of (hl) are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rr (hl)</td>
+<td axis="+0P0++|2|16|The contents of (hl) are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rr (hl)</td>
 <td axis="+0P0++|2|8|The contents of a are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rr a</td>
 </tr>
 <tr>
@@ -663,7 +663,7 @@
 <td axis="+0P0++|2|8|The contents of e are shifted left one bit position. The contents of bit 7 are copied to the carry flag and a zero is put into bit 0.">sla e</td>
 <td axis="+0P0++|2|8|The contents of h are shifted left one bit position. The contents of bit 7 are copied to the carry flag and a zero is put into bit 0.">sla h</td>
 <td axis="+0P0++|2|8|The contents of l are shifted left one bit position. The contents of bit 7 are copied to the carry flag and a zero is put into bit 0.">sla l</td>
-<td axis="+0P0++|2|15|The contents of (hl) are shifted left one bit position. The contents of bit 7 are copied to the carry flag and a zero is put into bit 0.">sla (hl)</td>
+<td axis="+0P0++|2|16|The contents of (hl) are shifted left one bit position. The contents of bit 7 are copied to the carry flag and a zero is put into bit 0.">sla (hl)</td>
 <td axis="+0P0++|2|8|The contents of a are shifted left one bit position. The contents of bit 7 are copied to the carry flag and a zero is put into bit 0.">sla a</td>
 <td axis="+0P0++|2|8|The contents of b are shifted right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of bit 7 are unchanged.">sra b</td>
 <td axis="+0P0++|2|8|The contents of c are shifted right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of bit 7 are unchanged.">sra c</td>
@@ -671,26 +671,26 @@
 <td axis="+0P0++|2|8|The contents of e are shifted right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of bit 7 are unchanged.">sra e</td>
 <td axis="+0P0++|2|8|The contents of h are shifted right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of bit 7 are unchanged.">sra h</td>
 <td axis="+0P0++|2|8|The contents of l are shifted right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of bit 7 are unchanged.">sra l</td>
-<td axis="+0P0++|2|15|The contents of (hl) are shifted right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of bit 7 are unchanged.">sra (hl)</td>
+<td axis="+0P0++|2|16|The contents of (hl) are shifted right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of bit 7 are unchanged.">sra (hl)</td>
 <td axis="+0P0++|2|8|The contents of a are shifted right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of bit 7 are unchanged.">sra a</td>
 </tr>
 <tr>
 <th>3</th>
-<td class="un" axis="+0P0++|2|8|The contents of b are shifted left one bit position. The contents of bit 7 are put into the carry flag and a one is put into bit 0.">sll b</td>
-<td class="un" axis="+0P0++|2|8|The contents of c are shifted left one bit position. The contents of bit 7 are put into the carry flag and a one is put into bit 0.">sll c</td>
-<td class="un" axis="+0P0++|2|8|The contents of d are shifted left one bit position. The contents of bit 7 are put into the carry flag and a one is put into bit 0.">sll d</td>
-<td class="un" axis="+0P0++|2|8|The contents of e are shifted left one bit position. The contents of bit 7 are put into the carry flag and a one is put into bit 0.">sll e</td>
-<td class="un" axis="+0P0++|2|8|The contents of h are shifted left one bit position. The contents of bit 7 are put into the carry flag and a one is put into bit 0.">sll h</td>
-<td class="un" axis="+0P0++|2|8|The contents of l are shifted left one bit position. The contents of bit 7 are put into the carry flag and a one is put into bit 0.">sll l</td>
-<td class="un" axis="+0P0++|2|15|The contents of (hl) are shifted left one bit position. The contents of bit 7 are put into the carry flag and a one is put into bit 0.">sll (hl)</td>
-<td class="un" axis="+0P0++|2|8|The contents of a are shifted left one bit position. The contents of bit 7 are put into the carry flag and a one is put into bit 0.">sll a</td>
+<td axis="+0P0++|2|8|Swap upper and lower nibbles of b.">swap b</td>
+<td axis="+0P0++|2|8|Swap upper and lower nibbles of c.">swap c</td>
+<td axis="+0P0++|2|8|Swap upper and lower nibbles of d.">swap d</td>
+<td axis="+0P0++|2|8|Swap upper and lower nibbles of e.">swap e</td>
+<td axis="+0P0++|2|8|Swap upper and lower nibbles of h.">swap h</td>
+<td axis="+0P0++|2|8|Swap upper and lower nibbles of l.">swap l</td>
+<td axis="+0P0++|2|16|Swap upper and lower nibbles of (hl).">swap (hl)</td>
+<td axis="+0P0++|2|8|Swap upper and lower nibbles of a.">swap a</td>
 <td axis="+0P0++|2|8|The contents of b are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl b</td>
 <td axis="+0P0++|2|8|The contents of c are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl c</td>
 <td axis="+0P0++|2|8|The contents of d are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl d</td>
 <td axis="+0P0++|2|8|The contents of e are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl e</td>
 <td axis="+0P0++|2|8|The contents of h are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl h</td>
 <td axis="+0P0++|2|8|The contents of l are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl l</td>
-<td axis="+0P0++|2|15|The contents of (hl) are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl (hl)</td>
+<td axis="+0P0++|2|16|The contents of (hl) are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl (hl)</td>
 <td axis="+0P0++|2|8|The contents of a are shifted right one bit position. The contents of bit 0 are copied to the carry flag and a zero is put into bit 7.">srl a</td>
 </tr>
 <tr>
@@ -701,7 +701,7 @@
 <td axis="-0 1+ |2|8|Tests bit 0 of e.">bit 0,e</td>
 <td axis="-0 1+ |2|8|Tests bit 0 of h.">bit 0,h</td>
 <td axis="-0 1+ |2|8|Tests bit 0 of l.">bit 0,l</td>
-<td axis="-0 1+ |2|12|Tests bit 0 of (hl).">bit 0,(hl)</td>
+<td axis="-0 1+ |2|16|Tests bit 0 of (hl).">bit 0,(hl)</td>
 <td axis="-0 1+ |2|8|Tests bit 0 of a.">bit 0,a</td>
 <td axis="-0 1+ |2|8|Tests bit 1 of b.">bit 1,b</td>
 <td axis="-0 1+ |2|8|Tests bit 1 of c.">bit 1,c</td>
@@ -709,7 +709,7 @@
 <td axis="-0 1+ |2|8|Tests bit 1 of e.">bit 1,e</td>
 <td axis="-0 1+ |2|8|Tests bit 1 of h.">bit 1,h</td>
 <td axis="-0 1+ |2|8|Tests bit 1 of l.">bit 1,l</td>
-<td axis="-0 1+ |2|12|Tests bit 1 of (hl).">bit 1,(hl)</td>
+<td axis="-0 1+ |2|16|Tests bit 1 of (hl).">bit 1,(hl)</td>
 <td axis="-0 1+ |2|8|Tests bit 1 of a.">bit 1,a</td>
 </tr>
 <tr>
@@ -720,7 +720,7 @@
 <td axis="-0 1+ |2|8|Tests bit 2 of e.">bit 2,e</td>
 <td axis="-0 1+ |2|8|Tests bit 2 of h.">bit 2,h</td>
 <td axis="-0 1+ |2|8|Tests bit 2 of l.">bit 2,l</td>
-<td axis="-0 1+ |2|12|Tests bit 2 of (hl).">bit 2,(hl)</td>
+<td axis="-0 1+ |2|16|Tests bit 2 of (hl).">bit 2,(hl)</td>
 <td axis="-0 1+ |2|8|Tests bit 2 of a.">bit 2,a</td>
 <td axis="-0 1+ |2|8|Tests bit 3 of b.">bit 3,b</td>
 <td axis="-0 1+ |2|8|Tests bit 3 of c.">bit 3,c</td>
@@ -728,7 +728,7 @@
 <td axis="-0 1+ |2|8|Tests bit 3 of e.">bit 3,e</td>
 <td axis="-0 1+ |2|8|Tests bit 3 of h.">bit 3,h</td>
 <td axis="-0 1+ |2|8|Tests bit 3 of l.">bit 3,l</td>
-<td axis="-0 1+ |2|12|Tests bit 3 of (hl).">bit 3,(hl)</td>
+<td axis="-0 1+ |2|16|Tests bit 3 of (hl).">bit 3,(hl)</td>
 <td axis="-0 1+ |2|8|Tests bit 3 of a.">bit 3,a</td>
 </tr>
 <tr>
@@ -739,7 +739,7 @@
 <td axis="-0 1+ |2|8|Tests bit 4 of e.">bit 4,e</td>
 <td axis="-0 1+ |2|8|Tests bit 4 of h.">bit 4,h</td>
 <td axis="-0 1+ |2|8|Tests bit 4 of l.">bit 4,l</td>
-<td axis="-0 1+ |2|12|Tests bit 4 of (hl).">bit 4,(hl)</td>
+<td axis="-0 1+ |2|16|Tests bit 4 of (hl).">bit 4,(hl)</td>
 <td axis="-0 1+ |2|8|Tests bit 4 of a.">bit 4,a</td>
 <td axis="-0 1+ |2|8|Tests bit 5 of b.">bit 5,b</td>
 <td axis="-0 1+ |2|8|Tests bit 5 of c.">bit 5,c</td>
@@ -747,7 +747,7 @@
 <td axis="-0 1+ |2|8|Tests bit 5 of e.">bit 5,e</td>
 <td axis="-0 1+ |2|8|Tests bit 5 of h.">bit 5,h</td>
 <td axis="-0 1+ |2|8|Tests bit 5 of l.">bit 5,l</td>
-<td axis="-0 1+ |2|12|Tests bit 5 of (hl).">bit 5,(hl)</td>
+<td axis="-0 1+ |2|16|Tests bit 5 of (hl).">bit 5,(hl)</td>
 <td axis="-0 1+ |2|8|Tests bit 5 of a.">bit 5,a</td>
 </tr>
 <tr>
@@ -758,7 +758,7 @@
 <td axis="-0 1+ |2|8|Tests bit 6 of e.">bit 6,e</td>
 <td axis="-0 1+ |2|8|Tests bit 6 of h.">bit 6,h</td>
 <td axis="-0 1+ |2|8|Tests bit 6 of l.">bit 6,l</td>
-<td axis="-0 1+ |2|12|Tests bit 6 of (hl).">bit 6,(hl)</td>
+<td axis="-0 1+ |2|16|Tests bit 6 of (hl).">bit 6,(hl)</td>
 <td axis="-0 1+ |2|8|Tests bit 6 of a.">bit 6,a</td>
 <td axis="-0 1+ |2|8|Tests bit 7 of b.">bit 7,b</td>
 <td axis="-0 1+ |2|8|Tests bit 7 of c.">bit 7,c</td>
@@ -766,7 +766,7 @@
 <td axis="-0 1+ |2|8|Tests bit 7 of e.">bit 7,e</td>
 <td axis="-0 1+ |2|8|Tests bit 7 of h.">bit 7,h</td>
 <td axis="-0 1+ |2|8|Tests bit 7 of l.">bit 7,l</td>
-<td axis="-0 1+ |2|12|Tests bit 7 of (hl).">bit 7,(hl)</td>
+<td axis="-0 1+ |2|16|Tests bit 7 of (hl).">bit 7,(hl)</td>
 <td axis="-0 1+ |2|8|Tests bit 7 of a.">bit 7,a</td>
 </tr>
 <tr>
@@ -777,7 +777,7 @@
 <td axis="------|2|8|Resets bit 0 of e.">res 0,e</td>
 <td axis="------|2|8|Resets bit 0 of h.">res 0,h</td>
 <td axis="------|2|8|Resets bit 0 of l.">res 0,l</td>
-<td axis="------|2|15|Resets bit 0 of (hl).">res 0,(hl)</td>
+<td axis="------|2|16|Resets bit 0 of (hl).">res 0,(hl)</td>
 <td axis="------|2|8|Resets bit 0 of a.">res 0,a</td>
 <td axis="------|2|8|Resets bit 1 of b.">res 1,b</td>
 <td axis="------|2|8|Resets bit 1 of c.">res 1,c</td>
@@ -785,7 +785,7 @@
 <td axis="------|2|8|Resets bit 1 of e.">res 1,e</td>
 <td axis="------|2|8|Resets bit 1 of h.">res 1,h</td>
 <td axis="------|2|8|Resets bit 1 of l.">res 1,l</td>
-<td axis="------|2|15|Resets bit 1 of (hl).">res 1,(hl)</td>
+<td axis="------|2|16|Resets bit 1 of (hl).">res 1,(hl)</td>
 <td axis="------|2|8|Resets bit 1 of a.">res 1,a</td>
 </tr>
 <tr>
@@ -796,7 +796,7 @@
 <td axis="------|2|8|Resets bit 2 of e.">res 2,e</td>
 <td axis="------|2|8|Resets bit 2 of h.">res 2,h</td>
 <td axis="------|2|8|Resets bit 2 of l.">res 2,l</td>
-<td axis="------|2|15|Resets bit 2 of (hl).">res 2,(hl)</td>
+<td axis="------|2|16|Resets bit 2 of (hl).">res 2,(hl)</td>
 <td axis="------|2|8|Resets bit 2 of a.">res 2,a</td>
 <td axis="------|2|8|Resets bit 3 of b.">res 3,b</td>
 <td axis="------|2|8|Resets bit 3 of c.">res 3,c</td>
@@ -804,7 +804,7 @@
 <td axis="------|2|8|Resets bit 3 of e.">res 3,e</td>
 <td axis="------|2|8|Resets bit 3 of h.">res 3,h</td>
 <td axis="------|2|8|Resets bit 3 of l.">res 3,l</td>
-<td axis="------|2|15|Resets bit 3 of (hl).">res 3,(hl)</td>
+<td axis="------|2|16|Resets bit 3 of (hl).">res 3,(hl)</td>
 <td axis="------|2|8|Resets bit 3 of a.">res 3,a</td>
 </tr>
 <tr>
@@ -815,7 +815,7 @@
 <td axis="------|2|8|Resets bit 4 of e.">res 4,e</td>
 <td axis="------|2|8|Resets bit 4 of h.">res 4,h</td>
 <td axis="------|2|8|Resets bit 4 of l.">res 4,l</td>
-<td axis="------|2|15|Resets bit 4 of (hl).">res 4,(hl)</td>
+<td axis="------|2|16|Resets bit 4 of (hl).">res 4,(hl)</td>
 <td axis="------|2|8|Resets bit 4 of a.">res 4,a</td>
 <td axis="------|2|8|Resets bit 5 of b.">res 5,b</td>
 <td axis="------|2|8|Resets bit 5 of c.">res 5,c</td>
@@ -823,7 +823,7 @@
 <td axis="------|2|8|Resets bit 5 of e.">res 5,e</td>
 <td axis="------|2|8|Resets bit 5 of h.">res 5,h</td>
 <td axis="------|2|8|Resets bit 5 of l.">res 5,l</td>
-<td axis="------|2|15|Resets bit 5 of (hl).">res 5,(hl)</td>
+<td axis="------|2|16|Resets bit 5 of (hl).">res 5,(hl)</td>
 <td axis="------|2|8|Resets bit 5 of a.">res 5,a</td>
 </tr>
 <tr>
@@ -834,7 +834,7 @@
 <td axis="------|2|8|Resets bit 6 of e.">res 6,e</td>
 <td axis="------|2|8|Resets bit 6 of h.">res 6,h</td>
 <td axis="------|2|8|Resets bit 6 of l.">res 6,l</td>
-<td axis="------|2|15|Resets bit 6 of (hl).">res 6,(hl)</td>
+<td axis="------|2|16|Resets bit 6 of (hl).">res 6,(hl)</td>
 <td axis="------|2|8|Resets bit 6 of a.">res 6,a</td>
 <td axis="------|2|8|Resets bit 7 of b.">res 7,b</td>
 <td axis="------|2|8|Resets bit 7 of c.">res 7,c</td>
@@ -842,7 +842,7 @@
 <td axis="------|2|8|Resets bit 7 of e.">res 7,e</td>
 <td axis="------|2|8|Resets bit 7 of h.">res 7,h</td>
 <td axis="------|2|8|Resets bit 7 of l.">res 7,l</td>
-<td axis="------|2|15|Resets bit 7 of (hl).">res 7,(hl)</td>
+<td axis="------|2|16|Resets bit 7 of (hl).">res 7,(hl)</td>
 <td axis="------|2|8|Resets bit 7 of a.">res 7,a</td>
 </tr>
 <tr>
@@ -853,7 +853,7 @@
 <td axis="------|2|8|Sets bit 0 of e.">set 0,e</td>
 <td axis="------|2|8|Sets bit 0 of h.">set 0,h</td>
 <td axis="------|2|8|Sets bit 0 of l.">set 0,l</td>
-<td axis="------|2|15|Sets bit 0 of (hl).">set 0,(hl)</td>
+<td axis="------|2|16|Sets bit 0 of (hl).">set 0,(hl)</td>
 <td axis="------|2|8|Sets bit 0 of a.">set 0,a</td>
 <td axis="------|2|8|Sets bit 1 of b.">set 1,b</td>
 <td axis="------|2|8|Sets bit 1 of c.">set 1,c</td>
@@ -861,7 +861,7 @@
 <td axis="------|2|8|Sets bit 1 of e.">set 1,e</td>
 <td axis="------|2|8|Sets bit 1 of h.">set 1,h</td>
 <td axis="------|2|8|Sets bit 1 of l.">set 1,l</td>
-<td axis="------|2|15|Sets bit 1 of (hl).">set 1,(hl)</td>
+<td axis="------|2|16|Sets bit 1 of (hl).">set 1,(hl)</td>
 <td axis="------|2|8|Sets bit 1 of a.">set 1,a</td>
 </tr>
 <tr>
@@ -872,7 +872,7 @@
 <td axis="------|2|8|Sets bit 2 of e.">set 2,e</td>
 <td axis="------|2|8|Sets bit 2 of h.">set 2,h</td>
 <td axis="------|2|8|Sets bit 2 of l.">set 2,l</td>
-<td axis="------|2|15|Sets bit 2 of (hl).">set 2,(hl)</td>
+<td axis="------|2|16|Sets bit 2 of (hl).">set 2,(hl)</td>
 <td axis="------|2|8|Sets bit 2 of a.">set 2,a</td>
 <td axis="------|2|8|Sets bit 3 of b.">set 3,b</td>
 <td axis="------|2|8|Sets bit 3 of c.">set 3,c</td>
@@ -880,7 +880,7 @@
 <td axis="------|2|8|Sets bit 3 of e.">set 3,e</td>
 <td axis="------|2|8|Sets bit 3 of h.">set 3,h</td>
 <td axis="------|2|8|Sets bit 3 of l.">set 3,l</td>
-<td axis="------|2|15|Sets bit 3 of (hl).">set 3,(hl)</td>
+<td axis="------|2|16|Sets bit 3 of (hl).">set 3,(hl)</td>
 <td axis="------|2|8|Sets bit 3 of a.">set 3,a</td>
 </tr>
 <tr>
@@ -891,7 +891,7 @@
 <td axis="------|2|8|Sets bit 4 of e.">set 4,e</td>
 <td axis="------|2|8|Sets bit 4 of h.">set 4,h</td>
 <td axis="------|2|8|Sets bit 4 of l.">set 4,l</td>
-<td axis="------|2|15|Sets bit 4 of (hl).">set 4,(hl)</td>
+<td axis="------|2|16|Sets bit 4 of (hl).">set 4,(hl)</td>
 <td axis="------|2|8|Sets bit 4 of a.">set 4,a</td>
 <td axis="------|2|8|Sets bit 5 of b.">set 5,b</td>
 <td axis="------|2|8|Sets bit 5 of c.">set 5,c</td>
@@ -899,7 +899,7 @@
 <td axis="------|2|8|Sets bit 5 of e.">set 5,e</td>
 <td axis="------|2|8|Sets bit 5 of h.">set 5,h</td>
 <td axis="------|2|8|Sets bit 5 of l.">set 5,l</td>
-<td axis="------|2|15|Sets bit 5 of (hl).">set 5,(hl)</td>
+<td axis="------|2|16|Sets bit 5 of (hl).">set 5,(hl)</td>
 <td axis="------|2|8|Sets bit 5 of a.">set 5,a</td>
 </tr>
 <tr>
@@ -910,7 +910,7 @@
 <td axis="------|2|8|Sets bit 6 of e.">set 6,e</td>
 <td axis="------|2|8|Sets bit 6 of h.">set 6,h</td>
 <td axis="------|2|8|Sets bit 6 of l.">set 6,l</td>
-<td axis="------|2|15|Sets bit 6 of (hl).">set 6,(hl)</td>
+<td axis="------|2|16|Sets bit 6 of (hl).">set 6,(hl)</td>
 <td axis="------|2|8|Sets bit 6 of a.">set 6,a</td>
 <td axis="------|2|8|Sets bit 7 of b.">set 7,b</td>
 <td axis="------|2|8|Sets bit 7 of c.">set 7,c</td>
@@ -918,7 +918,7 @@
 <td axis="------|2|8|Sets bit 7 of e.">set 7,e</td>
 <td axis="------|2|8|Sets bit 7 of h.">set 7,h</td>
 <td axis="------|2|8|Sets bit 7 of l.">set 7,l</td>
-<td axis="------|2|15|Sets bit 7 of (hl).">set 7,(hl)</td>
+<td axis="------|2|16|Sets bit 7 of (hl).">set 7,(hl)</td>
 <td axis="------|2|8|Sets bit 7 of a.">set 7,a</td>
 </tr>
 </table>
