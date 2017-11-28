@@ -60,3 +60,33 @@ function generate_base_ld_code() {
 		fi
 	fi
 }
+
+function generate_base_add_code() {
+	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
+	local dst=${operands[0]}
+	local src=${operands[1]}
+
+	echo -e -n "\tuint32_t result = s_gb->gb_register.${dst} + "
+	if [ "${src}" = "*" ]; then
+		echo "read8bit(s_gb->gb_register.pc + 1, s_gb);"
+	elif [ "${src}" = "**" ]; then
+		echo "read16bit(s_gb->gb_register.pc + 1, s_gb);"
+	elif [ "${src}" = "(hl)" ]; then
+		echo "read16bit(s_gb->gb_register.hl, s_gb);"
+	else
+		echo "s_gb->gb_register.${src};"
+	fi
+	cat <<here_doc_delim
+	if (result & 0xffff0000)
+		SET_CARRY();
+	else
+		CLEAR_CARRY();
+
+	if (((s_gb->gb_register.${dst} & 0x0f) + (result & 0x0f)) > 0x0f)
+		SET_HALFC();
+	else
+		CLEAR_HALFC();
+
+	s_gb->gb_register.${dst} = 0xffffu & result;
+here_doc_delim
+}
