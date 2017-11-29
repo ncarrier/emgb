@@ -201,8 +201,9 @@ function generate_base_and_code() {
 	generate_base_binary_op_code "$1" "&"
 }
 
-function generate_base_sub_code() {
+function generate_base_sub_gen_code() {
 	local operand=$1
+	local apply=$2
 	local target
 
 	if [ "${operand}" = "a" ]; then
@@ -238,13 +239,23 @@ here_doc_delim
 	else
 		CLEAR_HALFC();
 
-	s_gb->gb_register.a -= ${target};
-
-	if (s_gb->gb_register.a != 0)
-		CLEAR_ZERO();
-	else
+	if (s_gb->gb_register.a = ${target})
 		SET_ZERO();
+	else
+		CLEAR_ZERO();
+
 here_doc_delim
+	if [ "${apply}" = "true" ]; then
+		echo -e "\ts_gb->gb_register.a -= ${target};"
+	fi
+}
+
+function generate_base_sub_code() {
+	generate_base_sub_gen_code "$1" true
+}
+
+function generate_base_cp_code() {
+	generate_base_sub_gen_code "$1" false
 }
 
 function generate_base_sbc_code() {
