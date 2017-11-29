@@ -239,7 +239,7 @@ here_doc_delim
 	else
 		CLEAR_HALFC();
 
-	if (s_gb->gb_register.a = ${target})
+	if (s_gb->gb_register.a == ${target})
 		SET_ZERO();
 	else
 		CLEAR_ZERO();
