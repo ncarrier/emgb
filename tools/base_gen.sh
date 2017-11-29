@@ -158,3 +158,32 @@ here_doc_delim
 here_doc_delim
 	fi
 }
+
+function generate_base_xor_code() {
+	local operand=$1
+	local target
+
+	if [ "${operand}" = "(hl)" ]; then
+		target="value";
+	cat <<here_doc_delim
+	uint8_t value = read8bit(s_gb->gb_register.hl, s_gb);
+here_doc_delim
+	elif [ "${operand}" = "*" ]; then
+		target="value";
+	cat <<here_doc_delim
+	uint8_t value = read8bit(s_gb->gb_register.pc + 1, s_gb);
+here_doc_delim
+	else
+		target="s_gb->gb_register.${operand}"
+	fi
+
+	cat <<here_doc_delim
+
+	s_gb->gb_register.a ^= ${target};
+
+	if (s_gb->gb_register.a != 0)
+		CLEAR_ZERO();
+	else
+		SET_ZERO();
+here_doc_delim
+}
