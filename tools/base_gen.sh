@@ -264,6 +264,16 @@ function generate_base_or_code() {
 	generate_base_binary_op_code "$1" '|'
 }
 
+function generate_base_rst_code() {
+	local offset=0x${1//h/}
+
+	cat <<here_doc_delim
+	s_gb->gb_register.sp -= 2;
+	write16bitToAddr(s_gb->gb_register.sp, s_gb->gb_register.pc, s_gb);
+	s_gb->gb_register.pc = ${offset};
+here_doc_delim
+}
+
 function generate_base_sbc_code() {
 	local operand=$1
 
