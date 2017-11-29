@@ -127,6 +127,41 @@ function generate_base_add_carry_code() {
 here_doc_delim
 }
 
+function generate_base_jp_cond_code() {
+	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
+	local cond=${operands[0]}
+
+	echo -n -e "\tif ("
+	if [[ ${cond} == "n"* ]]; then
+		echo -n "!"
+	fi
+	if [[ ${cond} == *"c" ]]; then
+		echo "FLAGS_ISCARRY(s_gb->gb_register.f))"
+	else
+		echo "FLAGS_ISZERO(s_gb->gb_register.f))"
+	fi
+	cat <<here_doc_delim
+		s_gb->gb_register.pc = read16bit(s_gb->gb_register.pc, s_gb);
+	else
+		s_gb->gb_register.pc++;
+here_doc_delim
+}
+
+function generate_base_jp_uncond_code() {
+	local dest=$1
+	local register
+
+	if [ "${dest}" = "(hl)" ]; then
+		register=hl
+	else
+		register=pc
+	fi
+
+	cat <<here_doc_delim
+	s_gb->gb_register.pc = read16bit(s_gb->gb_register.${register}, s_gb);
+here_doc_delim
+}
+
 # start of functions generating instructions code
 function generate_base_add_code() {
 	generate_base_add_carry_code "$1" false
@@ -209,6 +244,17 @@ here_doc_delim
 	cat <<here_doc_delim
 	write8bit(s_gb->gb_register.hl, value, s_gb);
 here_doc_delim
+	fi
+}
+
+function generate_base_jp_code() {
+	local operands=$1
+	local target
+
+	if [[ "${operands}" == *","* ]]; then
+		generate_base_jp_cond_code ${operands}
+	else
+		generate_base_jp_uncond_code ${operands}
 	fi
 }
 
