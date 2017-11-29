@@ -187,3 +187,49 @@ here_doc_delim
 		SET_ZERO();
 here_doc_delim
 }
+
+function generate_base_sub_code() {
+	local operand=$1
+	local target
+
+	if [ "${operand}" = "a" ]; then
+		cat <<here_doc_delim
+	s_gb->gb_register.a = 0;
+here_doc_delim
+		return 0
+	fi
+
+	if [ "${operand}" = "(hl)" ]; then
+		target="value";
+	cat <<here_doc_delim
+	uint8_t value = read8bit(s_gb->gb_register.hl, s_gb);
+here_doc_delim
+	elif [ "${operand}" = "*" ]; then
+		target="value";
+	cat <<here_doc_delim
+	uint8_t value = read8bit(s_gb->gb_register.pc + 1, s_gb);
+here_doc_delim
+	else
+		target="s_gb->gb_register.${operand}"
+	fi
+
+	cat <<here_doc_delim
+
+	if (${target} > s_gb->gb_register.a)
+		SET_CARRY();
+	else
+		CLEAR_CARRY();
+
+	if ((${target} & 0x0f) > (s_gb->gb_register.a & 0x0f))
+		SET_HALFC();
+	else
+		CLEAR_HALFC();
+
+	s_gb->gb_register.a -= ${target};
+
+	if (s_gb->gb_register.a != 0)
+		CLEAR_ZERO();
+	else
+		SET_ZERO();
+here_doc_delim
+}
