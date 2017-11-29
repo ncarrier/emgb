@@ -159,8 +159,9 @@ here_doc_delim
 	fi
 }
 
-function generate_base_xor_code() {
+function generate_base_binary_op_code() {
 	local operand=$1
+	local operator=$2
 	local target
 
 	if [ "${operand}" = "(hl)" ]; then
@@ -179,13 +180,25 @@ here_doc_delim
 
 	cat <<here_doc_delim
 
-	s_gb->gb_register.a ^= ${target};
+	s_gb->gb_register.a ${operator}= ${target};
 
 	if (s_gb->gb_register.a != 0)
 		CLEAR_ZERO();
 	else
 		SET_ZERO();
 here_doc_delim
+}
+
+function generate_base_xor_code() {
+	generate_base_binary_op_code "$1" '^'
+}
+
+function generate_base_or_code() {
+	generate_base_binary_op_code "$1" '|'
+}
+
+function generate_base_and_code() {
+	generate_base_binary_op_code "$1" "&"
 }
 
 function generate_base_sub_code() {
