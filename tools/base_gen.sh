@@ -233,3 +233,36 @@ here_doc_delim
 		SET_ZERO();
 here_doc_delim
 }
+
+function generate_base_sbc_code() {
+	local operand=$1
+
+	echo -e -n "\tuint8_t value = "
+	if [ "${operand}" = "(hl)" ]; then
+		echo  "read8bit(s_gb->gb_register.hl, s_gb);"
+	elif [ "${operand}" = "*" ]; then
+		echo "read8bit(s_gb->gb_register.pc + 1, s_gb);"
+	else
+		echo "s_gb->gb_register.${operand};"
+	fi
+
+	cat <<here_doc_delim
+	value += FLAGS_ISCARRY(s_gb->gb_register.f);
+	if (value > s_gb->gb_register.a)
+		SET_CARRY();
+	else
+		CLEAR_CARRY();
+
+	if ((value & 0x0f) > (s_gb->gb_register.a & 0x0f))
+		SET_HALFC();
+	else
+		CLEAR_HALFC();
+
+	s_gb->gb_register.a -= value;
+
+	if (s_gb->gb_register.a != 0)
+		CLEAR_ZERO();
+	else
+		SET_ZERO();
+here_doc_delim
+}
