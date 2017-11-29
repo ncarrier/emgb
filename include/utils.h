@@ -11,10 +11,10 @@
 #define FLAGS_HALFCARRY (1 << 5)
 #define FLAGS_CARRY (1 << 4)
 
-#define FLAGS_ISZERO(f) ((f) & FLAGS_ZERO)
-#define FLAGS_ISNEGATIVE(f) ((f) & FLAGS_NEGATIVE)
-#define FLAGS_ISCARRY(f) ((f) & FLAGS_CARRY)
-#define FLAGS_ISHALFCARRY(f) ((f) & FLAGS_HALFCARRY)
+#define FLAGS_ISZERO(f) (!!((f) & FLAGS_ZERO))
+#define FLAGS_ISNEGATIVE(f) (!!((f) & FLAGS_NEGATIVE))
+#define FLAGS_ISCARRY(f) (!!((f) & FLAGS_CARRY))
+#define FLAGS_ISHALFCARRY(f) (!!((f) & FLAGS_HALFCARRY))
 
 #define FLAGS_ISSET(f, x) ((f) & (x))
 #define FLAGS_SET(f, x) ((f) |= (x))
