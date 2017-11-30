@@ -521,15 +521,15 @@
 <th>C</th>
 <td axis="------|1|8|If condition cc is true, the top stack entry is popped into pc.">ret nz</td>
 <td axis="------|1|12|The memory location pointed to by sp is stored into c and sp is incremented. The memory location pointed to by sp is stored into b and sp is incremented again.">pop bc</td>
-<td axis="------|3|12|If condition cc is true, ** is copied to pc.">jp nz,**</td>
-<td axis="------|3|12|** is copied to pc.">jp **</td>
+<td axis="------|0|12|If condition cc is true, ** is copied to pc.">jp nz,**</td>
+<td axis="------|0|12|** is copied to pc.">jp **</td>
 <td axis="------|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call nz,**</td>
 <td axis="------|1|12|sp is decremented and b is stored into the memory location pointed to by sp. sp is decremented again and c is stored into the memory location pointed to by sp.">push bc</td>
 <td axis="++V+++|2|8|Adds * to a.">add a,*</td>
 <td axis="------|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 00h.">rst 00h</td>
 <td axis="------|1|8|If condition cc is true, the top stack entry is popped into pc.">ret z</td>
 <td axis="------|1|8|The top stack entry is popped into pc.">ret</td>
-<td axis="------|3|12|If condition cc is true, ** is copied to pc.">jp z,**</td>
+<td axis="------|0|12|If condition cc is true, ** is copied to pc.">jp z,**</td>
 <td class="ln">
 <a href="#table3">BITS</a>
 </td>
@@ -542,7 +542,7 @@
 <th>D</th>
 <td axis="------|1|7|If condition cc is true, the top stack entry is popped into pc.">ret nc</td>
 <td axis="------|1|12|The memory location pointed to by sp is stored into e and sp is incremented. The memory location pointed to by sp is stored into d and sp is incremented again.">pop de</td>
-<td axis="------|3|12|If condition cc is true, ** is copied to pc.">jp nc,**</td>
+<td axis="------|0|12|If condition cc is true, ** is copied to pc.">jp nc,**</td>
 <td axis="------|1|4|Undefined.">und</td>
 <td axis="------|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call nc,**</td>
 <td axis="------|1|16|sp is decremented and d is stored into the memory location pointed to by sp. sp is decremented again and e is stored into the memory location pointed to by sp.">push de</td>
@@ -550,7 +550,7 @@
 <td axis="------|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 10h.">rst 10h</td>
 <td axis="------|1|8|If condition cc is true, the top stack entry is popped into pc.">ret c</td>
 <td axis="------|3|8|Pop two bytes from stack & jump to that address then enable interupts.">reti</td>
-<td axis="------|3|12|If condition cc is true, ** is copied to pc.">jp c,**</td>
+<td axis="------|0|12|If condition cc is true, ** is copied to pc.">jp c,**</td>
 <td axis="------|1|4|Undefined.">und</td>
 <td axis="------|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call c,**</td>
 <td axis="------|1|4|Undefined.">und</td>
@@ -568,7 +568,7 @@
 <td axis="00P1++|2|8|Bitwise AND on a with *.">and *</td>
 <td axis="------|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 20h.">rst 20h</td>
 <td axis="+0-+0-|2|16|If condition cc is true, the top stack entry is popped into pc.">add sp,*</td>
-<td axis="------|1|4|Loads the value of hl into pc.">jp (hl)</td>
+<td axis="------|0|4|Loads the value of hl into pc.">jp (hl)</td>
 <td axis="------|3|16|Put a into memory location **.">ld (**),a</td>
 <td axis="------|1|4|Undefined.">und</td>
 <td axis="------|1|4|Undefined.">und</td>
