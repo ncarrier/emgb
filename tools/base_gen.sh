@@ -133,6 +133,7 @@ function generate_base_jp_or_ret_or_jr_cond_code() {
 	local op=$2
 	local pc="s_gb->gb_register.pc"
 
+	echo -e "\t${pc}++;"
 	if [ "${op}" = "jp" ]; then
 		size=2
 		dest="read16bit(s_gb->gb_register.pc, s_gb)"
@@ -155,7 +156,7 @@ function generate_base_jp_or_ret_or_jr_cond_code() {
 	cat <<here_doc_delim
 		s_gb->gb_register.pc = ${dest};
 	else
-		s_gb->gb_register.pc += ${size}; /* op code + size of address */
+		s_gb->gb_register.pc += ${size}; /* size of address */
 here_doc_delim
 }
 
