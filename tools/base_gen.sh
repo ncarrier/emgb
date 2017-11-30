@@ -5,9 +5,9 @@ pc="s_gb->gb_register.pc"
 function generate_base_ld_dst_adress_code() {
 	echo -e -n "\tuint16_t dst_adr = "
 	if [ ${dst_adress} = "**" ]; then
-		echo -e "read16bit(s_gb->gb_register.pc + 1, s_gb);"
+		echo -e "read16bit(${pc} + 1, s_gb);"
 	elif [ ${dst_adress} = "*" ]; then
-		echo -e "0xFF00u + read8bit(s_gb->gb_register.pc + 1, s_gb);"
+		echo -e "0xFF00u + read8bit(${pc} + 1, s_gb);"
 	elif [ ${dst_adress} = "c" ]; then
 		echo -e "0xFF00u + s_gb->gb_register.${dst_adress};"
 	else
@@ -28,7 +28,7 @@ here_doc_delim
 	elif [ "${operand}" = "*" ]; then
 		target="value";
 	cat <<here_doc_delim
-	uint8_t value = read8bit(s_gb->gb_register.pc + 1, s_gb);
+	uint8_t value = read8bit(${pc} + 1, s_gb);
 here_doc_delim
 	else
 		target="s_gb->gb_register.${operand}"
@@ -65,7 +65,7 @@ here_doc_delim
 	elif [ "${operand}" = "*" ]; then
 		target="value";
 	cat <<here_doc_delim
-	uint8_t value = read8bit(s_gb->gb_register.pc + 1, s_gb);
+	uint8_t value = read8bit(${pc} + 1, s_gb);
 here_doc_delim
 	else
 		target="s_gb->gb_register.${operand}"
@@ -102,9 +102,9 @@ function generate_base_add_carry_code() {
 
 	echo -e -n "\tuint32_t result = s_gb->gb_register.${dst} + "
 	if [ "${src}" = "*" ]; then
-		echo "read8bit(s_gb->gb_register.pc + 1, s_gb);"
+		echo "read8bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "**" ]; then
-		echo "read16bit(s_gb->gb_register.pc + 1, s_gb);"
+		echo "read16bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "(hl)" ]; then
 		echo "read16bit(s_gb->gb_register.hl, s_gb);"
 	else
@@ -158,9 +158,9 @@ function generate_base_jp_or_ret_or_jr_or_call_cond_code() {
 		echo "FLAGS_ISZERO(s_gb->gb_register.f))"
 	fi
 	cat <<here_doc_delim
-		s_gb->gb_register.pc = ${dest};
+		${pc} = ${dest};
 	else
-		s_gb->gb_register.pc += ${size}; /* size of address */
+		${pc} += ${size}; /* size of address */
 here_doc_delim
 }
 
@@ -175,7 +175,7 @@ function generate_base_jp_uncond_code() {
 	fi
 
 	cat <<here_doc_delim
-	s_gb->gb_register.pc = read16bit(s_gb->gb_register.${register}, s_gb);
+	${pc} = read16bit(s_gb->gb_register.${register}, s_gb);
 here_doc_delim
 }
 
@@ -291,7 +291,7 @@ function generate_base_jr_code() {
 	if [ -n "${operands}" ]; then
 		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "jr"
 	else
-		echo -e "\ts_gb->gb_register.pc = read8bit(s_gb->gb_register.hl, s_gb);"
+		echo -e "\t${pc} = read8bit(s_gb->gb_register.hl, s_gb);"
 	fi
 }
 
@@ -304,9 +304,9 @@ function generate_base_ld_code() {
 		src_adress=${BASH_REMATCH[1]}
 		echo -e -n "\tuint16_t src_adr = "
 		if [ "${src_adress}" = '**' ]; then
-			echo "read16bit(s_gb->gb_register.pc + 1, s_gb);"
+			echo "read16bit(${pc} + 1, s_gb);"
 		elif [ "${src_adress}" = '*' ]; then
-			echo "0xFF00u + read8bit(s_gb->gb_register.pc + 1, s_gb);"
+			echo "0xFF00u + read8bit(${pc} + 1, s_gb);"
 		elif [ "${src_adress}" = 'c' ]; then
 			echo "0xFF00u + s_gb->gb_register.c;"
 		else
@@ -322,9 +322,9 @@ function generate_base_ld_code() {
 		fi
 	else
 		if [ ${src} = "*" ]; then
-			echo -e "\tuint8_t src_val = read8bit(s_gb->gb_register.pc + 1, s_gb);"
+			echo -e "\tuint8_t src_val = read8bit(${pc} + 1, s_gb);"
 		elif [ ${src} = "**" ]; then
-			echo -e "\tuint16_t src_val = read16bit(s_gb->gb_register.pc + 1, s_gb);"
+			echo -e "\tuint16_t src_val = read16bit(${pc} + 1, s_gb);"
 		else
 			src_reg="s_gb->gb_register.${src}"
 			echo -e "\t__typeof__(${src_reg}) src_val = ${src_reg};"
@@ -353,7 +353,7 @@ function generate_base_ret_code() {
 	if [ -n "${operands}" ]; then
 		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "ret"
 	else
-		echo -e "\ts_gb->gb_register.pc = pop16(s_gb);"
+		echo -e "\t${pc} = pop16(s_gb);"
 	fi
 }
 
@@ -362,8 +362,8 @@ function generate_base_rst_code() {
 
 	cat <<here_doc_delim
 	s_gb->gb_register.sp -= 2;
-	write16bitToAddr(s_gb->gb_register.sp, s_gb->gb_register.pc, s_gb);
-	s_gb->gb_register.pc = ${offset};
+	write16bitToAddr(s_gb->gb_register.sp, ${pc}, s_gb);
+	${pc} = ${offset};
 here_doc_delim
 }
 
@@ -374,7 +374,7 @@ function generate_base_sbc_code() {
 	if [ "${operand}" = "(hl)" ]; then
 		echo  "read8bit(s_gb->gb_register.hl, s_gb);"
 	elif [ "${operand}" = "*" ]; then
-		echo "read8bit(s_gb->gb_register.pc + 1, s_gb);"
+		echo "read8bit(${pc} + 1, s_gb);"
 	else
 		echo "s_gb->gb_register.${operand};"
 	fi
