@@ -127,14 +127,20 @@ function generate_base_add_carry_code() {
 here_doc_delim
 }
 
-function generate_base_jp_or_ret_cond_code() {
+function generate_base_jp_or_ret_or_jr_cond_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 	local cond=${operands[0]}
 	local op=$2
+	local pc="s_gb->gb_register.pc"
 
 	if [ "${op}" = "jp" ]; then
+		size=2
 		dest="read16bit(s_gb->gb_register.pc, s_gb)"
+	elif [ "${op}" = "jr" ]; then
+		size=1
+		dest="${pc} + read8bit(${pc}, s_gb) + 1"
 	else # ret
+		size=0
 		dest="pop16(s_gb)"
 	fi
 	echo -n -e "\tif ("
@@ -149,7 +155,7 @@ function generate_base_jp_or_ret_cond_code() {
 	cat <<here_doc_delim
 		s_gb->gb_register.pc = ${dest};
 	else
-		s_gb->gb_register.pc += 3; /* op code + 16b address */
+		s_gb->gb_register.pc += ${size}; /* op code + size of address */
 here_doc_delim
 }
 
@@ -257,9 +263,19 @@ function generate_base_jp_code() {
 	local operands=$1
 
 	if [[ "${operands}" == *","* ]]; then
-		generate_base_jp_or_ret_cond_code ${operands} "jp"
+		generate_base_jp_or_ret_or_jr_cond_code ${operands} "jp"
 	else
 		generate_base_jp_uncond_code ${operands}
+	fi
+}
+
+function generate_base_jr_code() {
+	local operands=$1
+
+	if [ -n "${operands}" ]; then
+		generate_base_jp_or_ret_or_jr_cond_code ${operands} "jr"
+	else
+		echo -e "\ts_gb->gb_register.pc = read8bit(s_gb->gb_register.hl, s_gb);"
 	fi
 }
 
@@ -319,7 +335,7 @@ function generate_base_ret_code() {
 	local operands=$1
 
 	if [ -n "${operands}" ]; then
-		generate_base_jp_or_ret_cond_code ${operands} "ret"
+		generate_base_jp_or_ret_or_jr_cond_code ${operands} "ret"
 	else
 		echo -e "\ts_gb->gb_register.pc = pop16(s_gb);"
 	fi
