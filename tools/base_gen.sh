@@ -143,7 +143,7 @@ function generate_base_jp_cond_code() {
 	cat <<here_doc_delim
 		s_gb->gb_register.pc = read16bit(s_gb->gb_register.pc, s_gb);
 	else
-		s_gb->gb_register.pc++;
+		s_gb->gb_register.pc += 3; /* op code + 16b address */
 here_doc_delim
 }
 
