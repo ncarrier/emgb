@@ -346,10 +346,7 @@ function generate_base_nop_code() {
 function generate_base_push_code() {
 	local reg=$1
 
-	cat <<here_doc_delim
-	push16(s_gb->gb_register.${reg}, s_gb);
-	${pc}++;
-here_doc_delim
+	echo -e "\tpush16(s_gb->gb_register.${reg}, s_gb);"
 }
 
 function generate_base_or_code() {
