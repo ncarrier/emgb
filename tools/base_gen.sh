@@ -127,10 +127,16 @@ function generate_base_add_carry_code() {
 here_doc_delim
 }
 
-function generate_base_jp_cond_code() {
+function generate_base_jp_or_ret_cond_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 	local cond=${operands[0]}
+	local op=$2
 
+	if [ "${op}" = "jp" ]; then
+		dest="read16bit(s_gb->gb_register.pc, s_gb)"
+	else # ret
+		dest="pop16(s_gb)"
+	fi
 	echo -n -e "\tif ("
 	if [[ ${cond} == "n"* ]]; then
 		echo -n "!"
@@ -141,7 +147,7 @@ function generate_base_jp_cond_code() {
 		echo "FLAGS_ISZERO(s_gb->gb_register.f))"
 	fi
 	cat <<here_doc_delim
-		s_gb->gb_register.pc = read16bit(s_gb->gb_register.pc, s_gb);
+		s_gb->gb_register.pc = ${dest};
 	else
 		s_gb->gb_register.pc += 3; /* op code + 16b address */
 here_doc_delim
@@ -249,10 +255,9 @@ here_doc_delim
 
 function generate_base_jp_code() {
 	local operands=$1
-	local target
 
 	if [[ "${operands}" == *","* ]]; then
-		generate_base_jp_cond_code ${operands}
+		generate_base_jp_or_ret_cond_code ${operands} "jp"
 	else
 		generate_base_jp_uncond_code ${operands}
 	fi
@@ -308,6 +313,16 @@ function generate_base_nop_code() {
 
 function generate_base_or_code() {
 	generate_base_binary_op_code "$1" '|'
+}
+
+function generate_base_ret_code() {
+	local operands=$1
+
+	if [ -n "${operands}" ]; then
+		generate_base_jp_or_ret_cond_code ${operands} "ret"
+	else
+		echo -e "\ts_gb->gb_register.pc = pop16(s_gb);"
+	fi
 }
 
 function generate_base_rst_code() {
