@@ -1,6 +1,7 @@
 # functions for generating base set instructions
 # helper functions for instruction code generating functions
 adress_re='\((.*)\)'
+pc="s_gb->gb_register.pc"
 function generate_base_ld_dst_adress_code() {
 	echo -e -n "\tuint16_t dst_adr = "
 	if [ ${dst_adress} = "**" ]; then
@@ -127,16 +128,19 @@ function generate_base_add_carry_code() {
 here_doc_delim
 }
 
-function generate_base_jp_or_ret_or_jr_cond_code() {
+function generate_base_jp_or_ret_or_jr_or_call_cond_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 	local cond=${operands[0]}
 	local op=$2
-	local pc="s_gb->gb_register.pc"
 
 	echo -e "\t${pc}++;"
 	if [ "${op}" = "jp" ]; then
 		size=2
-		dest="read16bit(s_gb->gb_register.pc, s_gb)"
+		dest="read16bit(${pc}, s_gb)"
+	elif [ "${op}" = "call" ]; then
+		echo -e "\tpush16(read16bit(${pc} + 2, s_gb), s_gb);"
+		size=2
+		dest="read16bit(${pc}, s_gb)"
 	elif [ "${op}" = "jr" ]; then
 		size=1
 		dest="${pc} + read8bit(${pc}, s_gb) + 1"
@@ -186,6 +190,17 @@ function generate_base_adc_code() {
 
 function generate_base_and_code() {
 	generate_base_binary_op_code "$1" "&"
+}
+
+function generate_base_call_code() {
+	local operands=$1
+
+	if [[ "${operands}" == *","* ]]; then
+		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "call"
+	else
+		echo -e "\tpush16(read16bit(${pc} + 1, s_gb), s_gb);"
+		generate_base_jp_uncond_code ${operands}
+	fi
 }
 
 function generate_base_cp_code() {
@@ -264,7 +279,7 @@ function generate_base_jp_code() {
 	local operands=$1
 
 	if [[ "${operands}" == *","* ]]; then
-		generate_base_jp_or_ret_or_jr_cond_code ${operands} "jp"
+		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "jp"
 	else
 		generate_base_jp_uncond_code ${operands}
 	fi
@@ -274,7 +289,7 @@ function generate_base_jr_code() {
 	local operands=$1
 
 	if [ -n "${operands}" ]; then
-		generate_base_jp_or_ret_or_jr_cond_code ${operands} "jr"
+		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "jr"
 	else
 		echo -e "\ts_gb->gb_register.pc = read8bit(s_gb->gb_register.hl, s_gb);"
 	fi
@@ -336,7 +351,7 @@ function generate_base_ret_code() {
 	local operands=$1
 
 	if [ -n "${operands}" ]; then
-		generate_base_jp_or_ret_or_jr_cond_code ${operands} "ret"
+		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "ret"
 	else
 		echo -e "\ts_gb->gb_register.pc = pop16(s_gb);"
 	fi
