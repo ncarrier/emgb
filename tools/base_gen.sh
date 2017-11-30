@@ -343,6 +343,15 @@ function generate_base_nop_code() {
 	echo -e "\t/* nothing to do */"
 }
 
+function generate_base_push_code() {
+	local reg=$1
+
+	cat <<here_doc_delim
+	push16(s_gb->gb_register.${reg}, s_gb);
+	${pc}++;
+here_doc_delim
+}
+
 function generate_base_or_code() {
 	generate_base_binary_op_code "$1" '|'
 }
