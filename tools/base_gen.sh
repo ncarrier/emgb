@@ -222,8 +222,30 @@ function generate_base_call_code() {
 	fi
 }
 
+function generate_base_exec_code() {
+	cat <<here_doc_delim
+	uint8_t opcode;
+
+	opcode = read8bit(${pc}, s_gb);
+	instructions_cb[opcode].func(s_gb);
+here_doc_delim
+}
+
+function generate_base_ccf_code() {
+	cat <<here_doc_delim
+	if (FLAGS_ISCARRY(s_gb->gb_register.f))
+		FLAGS_CLEAR(s_gb->gb_register.f, FLAGS_CARRY);
+	else
+		FLAGS_SET(s_gb->gb_register.f, FLAGS_CARRY);
+here_doc_delim
+}
+
 function generate_base_cp_code() {
 	generate_base_sub_gen_code "$1" false
+}
+
+function generate_base_cpl_code() {
+	echo -e "\ts_gb->gb_register.a = ~s_gb->gb_register.a;"
 }
 
 function generate_base_daa_code() {
@@ -287,6 +309,18 @@ here_doc_delim
 	write8bit(s_gb->gb_register.hl, value, s_gb);
 here_doc_delim
 	fi
+}
+
+function generate_base_di_code() {
+	echo -e "\t_gb->gb_interrupts.interMaster = 0;"
+}
+
+function generate_base_ei_code() {
+	echo -e "\t_gb->gb_interrupts.interMaster = 1;"
+}
+
+function generate_base_halt_code() {
+	echo -e "\ts_gb->gb_cpu.stopCpu = 1;"
 }
 
 function generate_base_inc_code() {
@@ -446,6 +480,14 @@ function generate_base_ret_code() {
 	fi
 }
 
+function generate_base_reti_code() {
+	cat <<here_doc_delim
+	s_gb->gb_register.pc = read16bit(s_gb->gb_register.sp, s_gb);
+	s_gb->gb_register.sp += 2;
+	s_gb->gb_interrupts.interMaster = 1;
+here_doc_delim
+}
+
 function generate_base_rla_code() {
 	cat <<here_doc_delim
 	bool carry;
@@ -563,6 +605,10 @@ function generate_base_sbc_code() {
 here_doc_delim
 }
 
+function generate_base_scf_code() {
+	:
+}
+
 function generate_base_stop_code() {
 	cat <<here_doc_delim
 	s_gb->gb_cpu.stopCpu = 1;
@@ -571,6 +617,10 @@ here_doc_delim
 
 function generate_base_sub_code() {
 	generate_base_sub_gen_code "$1" true
+}
+
+function generate_base_und_code() {
+	:
 }
 
 function generate_base_xor_code() {
