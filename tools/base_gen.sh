@@ -347,7 +347,7 @@ function generate_base_ldi_or_ldd_code() {
 
 	if [ "${dst}" = "a" ]; then
 		cat <<here_doc_delim
-	s_gb->gb_register.a = read8bit((s_gb->gb_register.hl, s_gb);
+	s_gb->gb_register.a = read8bit(s_gb->gb_register.hl, s_gb);
 	s_gb->gb_register.hl${operator};
 here_doc_delim
 	else
