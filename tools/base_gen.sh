@@ -343,14 +343,20 @@ function generate_base_nop_code() {
 	echo -e "\t/* nothing to do */"
 }
 
+function generate_base_or_code() {
+	generate_base_binary_op_code "$1" '|'
+}
+
+function generate_base_pop_code() {
+	local reg=$1
+
+	echo -e "\ts_gb->gb_register.${reg} = pop16(s_gb);"
+}
+
 function generate_base_push_code() {
 	local reg=$1
 
 	echo -e "\tpush16(s_gb->gb_register.${reg}, s_gb);"
-}
-
-function generate_base_or_code() {
-	generate_base_binary_op_code "$1" '|'
 }
 
 function generate_base_ret_code() {
