@@ -417,6 +417,25 @@ function generate_base_ret_code() {
 	fi
 }
 
+function generate_base_rlca_code() {
+	cat <<here_doc_delim
+	bool carry;
+
+	carry = s_gb->gb_register.a & 0x80;
+	if (carry)
+		SET_CARRY();
+	else
+		CLEAR_CARRY();
+
+	s_gb->gb_register.a <<= 1;
+	s_gb->gb_register.a += carry;
+	if (s_gb->gb_register.a == 0)
+		SET_ZERO();
+	else
+		CLEAR_ZERO();
+here_doc_delim
+}
+
 function generate_base_rst_code() {
 	local offset=0x${1//h/}
 
