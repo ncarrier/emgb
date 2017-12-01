@@ -226,6 +226,35 @@ function generate_base_cp_code() {
 	generate_base_sub_gen_code "$1" false
 }
 
+function generate_base_daa_code() {
+	cat <<here_doc_delim
+	int8_t low_inc = 0x06;
+	int8_t high_inc = 0x60;
+	uint16_t s;
+
+	if (FLAGS_ISHALFCARRY(s_gb->gb_register.f)) {
+		low_inc = -0x06;
+		high_inc = -0x60;
+	}
+	s = s_gb->gb_register.a;
+	if (FLAGS_ISHALFCARRY(s_gb->gb_register.f) || (s & 0xF) > 9)
+		s += low_inc;
+	if (FLAGS_ISCARRY(s_gb->gb_register.f) || s > 0x9F)
+		s += high_inc;
+
+	s_gb->gb_register.a = s & 0xff;
+	if (s_gb->gb_register.a != 0)
+		FLAGS_CLEAR(s_gb->gb_register.f, FLAGS_ZERO);
+	else
+		FLAGS_SET(s_gb->gb_register.f, FLAGS_ZERO);
+
+	if (s >= 0x100)
+		FLAGS_SET(s_gb->gb_register.f, FLAGS_CARRY);
+	else
+		FLAGS_CLEAR(s_gb->gb_register.f, FLAGS_CARRY);
+here_doc_delim
+}
+
 function generate_base_dec_code() {
 	local operand=$1
 	local target
