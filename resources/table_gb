@@ -336,7 +336,7 @@
 <td axis="-+V+++|1|4|Adds one to h.">inc h</td>
 <td axis="-+V+++|1|4|Subtracts one from h.">dec h</td>
 <td axis="------|2|8|Loads * into h.">ld h,*</td>
-<td axis="*-P*++|1|4|Adjusts a for BCD addition and subtraction operations.">daa</td>
+<td axis="+-P0++|1|4|Adjusts a for BCD addition and subtraction operations.">daa</td>
 <td axis="------|0|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr z,*</td>
 <td axis="++-+--|1|8|The value of hl is added to hl.">add hl,hl</td>
 <td axis="------|3|8|Put the value at adress hl into a. Increment hl.">ldi a,(hl)</td>
