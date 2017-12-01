@@ -127,7 +127,7 @@ function generate_cb_opcode() {
 	op=${text[0]}
 	operands=${text[1]}
 
-	generate_cb_${op}_code "${text[1]}"
+	generate_cb_${op}_code "${text[1]}" "${operands}"
 }
 
 function generate_base_opcode() {
@@ -143,7 +143,7 @@ function generate_base_opcode() {
 
 	# call if function is defined
 	if type -t generate_base_${op}_code > /dev/null; then
-		generate_base_${op}_code "${operands}"
+		generate_base_${op}_code "${operands}" ${opcode}
 	else
 		echo "not implemented yet: [${opcode}] ${op} \"${operands}\"" > /dev/stderr
 	fi
