@@ -232,7 +232,7 @@ function generate_base_daa_code() {
 	int8_t high_inc = 0x60;
 	uint16_t s;
 
-	if (FLAGS_ISHALFCARRY(s_gb->gb_register.f)) {
+	if (FLAGS_ISNEGATIVE(s_gb->gb_register.f)) {
 		low_inc = -0x06;
 		high_inc = -0x60;
 	}
