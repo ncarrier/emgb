@@ -132,6 +132,7 @@ function generate_cb_opcode() {
 
 function generate_base_opcode() {
 	local text=( $1 )
+	local opcode=$2
 
 	if [ ${#text[*]} -eq 1 ]; then
 		operands=""
@@ -144,7 +145,7 @@ function generate_base_opcode() {
 	if type -t generate_base_${op}_code > /dev/null; then
 		generate_base_${op}_code "${operands}"
 	else
-		:
+		echo "not implemented yet: [${opcode}] ${op} \"${operands}\"" > /dev/stderr
 	fi
 }
 
@@ -176,9 +177,9 @@ function definition_body_gen() {
 	echo
 	echo "	/* end of ${func} manual code */"
 	if [ "${title}" = "CB" ]; then
-		generate_cb_opcode "${text}"
+		generate_cb_opcode "${text}" ${opcode}
 	else
-		generate_base_opcode "${text}"
+		generate_base_opcode "${text}" ${opcode}
 	fi
 	for f in ZERO NEG HALFC CARRY; do
 		case ${flags[${f}]} in
