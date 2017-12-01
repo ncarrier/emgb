@@ -497,6 +497,12 @@ function generate_base_sbc_code() {
 here_doc_delim
 }
 
+function generate_base_stop_code() {
+	cat <<here_doc_delim
+	s_gb->gb_cpu.stopCpu = 1;
+here_doc_delim
+}
+
 function generate_base_sub_code() {
 	generate_base_sub_gen_code "$1" true
 }
