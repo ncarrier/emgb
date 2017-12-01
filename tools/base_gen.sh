@@ -339,6 +339,33 @@ function generate_base_ld_code() {
 	fi
 }
 
+function generate_base_ldi_or_ldd_code() {
+	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
+	local dst=${operands[0]}
+	local src=${operands[1]}
+	local operator="${2}"
+
+	if [ "${dst}" = "a" ]; then
+		cat <<here_doc_delim
+	s_gb->gb_register.a = read8bit((s_gb->gb_register.hl, s_gb);
+	s_gb->gb_register.hl${operator};
+here_doc_delim
+	else
+		cat <<here_doc_delim
+	write8bit(s_gb->gb_register.hl, s_gb->gb_register.a, s_gb);
+	s_gb->gb_register.hl${operator};
+here_doc_delim
+	fi
+}
+
+function generate_base_ldd_code() {
+	generate_base_ldi_or_ldd_code "$1" "--"
+}
+
+function generate_base_ldi_code() {
+	generate_base_ldi_or_ldd_code "$1" "++"
+}
+
 function generate_base_nop_code() {
 	echo -e "\t/* nothing to do */"
 }
