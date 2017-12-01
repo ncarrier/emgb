@@ -362,6 +362,27 @@ function generate_base_ldd_code() {
 	generate_base_ldi_or_ldd_code "$1" "--"
 }
 
+function generate_base_ldhl_code() {
+	cat <<here_doc_delim
+	int8_t value = read8bit(s_gb->gb_register.pc, s_gb);
+	int res;
+
+	res = value + s_gb->gb_register.sp;
+
+	if (res & 0xffff0000)
+		SET_CARRY();
+	else
+		CLEAR_CARRY();
+
+	if (((s_gb->gb_register.sp & 0x0f) + (value & 0x0f)) > 0x0f)
+		SET_HALFC();
+	else
+		CLEAR_HALFC();
+
+	s_gb->gb_register.hl = res & 0x0000ffff;
+here_doc_delim
+}
+
 function generate_base_ldi_code() {
 	generate_base_ldi_or_ldd_code "$1" "++"
 }
