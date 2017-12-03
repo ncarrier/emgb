@@ -143,7 +143,7 @@ function generate_base_jp_or_ret_or_jr_or_call_cond_code() {
 		dest="read16bit(${pc}, s_gb)"
 	elif [ "${op}" = "jr" ]; then
 		size=1
-		dest="${pc} + read8bit(${pc}, s_gb) + 1"
+		dest="${pc} + (int8_t)read8bit(${pc}, s_gb) + 1"
 	else # ret
 		size=0
 		dest="pop16(s_gb)"
