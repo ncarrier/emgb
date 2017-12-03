@@ -171,6 +171,7 @@ function generate_base_jp_uncond_code() {
 	if [ "${dest}" = "(hl)" ]; then
 		register=hl
 	else
+		echo -e "\t${pc}++;"
 		register=pc
 	fi
 
