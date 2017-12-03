@@ -312,11 +312,11 @@ here_doc_delim
 }
 
 function generate_base_di_code() {
-	echo -e "\t_gb->gb_interrupts.interMaster = 0;"
+	echo -e "\ts_gb->gb_interrupts.interMaster = 0;"
 }
 
 function generate_base_ei_code() {
-	echo -e "\t_gb->gb_interrupts.interMaster = 1;"
+	echo -e "\ts_gb->gb_interrupts.interMaster = 1;"
 }
 
 function generate_base_halt_code() {
