@@ -256,8 +256,8 @@ static uint16_t pop16(struct s_gb *s_gb)
 {
 	uint16_t value;
 
-	s_gb->gb_register.sp += 2;
 	value = read16bit(s_gb->gb_register.sp, s_gb);
+	s_gb->gb_register.sp += 2;
 
 	return value;
 }
