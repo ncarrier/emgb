@@ -9,12 +9,34 @@
 
 int imgui(void *p_s_gb);
 
+static void instruction_gen(struct s_gb *s_gb)
+{
+	uint8_t fopcode;
+	const struct s_cpu_z80 *instruction;
 
+	fopcode = read8bit(s_gb->gb_register.pc, s_gb);
+	instruction = instructions_base + fopcode;
+	instruction->func(s_gb);
+	s_gb->gb_register.pc += instruction->size;
+	s_gb->gb_cpu.totalTick += instruction->cycles;
+}
+
+static void instruction_hw(struct s_gb *s_gb)
+{
+	uint8_t fopcode;
+
+	fopcode = read8bit(s_gb->gb_register.pc, s_gb);
+	s_gb->gb_register.pc += 1; //retrieve func opcode
+	instructions[fopcode].func(s_gb); //call opcode func pointer
+	if (s_gb->gb_cpu.jmpf == 0) //if jmp opcode was called, no need to incr PC
+		s_gb->gb_register.pc += instructions[fopcode].size;
+	s_gb->gb_cpu.jmpf = 0;
+}
 
 void gb(char *fileName)
 {
-	unsigned char	fopcode = 0;
 	struct s_gb		*s_gb = NULL;
+	void (*execute_instruction)(struct s_gb *s_gb);
 #ifdef IMDBG
 	SDL_Thread		*thr = NULL;
 #endif
@@ -24,6 +46,7 @@ void gb(char *fileName)
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
 	s_gb = initGb(fileName);
+	execute_instruction = getenv("GEN") ? instruction_gen : instruction_hw;
 #if EMGB_CONSOLE_DEBUGGER
 	ret = console_debugger_init(&debugger, &s_gb->gb_register, s_gb);
 	if (ret < 0)
@@ -47,14 +70,8 @@ void gb(char *fileName)
 #endif /* EMGB_CONSOLE_DEBUGGER */
 	  /* debug(s_gb); */
 	  handleEvent(s_gb);
-	  if (s_gb->gb_cpu.stopCpu == 0) 
-	    {
-	      fopcode = read8bit(s_gb->gb_register.pc, s_gb); s_gb->gb_register.pc += 1; //retrieve func opcode
-	      instructions[fopcode].func(s_gb); //call opcode func pointer
-	      if (s_gb->gb_cpu.jmpf == 0) //if jmp opcode was called, no need to incr PC
-		s_gb->gb_register.pc += instructions[fopcode].size;
-	      s_gb->gb_cpu.jmpf = 0;
-	    }
+	  if (s_gb->gb_cpu.stopCpu == 0)
+		  execute_instruction(s_gb);
 	  updateGpu(s_gb);
 	  doInterupt(s_gb);
 	  updateTimer(s_gb);

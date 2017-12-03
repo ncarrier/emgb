@@ -18,7 +18,8 @@ struct		s_cpu_z80
   uint8_t cycles;
 };
 
-extern const struct s_cpu_z80 instructions_cb[];
+extern const struct s_cpu_z80 instructions_cb[]; // TODO remove
+extern const struct s_cpu_z80 instructions_base[];
 
 #pragma pack(push, 1)
 
@@ -73,7 +74,7 @@ extern const struct s_cpu_z80 instructions[256];
 struct	       			s_cpu {
 	unsigned int		totalTick;
 	unsigned char		stopCpu;
-	unsigned char		jmpf;
+	unsigned char		jmpf; // TODO remove
 };
 
 #pragma pack(pop)
