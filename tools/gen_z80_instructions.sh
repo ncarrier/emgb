@@ -173,9 +173,6 @@ function definition_body_gen() {
 	echo "/* ${text} [${opcode}] : ${doc} */"
 	echo "static void ${func}(struct s_gb *s_gb)"
 	echo "{"
-	echo "	/* start of ${func} manual code */"
-	echo
-	echo "	/* end of ${func} manual code */"
 	if [ "${title}" = "CB" ]; then
 		generate_cb_opcode "${text}" ${opcode}
 	else
