@@ -181,8 +181,8 @@ static void console_debugger_breakpoint(struct console_debugger *debugger)
 		return;
 	}
 
-	printf("Breakpoint %d set at adress %#lx\n",
-			breakpoint - debugger->breakpoints, adress);
+	printf("Breakpoint %u set at adress %#lx\n",
+			(unsigned)(breakpoint - debugger->breakpoints), adress);
 
 	*breakpoint = (struct breakpoint) {
 		.pc = adress,
