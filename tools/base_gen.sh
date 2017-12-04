@@ -218,8 +218,10 @@ function generate_base_call_code() {
 	if [[ "${operands}" == *","* ]]; then
 		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "call"
 	else
-		echo -e "\tpush16(read16bit(${pc} + 1, s_gb), s_gb);"
-		generate_base_jp_uncond_code ${operands}
+		cat <<here_doc_delim
+	push16(read16bit(${pc} + 3, s_gb), s_gb);
+	${pc} = read16bit(${pc} + 1, s_gb);
+here_doc_delim
 	fi
 }
 
