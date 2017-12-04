@@ -307,6 +307,7 @@ here_doc_delim
 here_doc_delim
 	if [ "${operand}" = "(hl)" ]; then
 	cat <<here_doc_delim
+	memoperation(s_gb->gb_register.hl, -1, s_gb);
 	write8bit(s_gb->gb_register.hl, value, s_gb);
 here_doc_delim
 	fi
@@ -353,6 +354,7 @@ here_doc_delim
 here_doc_delim
 	if [ "${operand}" = "(hl)" ]; then
 	cat <<here_doc_delim
+	memoperation(s_gb->gb_register.hl, 1, s_gb);
 	write8bit(s_gb->gb_register.hl, value, s_gb);
 here_doc_delim
 	fi
