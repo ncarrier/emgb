@@ -251,6 +251,7 @@ cat <<here_doc_delim
 #include "cpu.h"
 #include "utils.h"
 #include "GB.h"
+#include "instructions.h"
 
 static uint16_t pop16(struct s_gb *s_gb)
 {
