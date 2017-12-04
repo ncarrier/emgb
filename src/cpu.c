@@ -2,6 +2,7 @@
 #include "cpu.h"
 //ld matrix
 #include "ld.h"
+#include "instructions.h"
 
 unsigned short read16(struct s_gb *s_gb)
 {
@@ -532,7 +533,7 @@ void and_a(struct s_gb *s_gb) { and (s_gb->gb_register.a, s_gb); }
 //cb
 static void handle_cb(unsigned char cbopcode, struct s_gb *s_gb)
 {
-	instructions_cb[cbopcode].func(s_gb);
+	extendedInstructions[cbopcode].execute(s_gb);
 	s_gb->gb_cpu.totalTick += instructions_cb[cbopcode].cycles;
 }
 

@@ -3,23 +3,11 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
+#include "cpu_op.h"
+
 struct s_gb;
 void initCpu(struct s_gb * s_gb);
 bool is_opcode_undefined(uint8_t opcode);
-typedef void (*cpufunc)(struct s_gb*);
-
-struct		s_cpu_z80
-{
-  unsigned char	opcode;
-  char	       	*value;
-  cpufunc       func;
-  uint8_t size;
-  char *doc;
-  uint8_t cycles;
-};
-
-extern const struct s_cpu_z80 instructions_cb[]; // TODO remove
-extern const struct s_cpu_z80 instructions_base[];
 
 #pragma pack(push, 1)
 
@@ -69,7 +57,14 @@ struct s_register
   //unsigned char	flags;
 };
 
+struct extendedInstruction {
+	char *disassembly;
+	void(*execute)(struct s_gb *);
+	//unsigned char ticks;
+};
+
 extern const struct s_cpu_z80 instructions[256];
+extern const struct extendedInstruction extendedInstructions[256];
 
 struct	       			s_cpu {
 	unsigned int		totalTick;

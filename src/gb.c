@@ -3,6 +3,7 @@
 #include "console_debugger.h"
 #include "log.h"
 #endif /* EMGB_CONSOLE_DEBUGGER */
+#include "instructions.h"
 
 // main loop function
 // retrieve opcode & execute it. update gpu interupt & timer
