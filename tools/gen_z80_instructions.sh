@@ -16,8 +16,8 @@ re_sll='^sll (.*)'
 
 CARRY=0
 NEG=1
-HALFC=3
-ZERO=4
+HALFC=2
+ZERO=3
 
 line_number=0
 function text_to_func() {
@@ -55,7 +55,7 @@ function parse_instruction_line() {
 function parse_exec_line() {
 	opcode=0x${high_nibble}${low_nibble}
 	text="exec ${opcode}"
-	flags="------"
+	flags="----"
 	size=2
 	cycles=0
 	doc="execute instruction in subtable ${opcode}"
@@ -169,7 +169,7 @@ function definition_body_gen() {
 		fi
 	fi
 
-	flags=( "${8:0:1}" "${8:1:1}" "${8:2:1}" "${8:3:1}" "${8:4:1}" "${8:5:1}" )
+	flags=( "${8:0:1}" "${8:1:1}" "${8:2:1}" "${8:3:1}" )
 	echo "/* ${text} [${opcode}] : ${doc} */"
 	echo "static void ${func}(struct s_gb *s_gb)"
 	echo "{"
@@ -193,6 +193,9 @@ function definition_body_gen() {
 		"0")
 			echo "	/* ${f} reset */"
 			echo "	CLEAR_${f}();"
+			;;
+		"*")
+			echo "	/* ${f} exceptional */"
 			;;
 		*)
 			echo "	/* unknown action on ${f} */"
