@@ -54,14 +54,13 @@ struct s_register
 
   unsigned short	pc;
   unsigned short	sp;
-  //unsigned char	flags;
-};
+} __attribute__((__packed__));
 
 struct extendedInstruction {
 	char *disassembly;
 	void(*execute)(struct s_gb *);
 	//unsigned char ticks;
-};
+} __attribute__((__packed__));
 
 extern const struct s_cpu_z80 instructions[256];
 extern const struct extendedInstruction extendedInstructions[256];
@@ -70,7 +69,7 @@ struct	       			s_cpu {
 	unsigned int		totalTick;
 	unsigned char		stopCpu;
 	unsigned char		jmpf; // TODO remove
-};
+} __attribute__((__packed__));
 
 #pragma pack(pop)
 

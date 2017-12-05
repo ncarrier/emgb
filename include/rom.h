@@ -23,14 +23,14 @@ struct              s_romHeader
 	unsigned char	gameVersion;
 	unsigned char	headerCheckSum;
 	unsigned short	glbCheckSum;
-};
+} __attribute__((__packed__));
 
 struct					s_rom
 {
 	unsigned int			size;
 	unsigned char	*		rom;
 	struct s_romHeader		romheader;
-};
+} __attribute__((__packed__));
 
 #pragma pack(pop)
 
