@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# usage gen_z80_instructions.sh table_gb.html instructions.c
+
 set -euf
 
 SOURCE="${BASH_SOURCE[0]}"
@@ -14,6 +16,9 @@ source ${dir}cb_gen.sh
 source ${dir}base_gen.sh
 
 file=$1
+output=$2
+exec > $2
+
 temp_file=$(mktemp)
 grep -E '</?tr|td|th|table' ${file} > ${temp_file}
 
