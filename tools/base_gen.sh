@@ -38,11 +38,7 @@ here_doc_delim
 	cat <<here_doc_delim
 
 	${regs}.a ${operator}= ${target};
-
-	if (${regs}.a != 0)
-		CLEAR_ZERO();
-	else
-		SET_ZERO();
+	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 
@@ -74,20 +70,9 @@ here_doc_delim
 
 	cat <<here_doc_delim
 
-	if (${target} > ${regs}.a)
-		SET_CARRY();
-	else
-		CLEAR_CARRY();
-
-	if ((${target} & 0x0f) > (${regs}.a & 0x0f))
-		SET_HALFC();
-	else
-		CLEAR_HALFC();
-
-	if (${regs}.a == ${target})
-		SET_ZERO();
-	else
-		CLEAR_ZERO();
+	${regs}.cf = ${target} > ${regs}.a;
+	${regs}.hf = (${target} & 0x0f) > (${regs}.a & 0x0f);
+	${regs}.zf = ${regs}.a == ${target};
 
 here_doc_delim
 	if [ "${apply}" = "true" ]; then
@@ -112,18 +97,11 @@ function generate_base_add_carry_code() {
 		echo "${regs}.${src};"
 	fi
 	if [ "${add_carry}" = "true" ]; then
-		echo -e "\tresult += FLAGS_ISCARRY(${regs}.f);"
+		echo -e "\tresult += ${regs}.cf;"
 	fi
 	cat <<here_doc_delim
-	if (result & 0xffff0000)
-		SET_CARRY();
-	else
-		CLEAR_CARRY();
-
-	if (((${regs}.${dst} & 0x0f) + (result & 0x0f)) > 0x0f)
-		SET_HALFC();
-	else
-		CLEAR_HALFC();
+	${regs}.cf = result & 0xffff0000;
+	${regs}.cf =((${regs}.${dst} & 0x0f) + (result & 0x0f)) > 0x0f;
 
 	${regs}.${dst} = 0xffffu & result;
 here_doc_delim
@@ -133,6 +111,8 @@ function generate_base_jp_or_ret_or_jr_or_call_cond_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 	local cond=${operands[0]}
 	local op=$2
+
+	# TODO handle properly jr *
 
 	echo -e "\t${pc}++;"
 	if [ "${op}" = "jp" ]; then
@@ -154,9 +134,9 @@ function generate_base_jp_or_ret_or_jr_or_call_cond_code() {
 		echo -n "!"
 	fi
 	if [[ ${cond} == *"c" ]]; then
-		echo "FLAGS_ISCARRY(${regs}.f))"
+		echo "${regs}.cf)"
 	else
-		echo "FLAGS_ISZERO(${regs}.f))"
+		echo "${regs}.zf)"
 	fi
 	cat <<here_doc_delim
 		${pc} = ${dest};
@@ -237,10 +217,7 @@ here_doc_delim
 
 function generate_base_ccf_code() {
 	cat <<here_doc_delim
-	if (FLAGS_ISCARRY(${regs}.f))
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
+	${regs}.cf = !${regs}.cf;
 here_doc_delim
 }
 
@@ -258,26 +235,20 @@ function generate_base_daa_code() {
 	int8_t high_inc = 0x60;
 	uint16_t s;
 
-	if (FLAGS_ISNEGATIVE(${regs}.f)) {
+	if (${regs}.nf) {
 		low_inc = -0x06;
 		high_inc = -0x60;
 	}
 	s = ${regs}.a;
-	if (FLAGS_ISHALFCARRY(${regs}.f) || (s & 0xF) > 9)
+	if (${regs}.hf || (s & 0xF) > 9)
 		s += low_inc;
-	if (FLAGS_ISCARRY(${regs}.f) || s > 0x9F)
+	if (${regs}.cf || s > 0x9F)
 		s += high_inc;
 
 	${regs}.a = s & 0xff;
-	if (${regs}.a != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
 
-	if (s >= 0x100)
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
+	${regs}.zf = ${regs}.a == 0;
+	${regs}.cf = s >= 0x100;
 here_doc_delim
 }
 
@@ -294,22 +265,15 @@ here_doc_delim
 		target="${regs}.${operand}"
 	fi
 	cat <<here_doc_delim
-	if (${target} & 0x0f)
-		CLEAR_HALFC();
-	else
-		SET_HALFC();
+	${regs}.hf = ${target} & 0x0f;
 
 	${target}--;
 
-	if (${target})
-		CLEAR_ZERO();
-	else
-		SET_ZERO();
-
-	SET_NEG();
+	${regs}.zf = ${target} == 0;
+	${regs}.nf = true;
 here_doc_delim
 	if [ "${operand}" = "(hl)" ]; then
-	cat <<here_doc_delim
+		cat <<here_doc_delim
 	write8bit(${regs}.hl, value, s_gb);
 here_doc_delim
 	fi
@@ -340,19 +304,12 @@ here_doc_delim
 		target="${regs}.${operand}"
 	fi
 	cat <<here_doc_delim
-	if ((${target} & 0x0f) == 0x0f)
-		SET_HALFC();
-	else
-		CLEAR_HALFC();
+	${regs}.hf = (${target} & 0x0f) == 0x0f;
 
 	${target}++;
 
-	if (${target})
-		CLEAR_ZERO();
-	else
-		SET_ZERO();
-
-	CLEAR_NEG();
+	${regs}.zf = ${target} == 0;
+	${regs}.nf = false;
 here_doc_delim
 	if [ "${operand}" = "(hl)" ]; then
 	cat <<here_doc_delim
@@ -436,15 +393,8 @@ function generate_base_ldhl_code() {
 
 	res = value + ${regs}.sp;
 
-	if (res & 0xffff0000)
-		SET_CARRY();
-	else
-		CLEAR_CARRY();
-
-	if (((${regs}.sp & 0x0f) + (value & 0x0f)) > 0x0f)
-		SET_HALFC();
-	else
-		CLEAR_HALFC();
+	${regs}.cf = res & 0xffff0000;
+	${regs}.hf = ((${regs}.sp & 0x0f) + (value & 0x0f)) > 0x0f;
 
 	${regs}.hl = res & 0x0000ffff;
 here_doc_delim
@@ -497,16 +447,10 @@ function generate_base_rla_code() {
 	bool carry;
 
 	carry = ${regs}.a & 0x80;
-	if (carry)
-		SET_CARRY();
-	else
-		CLEAR_CARRY();
+	${regs}.cf = carry;
 
 	${regs}.a <<= 1;
-	if (${regs}.a == 0)
-		SET_ZERO();
-	else
-		CLEAR_ZERO();
+	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 
@@ -515,17 +459,11 @@ function generate_base_rlca_code() {
 	bool carry;
 
 	carry = ${regs}.a & 0x80;
-	if (carry)
-		SET_CARRY();
-	else
-		CLEAR_CARRY();
+	${regs}.cf = carry;
 
 	${regs}.a <<= 1;
 	${regs}.a += carry;
-	if (${regs}.a == 0)
-		SET_ZERO();
-	else
-		CLEAR_ZERO();
+	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 
@@ -533,18 +471,12 @@ function generate_base_rra_code() {
 	cat <<here_doc_delim
 	bool carry;
 
-	carry = FLAGS_ISCARRY(${regs}.f);
-	if (${regs}.a & 0x01)
-		SET_CARRY();
-	else
-		CLEAR_CARRY();
+	carry = ${regs}.cf;
+	${regs}.cf = ${regs}.a & 0x01;
 	${regs}.a >>= 1;
 	${regs}.a += carry << 7;
 
-	if (${regs}.a == 0)
-		SET_ZERO();
-	else
-		CLEAR_ZERO();
+	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 
@@ -552,17 +484,11 @@ function generate_base_rrca_code() {
 	cat <<here_doc_delim
 	bool carry = ${regs}.a & 0x01;
 
-	if (carry)
-		SET_CARRY();
-	else
-		CLEAR_CARRY();
+	${regs}.cf = carry;
 	${regs}.a >>= 1;
 
 	${regs}.a |= carry << 7;
-	if (${regs}.a == 0)
-		SET_ZERO();
-	else
-		CLEAR_ZERO();
+	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 
@@ -589,23 +515,14 @@ function generate_base_sbc_code() {
 	fi
 
 	cat <<here_doc_delim
-	value += FLAGS_ISCARRY(${regs}.f);
-	if (value > ${regs}.a)
-		SET_CARRY();
-	else
-		CLEAR_CARRY();
+	value += ${regs}.cf;
+	${regs}.cf = value > ${regs}.a;
 
-	if ((value & 0x0f) > (${regs}.a & 0x0f))
-		SET_HALFC();
-	else
-		CLEAR_HALFC();
+	${regs}.hf = (value & 0x0f) > (${regs}.a & 0x0f);
 
 	${regs}.a -= value;
 
-	if (${regs}.a != 0)
-		CLEAR_ZERO();
-	else
-		SET_ZERO();
+	${regs}.zf = ${regs}.a != 0;
 here_doc_delim
 }
 
