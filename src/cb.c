@@ -17,12 +17,6 @@
 #define FLAGS_SET(x) (registers.f |= (x))
 #define FLAGS_CLEAR(x) (registers.f &= ~(x))
 
-struct extendedInstruction {
-	char *disassembly;
-	void(*execute)(struct s_gb *);
-	//unsigned char ticks;
-};
-
 extern const unsigned char extendedInstructionTicks[256];
 
 static unsigned char rlc(unsigned char value, struct s_gb *s_gb) {

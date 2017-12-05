@@ -10,6 +10,7 @@
 #include <histedit.h>
 
 #include "console_debugger.h"
+#include "instructions.h"
 #include "log.h"
 #include "memory.h"
 
@@ -143,7 +144,7 @@ static void console_debugger_assembler(struct console_debugger *debugger)
 	printf("%s = 0x%04"PRIx16"\n", start_str, start);
 	for (pc = start; pc <= stop; ) {
 		opcode = read8bit(pc, debugger->gb);
-		instruction = instructions + opcode;
+		instruction = instructions_base + opcode;
 		printf("[0x%04"PRIx16"] (0x%02"PRIx8") %s", pc, opcode,
 				instruction->value);
 		printf("\033[%dG", 53);
@@ -181,8 +182,8 @@ static void console_debugger_breakpoint(struct console_debugger *debugger)
 		return;
 	}
 
-	printf("Breakpoint %d set at adress %#lx\n",
-			breakpoint - debugger->breakpoints, adress);
+	printf("Breakpoint %u set at adress %#lx\n",
+			(unsigned)(breakpoint - debugger->breakpoints), adress);
 
 	*breakpoint = (struct breakpoint) {
 		.pc = adress,
@@ -225,6 +226,69 @@ static void console_debugger_disable_enable(struct console_debugger *debugger,
 
 	printf("%sabled breakpoint %ld at address %#"PRIx16")\n",
 			enable ? "En" : "Dis", id, breakpoint->pc);
+}
+
+static void doc_instruction(const struct s_cpu_z80 *instruction, bool cb)
+{
+	printf("[0x%s%"PRIx8"] %s : %s\n", cb ? "cb" : "", instruction->opcode,
+			instruction->value, instruction->doc);
+	printf("\tcycles: %"PRIu8"\tsize: %"PRIu8"\n", instruction->cycles,
+			instruction->size);
+}
+
+static void console_debugger_doc(struct console_debugger *debugger)
+{
+	long opcode;
+	struct command *command;
+	char *endptr;
+	const char *op_str;
+	uint8_t upper_byte;
+	int i;
+	const struct s_cpu_z80 *instr;
+	bool cb;
+
+	command = &debugger->command;
+	op_str = command->argv[1];
+
+	opcode = strtol(op_str, &endptr, 0);
+	upper_byte = (opcode & 0xff00) >> 8;
+	cb = upper_byte == 0xcb;
+	if (*op_str == '\0' || *endptr != '\0') {
+		/* not an op code, suppose it's a mnemonic */
+		opcode = -1;
+	} else {
+		if (opcode < 0 || opcode > UINT16_MAX
+				|| (!cb && upper_byte != 0)) {
+			printf("Opcode must have the form 0x00XX or 0xcb00, "
+					"with XX in [0, %"PRIu8"]\n",
+					UINT8_MAX);
+			return;
+		}
+		opcode &= 0xff;
+	}
+	if (opcode == -1) {
+		/* try to find operation as a string */
+		for (i = 0; i < UINT8_MAX; i++) {
+			instr = instructions_base + i;
+			if (str_matches(instr->value, op_str)) {
+				doc_instruction(instr, false);
+				return;
+			}
+			instr = instructions_cb + i;
+			if (str_matches(instr->value, op_str)) {
+				doc_instruction(instr, true);
+				return;
+			}
+		}
+	} else {
+		/* opcode is valid uint8_t */
+		instr = (cb ? instructions_cb : instructions_base) + opcode;
+		doc_instruction(instr, cb);
+
+		return;
+	}
+
+	printf("Operation \"%s\" not found.\n", op_str);
 }
 
 static void console_debugger_enable(struct console_debugger *debugger)
@@ -431,6 +495,13 @@ static struct debugger_command commands[] = {
 		.name = "disable",
 		.help = "Disables a breakpoint.\n"
 			"\t\t\tusage: disable breakpoint_id.",
+		.argc = 2,
+	},
+	{
+		.fn = console_debugger_doc,
+		.name = "doc",
+		.help = "Displays the documentation of an opcode.\n"
+			"\t\t\tusage: doc opcode.",
 		.argc = 2,
 	},
 	{
@@ -778,25 +849,5 @@ int console_debugger_update(struct console_debugger *debugger)
 	return 0;
 }
 
-bool str_matches(const char *s1, const char *s2)
-{
-	return strcmp(s1, s2) == 0;
-}
-
-bool str_matches_prefix(const char *s, const char *prefix)
-{
-	return strncmp(s, prefix, strlen(prefix)) == 0;
-}
-
-/* returns an adress inside string s1 */
-char *str_diff_chr(const char *s1, const char *s2)
-{
-	while (*s1 && *s1 == *s2) {
-		s1++;
-		s2++;
-	}
-
-	return (char *)s1;
-}
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
