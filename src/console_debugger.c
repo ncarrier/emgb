@@ -539,8 +539,8 @@ static struct debugger_command commands[] = {
 			"pc}\n"
 			"\t\t\t       print registers\n"
 			"\t\t\t       print *REG_NAME[{+offset,-offset}]\n"
-		        "\t\t\texamples: print pc\n"
-		        "\t\t\t          print *sp-0x02",
+			"\t\t\texamples: print pc\n"
+			"\t\t\t          print *sp-0x02",
 		.argc = 2,
 	},
 
