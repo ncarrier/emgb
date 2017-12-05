@@ -27,10 +27,10 @@ re_td_ln='<td class="ln">'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
 re_sll='^sll (.*)'
 
-CARRY=0
-NEG=1
-HALFC=2
-ZERO=3
+cf=0
+nf=1
+hf=2
+zf=3
 
 line_number=0
 function text_to_func() {
@@ -191,7 +191,7 @@ function definition_body_gen() {
 	else
 		generate_base_opcode "${text}" ${opcode}
 	fi
-	for f in ZERO NEG HALFC CARRY; do
+	for f in zf nf hf cf; do
 		case ${flags[${f}]} in
 		"-")
 			echo "	/* ${f} unaffected */"
@@ -201,11 +201,11 @@ function definition_body_gen() {
 			;;
 		"1")
 			echo "	/* ${f} set */"
-			echo "	SET_${f}();"
+			echo "	s_gb->gb_register.${f} = true;"
 			;;
 		"0")
 			echo "	/* ${f} reset */"
-			echo "	CLEAR_${f}();"
+			echo "	s_gb->gb_register.${f} = false;"
 			;;
 		"*")
 			echo "	/* ${f} exceptional */"
