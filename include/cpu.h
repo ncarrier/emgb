@@ -13,47 +13,53 @@ bool is_opcode_undefined(uint8_t opcode);
 
 struct s_register
 {
-  struct {
-    union  {
-      struct {
-	unsigned char f;
-	unsigned char a;
-      };
-			unsigned short af;
-    };
-  };
-  struct {
-    union {
-      struct {
-	unsigned char c;
-	unsigned char b;
-      };
-      unsigned short bc;
-    };
-  };
-  
-  struct {
-    union {
-      struct {
-	unsigned char e;
-	unsigned char d;
-      };
-      unsigned short de;
-    };
-  };
-  
-  struct {
-    union {
-      struct {
-	unsigned char l;
-	unsigned char h;
-      };
-      unsigned short hl;
-    };
-  };
-
-  unsigned short	pc;
-  unsigned short	sp;
+	struct {
+		union {
+			struct {
+				union {
+					uint8_t f;
+					struct {
+						uint8_t zero:4;
+						bool cf:1;
+						bool hf:1;
+						bool nf:1;
+						bool zf:1;
+					};
+				};
+				uint8_t a;
+			};
+			uint16_t af;
+		};
+	};
+	struct {
+		union {
+			struct {
+				uint8_t c;
+				uint8_t b;
+			};
+			uint16_t bc;
+		};
+	};
+	struct {
+		union {
+			struct {
+				uint8_t e;
+				uint8_t d;
+			};
+			uint16_t de;
+		};
+	};
+	struct {
+		union {
+			struct {
+				uint8_t l;
+				uint8_t h;
+			};
+			uint16_t hl;
+		};
+	};
+	uint16_t pc;
+	uint16_t sp;
 } __attribute__((__packed__));
 
 struct extendedInstruction {
