@@ -2,8 +2,16 @@
 
 set -euf
 
-source tools/cb_gen.sh
-source tools/base_gen.sh
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+	dir="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
+	SOURCE="$(readlink "$SOURCE")"
+	[[ ${SOURCE} != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+dir="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"/
+
+source ${dir}cb_gen.sh
+source ${dir}base_gen.sh
 
 file=$1
 temp_file=$(mktemp)
