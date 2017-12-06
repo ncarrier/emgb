@@ -107,16 +107,13 @@ function generate_base_add_carry_code() {
 here_doc_delim
 }
 
-function generate_base_jp_or_ret_or_jr_cond_code() {
+function generate_base_ret_or_jr_cond_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 	local cond=${operands[0]}
 	local op=$2
 
 	echo -e "\t${pc}++;"
-	if [ "${op}" = "jp" ]; then
-		size=2
-		dest="read16bit(${pc}, s_gb)"
-	elif [ "${op}" = "jr" ]; then
+	if [ "${op}" = "jr" ]; then
 		size=1
 		dest="${pc} + (int8_t)read8bit(${pc}, s_gb) + 1"
 	else # ret
@@ -144,15 +141,10 @@ function generate_base_jp_uncond_code() {
 	local register
 
 	if [ "${dest}" = "(hl)" ]; then
-		register=hl
+		echo -e "\t${pc} = ${regs}.hl;"
 	else
-		echo -e "\t${pc}++;"
-		register=pc
+		echo -e "\t${pc} = read16bit(${regs}.pc + 1, s_gb);"
 	fi
-
-	cat <<here_doc_delim
-	${pc} = read16bit(${regs}.${register}, s_gb);
-here_doc_delim
 }
 
 function generate_base_ldi_or_ldd_code() {
@@ -330,14 +322,29 @@ here_doc_delim
 }
 
 function generate_base_jp_code() {
-	local operands=$1
+	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	echo "jp ${operands} $2"> /dev/stderr
 
-	if [[ "${operands}" == *","* ]]; then
-		generate_base_jp_or_ret_or_jr_cond_code ${operands} "jp"
+	if [[ "$1" == *","* ]]; then
+		local cond=${operands[0]}
+
+		echo -n -e "\tif ("
+		if [[ ${cond} == "n"* ]]; then
+			echo -n "!"
+		fi
+		if [[ ${cond} == *"c" ]]; then
+			echo "${regs}.cf)"
+		else
+			echo "${regs}.zf)"
+		fi
+	cat <<here_doc_delim
+		${pc} = read16bit(${pc} + 1, s_gb);
 	else
-		generate_base_jp_uncond_code ${operands}
+		${pc} += 3;
+here_doc_delim
+	else
+		generate_base_jp_uncond_code $1
 	fi
 }
 
@@ -347,7 +354,7 @@ function generate_base_jr_code() {
 	echo "jr ${operands} $2"> /dev/stderr
 
 	if [[ "${operands}" == *","* ]]; then
-		generate_base_jp_or_ret_or_jr_cond_code ${operands} "jr"
+		generate_base_ret_or_jr_cond_code ${operands} "jr"
 	else
 		echo -e "\t${pc} = read8bit(${regs}.hl, s_gb);"
 	fi
@@ -445,7 +452,7 @@ function generate_base_ret_code() {
 	echo "ret ${operands} $2"> /dev/stderr
 
 	if [ -n "${operands}" ]; then
-		generate_base_jp_or_ret_or_jr_cond_code ${operands} "ret"
+		generate_base_ret_or_jr_cond_code ${operands} "ret"
 	else
 		echo -e "\t${pc} = pop16(s_gb);"
 	fi
