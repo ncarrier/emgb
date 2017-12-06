@@ -46,7 +46,7 @@ function generate_cb_rl_code() {
 
 	carry = ${regs}.cf;
 	value = ${value};
-	${regs}.cf = BIT(7, value) != 0;
+	${regs}.cf = !BIT(7, value);
 	value <<= 1;
 	value += carry;
 	${regs}.zf = value == 0;
@@ -104,18 +104,12 @@ function generate_cb_rr_code() {
 	bool carry;
 	uint8_t value;
 
-	carry = FLAGS_ISSET(${regs}.f, FLAGS_CARRY);
+	carry = ${regs}.cf;
 	value = ${value};
-	if (BIT(0, value) != 0)
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
+	${regs}.f = BIT(0, value);
 	value >>= 1;
 	value += (carry << 7);
-	if (value != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = value == 0;
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
@@ -142,16 +136,10 @@ function generate_cb_rrc_code() {
 
 	value = ${value};
 	lone_bit = BIT(0, value);
-	if (lone_bit)
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
+	${regs}.cf = lone_bit;
 	value >>= 1;
 	value += (lone_bit << 7);
-	if (value != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = value == 0;
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
@@ -187,15 +175,9 @@ function generate_cb_sla_code() {
 	uint8_t value;
 
 	value = ${value};
-	if (BIT(7, value) != 0)
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
+	${regs}.cf = BIT(7, value);
 	value <<= 1;
-	if (value != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = value == 0;
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
@@ -221,10 +203,7 @@ function generate_cb_swap_code() {
 
 	value = ${value};
 	value = ((value & 0xf) << 4) | ((value & 0xf0) >> 4);
-	if (value != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = value == 0;
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
@@ -251,15 +230,9 @@ function generate_cb_sra_code() {
 
 	value = ${value};
 	bit7 = BIT(7, value);
-	if (BIT(0, value) != 0)
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
+	${regs}.cf = BIT(0, value);
 	value >>= 1;
-	if (value != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = value == 0;
 	if (bit7)
 		FLAGS_SET(value, (1 << 7));
 	else
@@ -288,16 +261,10 @@ function generate_cb_srl_code() {
 	uint8_t value;
 
 	value = ${value};
-	if (BIT(0, value) != 0)
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
+	${regs}.f = BIT(0, value);
 	value >>= 1;
 	FLAGS_CLEAR(value, 1 << 7);
-	if (value != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = value == 0;
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
