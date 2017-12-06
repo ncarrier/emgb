@@ -107,19 +107,13 @@ function generate_base_add_carry_code() {
 here_doc_delim
 }
 
-function generate_base_ret_or_jr_cond_code() {
+function generate_base_ret_cond_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 	local cond=${operands[0]}
-	local op=$2
 
 	echo -e "\t${pc}++;"
-	if [ "${op}" = "jr" ]; then
-		size=1
-		dest="${pc} + (int8_t)read8bit(${pc}, s_gb) + 1"
-	else # ret
-		size=0
-		dest="pop16(s_gb)"
-	fi
+	size=0
+	dest="pop16(s_gb)"
 	echo -n -e "\tif ("
 	if [[ ${cond} == "n"* ]]; then
 		echo -n "!"
@@ -353,10 +347,26 @@ function generate_base_jr_code() {
 
 	echo "jr ${operands} $2"> /dev/stderr
 
-	if [[ "${operands}" == *","* ]]; then
-		generate_base_ret_or_jr_cond_code ${operands} "jr"
+	if [[ "$1" == *","* ]]; then
+		local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
+		local cond=${operands[0]}
+
+		echo -n -e "\tif ("
+		if [[ ${cond} == "n"* ]]; then
+			echo -n "!"
+		fi
+		if [[ ${cond} == *"c" ]]; then
+			echo "${regs}.cf)"
+		else
+			echo "${regs}.zf)"
+		fi
+		cat <<here_doc_delim
+		${pc} += (int8_t)read8bit(${pc} + 1, s_gb);
 	else
-		echo -e "\t${pc} = read8bit(${regs}.hl, s_gb);"
+		${pc} += 2;
+here_doc_delim
+	else
+		echo -e "\t${pc} += (int8_t)read8bit(${regs}.pc + 1, s_gb);"
 	fi
 }
 
@@ -452,7 +462,7 @@ function generate_base_ret_code() {
 	echo "ret ${operands} $2"> /dev/stderr
 
 	if [ -n "${operands}" ]; then
-		generate_base_ret_or_jr_cond_code ${operands} "ret"
+		generate_base_ret_cond_code ${operands} "ret"
 	else
 		echo -e "\t${pc} = pop16(s_gb);"
 	fi
