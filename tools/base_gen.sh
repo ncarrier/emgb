@@ -440,8 +440,7 @@ here_doc_delim
 
 function generate_base_reti_code() {
 	cat <<here_doc_delim
-	${regs}.pc = read16bit(${regs}.sp, s_gb);
-	${regs}.sp += 2;
+	${regs}.pc = pop16(s_gb);
 	s_gb->gb_interrupts.interMaster = 1;
 here_doc_delim
 }
