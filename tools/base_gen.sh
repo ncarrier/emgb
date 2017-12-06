@@ -107,29 +107,6 @@ function generate_base_add_carry_code() {
 here_doc_delim
 }
 
-function generate_base_ret_cond_code() {
-	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
-	local cond=${operands[0]}
-
-	echo -e "\t${pc}++;"
-	size=0
-	dest="pop16(s_gb)"
-	echo -n -e "\tif ("
-	if [[ ${cond} == "n"* ]]; then
-		echo -n "!"
-	fi
-	if [[ ${cond} == *"c" ]]; then
-		echo "${regs}.cf)"
-	else
-		echo "${regs}.zf)"
-	fi
-	cat <<here_doc_delim
-		${pc} = ${dest};
-	else
-		${pc} += ${size}; /* size of address */
-here_doc_delim
-}
-
 function generate_base_jp_uncond_code() {
 	local dest=$1
 	local register
@@ -345,8 +322,6 @@ here_doc_delim
 function generate_base_jr_code() {
 	local operands=$1
 
-	echo "jr ${operands} $2"> /dev/stderr
-
 	if [[ "$1" == *","* ]]; then
 		local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 		local cond=${operands[0]}
@@ -457,12 +432,26 @@ function generate_base_push_code() {
 }
 
 function generate_base_ret_code() {
-	local operands=$1
+	local operands
 
-	echo "ret ${operands} $2"> /dev/stderr
+	if [ -n "$1" ]; then
+		local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
+		local cond=${operands[0]}
 
-	if [ -n "${operands}" ]; then
-		generate_base_ret_cond_code ${operands} "ret"
+		echo -n -e "\tif ("
+		if [[ ${cond} == "n"* ]]; then
+			echo -n "!"
+		fi
+		if [[ ${cond} == *"c" ]]; then
+			echo "${regs}.cf)"
+		else
+			echo "${regs}.zf)"
+		fi
+		cat <<here_doc_delim
+		${pc} = pop16(s_gb);
+	else
+		${pc}++;
+here_doc_delim
 	else
 		echo -e "\t${pc} = pop16(s_gb);"
 	fi
