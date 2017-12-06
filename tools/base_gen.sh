@@ -153,19 +153,13 @@ function generate_base_and_code() {
 function generate_base_call_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 	local cond
+	local neg
 
 	if [[ "${1}" == *","* ]]; then
 		cond=${operands[0]}
-		echo -n -e "\tif ("
-		if [[ ${cond} == "n"* ]]; then
-			echo -n "!"
-		fi
-		if [[ ${cond} == *"c" ]]; then
-			echo "${regs}.cf) {"
-		else
-			echo "${regs}.zf) {"
-		fi
+		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
+	if (${neg}${regs}.${cond: -1}f) {
 		push16(${pc} + 3, s_gb);
 		${pc} = read16bit(${pc} + 1, s_gb);
 	} else {
@@ -294,22 +288,14 @@ here_doc_delim
 
 function generate_base_jp_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
-
-	echo "jp ${operands} $2"> /dev/stderr
+	local neg
 
 	if [[ "$1" == *","* ]]; then
 		local cond=${operands[0]}
 
-		echo -n -e "\tif ("
-		if [[ ${cond} == "n"* ]]; then
-			echo -n "!"
-		fi
-		if [[ ${cond} == *"c" ]]; then
-			echo "${regs}.cf)"
-		else
-			echo "${regs}.zf)"
-		fi
+		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
+	if (${neg}${regs}.${cond: -1}f)
 		${pc} = read16bit(${pc} + 1, s_gb);
 	else
 		${pc} += 3;
@@ -321,21 +307,15 @@ here_doc_delim
 
 function generate_base_jr_code() {
 	local operands=$1
+	local neg
 
 	if [[ "$1" == *","* ]]; then
 		local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 		local cond=${operands[0]}
 
-		echo -n -e "\tif ("
-		if [[ ${cond} == "n"* ]]; then
-			echo -n "!"
-		fi
-		if [[ ${cond} == *"c" ]]; then
-			echo "${regs}.cf)"
-		else
-			echo "${regs}.zf)"
-		fi
-		cat <<here_doc_delim
+		[[ ${cond} == "n"* ]] && neg="!" || neg=""
+	cat <<here_doc_delim
+	if (${neg}${regs}.${cond: -1}f)
 		${pc} += (int8_t)read8bit(${pc} + 1, s_gb);
 	else
 		${pc} += 2;
@@ -433,21 +413,15 @@ function generate_base_push_code() {
 
 function generate_base_ret_code() {
 	local operands
+	local neg
 
 	if [ -n "$1" ]; then
 		local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 		local cond=${operands[0]}
 
-		echo -n -e "\tif ("
-		if [[ ${cond} == "n"* ]]; then
-			echo -n "!"
-		fi
-		if [[ ${cond} == *"c" ]]; then
-			echo "${regs}.cf)"
-		else
-			echo "${regs}.zf)"
-		fi
-		cat <<here_doc_delim
+		[[ ${cond} == "n"* ]] && neg="!" || neg=""
+	cat <<here_doc_delim
+	if (${neg}${regs}.${cond: -1}f)
 		${pc} = pop16(s_gb);
 	else
 		${pc}++;
