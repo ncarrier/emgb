@@ -232,7 +232,6 @@ function generate_cb_swap_code() {
 	fi
 
 	cat <<here_doc_delim
-	/* sll opcodes are replaced with nibble swapping for gb */
 	uint8_t value;
 
 	value = ${value};
@@ -248,7 +247,6 @@ here_doc_delim
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi
-	echo -e "\tCLEAR_CARRY();"
 }
 
 function generate_cb_sra_code() {
