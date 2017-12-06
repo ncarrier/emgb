@@ -234,9 +234,9 @@ function generate_cb_sra_code() {
 	value >>= 1;
 	${regs}.zf = value == 0;
 	if (bit7)
-		FLAGS_SET(value, (1 << 7));
+		SET_BIT(value, 7);
 	else
-		FLAGS_CLEAR(value, (1 << 7));
+		CLEAR_BIT(value, 7);
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
@@ -263,7 +263,7 @@ function generate_cb_srl_code() {
 	value = ${value};
 	${regs}.f = BIT(0, value);
 	value >>= 1;
-	FLAGS_CLEAR(value, 1 << 7);
+	CLEAR_BIT(value, 7);
 	${regs}.zf = value == 0;
 here_doc_delim
 
