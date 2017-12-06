@@ -13,10 +13,7 @@ function generate_cb_bit_code() {
 	fi
 
 	cat <<here_doc_delim
-	if (BIT(${operands[0]}, ${value}))
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = !BIT(${operands[0]}, ${value});
 here_doc_delim
 }
 
