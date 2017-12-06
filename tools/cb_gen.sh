@@ -76,16 +76,10 @@ function generate_cb_rlc_code() {
 
 	value = ${value};
 	lone_bit = BIT(7, value);
-	if (lone_bit)
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
+	${regs}.cf = lone_bit;
 	value <<= 1;
 	value += lone_bit;
-	if (value != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = value == 0;
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
