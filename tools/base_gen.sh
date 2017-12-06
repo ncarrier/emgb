@@ -107,19 +107,13 @@ function generate_base_add_carry_code() {
 here_doc_delim
 }
 
-function generate_base_jp_or_ret_or_jr_or_call_cond_code() {
+function generate_base_jp_or_ret_or_jr_cond_code() {
 	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 	local cond=${operands[0]}
 	local op=$2
 
-	# TODO handle properly jr *
-
 	echo -e "\t${pc}++;"
 	if [ "${op}" = "jp" ]; then
-		size=2
-		dest="read16bit(${pc}, s_gb)"
-	elif [ "${op}" = "call" ]; then
-		echo -e "\tpush16(read16bit(${pc} + 2, s_gb), s_gb);"
 		size=2
 		dest="read16bit(${pc}, s_gb)"
 	elif [ "${op}" = "jr" ]; then
@@ -194,13 +188,30 @@ function generate_base_and_code() {
 }
 
 function generate_base_call_code() {
-	local operands=$1
+	local OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
+	local cond
 
-	if [[ "${operands}" == *","* ]]; then
-		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "call"
+	if [[ "${1}" == *","* ]]; then
+		cond=${operands[0]}
+		echo -n -e "\tif ("
+		if [[ ${cond} == "n"* ]]; then
+			echo -n "!"
+		fi
+		if [[ ${cond} == *"c" ]]; then
+			echo "${regs}.cf) {"
+		else
+			echo "${regs}.zf) {"
+		fi
+	cat <<here_doc_delim
+		push16(${pc} + 3, s_gb);
+		${pc} = read16bit(${pc} + 1, s_gb);
+	} else {
+		${pc} += 3;
+	}
+here_doc_delim
 	else
 		cat <<here_doc_delim
-	push16(read16bit(${pc} + 3, s_gb), s_gb);
+	push16(${pc} + 3, s_gb);
 	${pc} = read16bit(${pc} + 1, s_gb);
 here_doc_delim
 	fi
@@ -321,8 +332,10 @@ here_doc_delim
 function generate_base_jp_code() {
 	local operands=$1
 
+	echo "jp ${operands} $2"> /dev/stderr
+
 	if [[ "${operands}" == *","* ]]; then
-		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "jp"
+		generate_base_jp_or_ret_or_jr_cond_code ${operands} "jp"
 	else
 		generate_base_jp_uncond_code ${operands}
 	fi
@@ -331,8 +344,10 @@ function generate_base_jp_code() {
 function generate_base_jr_code() {
 	local operands=$1
 
-	if [ -n "${operands}" ]; then
-		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "jr"
+	echo "jr ${operands} $2"> /dev/stderr
+
+	if [[ "${operands}" == *","* ]]; then
+		generate_base_jp_or_ret_or_jr_cond_code ${operands} "jr"
 	else
 		echo -e "\t${pc} = read8bit(${regs}.hl, s_gb);"
 	fi
@@ -427,8 +442,10 @@ function generate_base_push_code() {
 function generate_base_ret_code() {
 	local operands=$1
 
+	echo "ret ${operands} $2"> /dev/stderr
+
 	if [ -n "${operands}" ]; then
-		generate_base_jp_or_ret_or_jr_or_call_cond_code ${operands} "ret"
+		generate_base_jp_or_ret_or_jr_cond_code ${operands} "ret"
 	else
 		echo -e "\t${pc} = pop16(s_gb);"
 	fi
