@@ -44,18 +44,12 @@ function generate_cb_rl_code() {
 	bool carry;
 	uint8_t value;
 
-	carry = FLAGS_ISSET(${regs}.f, FLAGS_CARRY);
+	carry = ${regs}.cf;
 	value = ${value};
-	if (BIT(7, value) != 0)
-		FLAGS_SET(${regs}.f, FLAGS_CARRY);
-	else
-		FLAGS_CLEAR(${regs}.f, FLAGS_CARRY);
+	${regs}.cf = BIT(7, value) != 0;
 	value <<= 1;
 	value += carry;
-	if (value != 0)
-		FLAGS_CLEAR(${regs}.f, FLAGS_ZERO);
-	else
-		FLAGS_SET(${regs}.f, FLAGS_ZERO);
+	${regs}.zf = value == 0;
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
