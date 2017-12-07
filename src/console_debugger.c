@@ -522,7 +522,7 @@ static struct debugger_command commands[] = {
 		.name = "memory",
 		.help = "Prints a memory region.\n"
 			"\t\t\tusage: memory start stop\n"
-			"\t\t\texample: memory *sp+0x50 0x200",
+			"\t\t\texample: memory sp+0x50 0x200",
 		.argc = 3,
 	},
 	{
