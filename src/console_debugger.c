@@ -233,7 +233,7 @@ static void doc_instruction(const struct s_cpu_z80 *instruction, bool cb)
 	printf("[0x%s%"PRIx8"] %s : %s\n", cb ? "cb" : "", instruction->opcode,
 			instruction->value, instruction->doc);
 	printf("\tcycles: %"PRIu8"\tsize: %"PRIu8"\n", instruction->cycles,
-			instruction->size);
+			instruction->real_size);
 }
 
 static void console_debugger_doc(struct console_debugger *debugger)
