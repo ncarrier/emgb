@@ -266,27 +266,31 @@ function generate_base_halt_code() {
 function generate_base_inc_code() {
 	local operand=$1
 	local target
+	local reg_size
+
+	# valid for all but (hl), but in fact we just want 2 or not 2
+	# flags are affected only for 1 byte operands and (hl)
+	regsize=${#operand}
 
 	if [ "${operand}" = "(hl)" ]; then
 		target="value";
-	cat <<here_doc_delim
-	uint8_t value = read8bit(${regs}.hl, s_gb);
-here_doc_delim
+		echo -e "\tuint8_t value = read8bit(${regs}.hl, s_gb);\n"
 	else
 		target="${regs}.${operand}"
 	fi
-	cat <<here_doc_delim
-	${regs}.hf = (${target} & 0x0f) == 0x0f;
 
-	${target}++;
+	if [ ${regsize} -ne 2 ]; then
+		echo -e "\t${regs}.hf = (${target} & 0x0f) == 0x0f;"
+	fi
 
-	${regs}.zf = ${target} == 0;
-	${regs}.nf = false;
-here_doc_delim
+	echo -e "\t${target}++;"
+
+	if [ ${regsize} -ne 2 ]; then
+		echo -e "\t${regs}.zf = ${target} == 0;"
+	fi
+
 	if [ "${operand}" = "(hl)" ]; then
-	cat <<here_doc_delim
-	write8bit(${regs}.hl, value, s_gb);
-here_doc_delim
+		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
 	fi
 }
 
