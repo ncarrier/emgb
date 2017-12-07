@@ -10,6 +10,7 @@ struct s_cpu_z80 {
 	char *value;
 	cpufunc func;
 	uint8_t size;
+	uint8_t real_size;
 	char *doc;
 	uint8_t cycles;
 };

@@ -236,9 +236,16 @@ function struct_body_gen() {
 	local text=$2
 	local doc=$3
 	local cycles=$4
-	local size=$5
+	local real_size=$5
 	local func=$6
 
+	size=${real_size}
+	for op in jp jr ret call rst reti; do
+		local re="^${op}"
+		if [[ "${func}" =~ ${re} ]]; then
+			size=0
+		fi
+	done
 	cat<<here_doc_delim
 	[${opcode}] = {
 		.opcode = ${opcode},
@@ -246,6 +253,7 @@ function struct_body_gen() {
 		.doc = "${doc}",
 		.cycles = ${cycles},
 		.size = ${size},
+		.real_size = ${real_size},
 		.func = ${func},
 	},
 here_doc_delim
