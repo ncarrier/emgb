@@ -302,7 +302,7 @@
 <td axis="-+++|1|4|Subtracts one from d.">dec d</td>
 <td axis="----|2|8|Loads * into d.">ld d,*</td>
 <td axis="+00-|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rla</td>
-<td axis="----|0|8|The signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr *</td>
+<td axis="----|2|8|The signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr *</td>
 <td axis="+++-|1|8|The value of de is added to hl.">add hl,de</td>
 <td axis="----|1|8|Loads the value pointed to by de into a.">ld a,(de)</td>
 <td axis="----|1|8|Subtracts one from de.">dec de</td>
@@ -313,7 +313,7 @@
 </tr>
 <tr>
 <th>2</th>
-<td axis="----|0|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr nz,*</td>
+<td axis="----|2|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr nz,*</td>
 <td axis="----|3|12|Loads ** into hl.">ld hl,**</td>
 <td axis="----|3|8|Put a into memory location pointed to by hl. Increment hl.">ldi (hl),a</td>
 <td axis="----|1|8|Adds one to hl.">inc hl</td>
@@ -321,7 +321,7 @@
 <td axis="-+++|1|4|Subtracts one from h.">dec h</td>
 <td axis="----|2|8|Loads * into h.">ld h,*</td>
 <td axis="+-0+|1|4|Adjusts a for BCD addition and subtraction operations.">daa</td>
-<td axis="----|0|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr z,*</td>
+<td axis="----|2|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr z,*</td>
 <td axis="+++-|1|8|The value of hl is added to hl.">add hl,hl</td>
 <td axis="----|1|8|Put the value at adress hl into a. Increment hl.">ldi a,(hl)</td>
 <td axis="----|1|8|Subtracts one from hl.">dec hl</td>
@@ -332,7 +332,7 @@
 </tr>
 <tr>
 <th>3</th>
-<td axis="----|0|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr nc,*</td>
+<td axis="----|2|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr nc,*</td>
 <td axis="----|3|12|Loads ** into sp.">ld sp,**</td>
 <td axis="----|3|8|Put a into memory adress hl. Decrement hl.">ldd (hl),a</td>
 <td axis="----|1|8|Adds one to sp.">inc sp</td>
@@ -340,7 +340,7 @@
 <td axis="-+++|1|12|Subtracts one from (hl).">dec (hl)</td>
 <td axis="----|2|12|Loads * into (hl).">ld (hl),*</td>
 <td axis="100-|1|4|Sets the carry flag.">scf</td>
-<td axis="----|0|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr c,*</td>
+<td axis="----|2|8|If condition cc is true, the signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr c,*</td>
 <td axis="+++-|1|8|The value of hl is added to hl.">add hl,sp</td>
 <td axis="----|3|8|Put value at adress hl into a. Decrement hl.">ldd a,(hl)</td>
 <td axis="----|1|8|Subtracts one from sp.">dec sp</td>
@@ -503,43 +503,43 @@
 </tr>
 <tr>
 <th>C</th>
-<td axis="----|0|8|If condition cc is true, the top stack entry is popped into pc.">ret nz</td>
+<td axis="----|1|8|If condition cc is true, the top stack entry is popped into pc.">ret nz</td>
 <td axis="----|1|12|The memory location pointed to by sp is stored into c and sp is incremented. The memory location pointed to by sp is stored into b and sp is incremented again.">pop bc</td>
-<td axis="----|0|12|If condition cc is true, ** is copied to pc.">jp nz,**</td>
-<td axis="----|0|12|** is copied to pc.">jp **</td>
-<td axis="----|0|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call nz,**</td>
+<td axis="----|3|12|If condition cc is true, ** is copied to pc.">jp nz,**</td>
+<td axis="----|3|12|** is copied to pc.">jp **</td>
+<td axis="----|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call nz,**</td>
 <td axis="----|1|12|sp is decremented and b is stored into the memory location pointed to by sp. sp is decremented again and c is stored into the memory location pointed to by sp.">push bc</td>
 <td axis="++++|2|8|Adds * to a.">add a,*</td>
-<td axis="----|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 00h.">rst 00h</td>
-<td axis="----|0|8|If condition cc is true, the top stack entry is popped into pc.">ret z</td>
-<td axis="----|0|8|The top stack entry is popped into pc.">ret</td>
-<td axis="----|0|12|If condition cc is true, ** is copied to pc.">jp z,**</td>
+<td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 00h.">rst 00h</td>
+<td axis="----|1|8|If condition cc is true, the top stack entry is popped into pc.">ret z</td>
+<td axis="----|1|8|The top stack entry is popped into pc.">ret</td>
+<td axis="----|3|12|If condition cc is true, ** is copied to pc.">jp z,**</td>
 <td class="ln">
 <a href="#table3">BITS</a>
 </td>
-<td axis="----|0|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call z,**</td>
-<td axis="----|0|12|Push address of next instruction onto the stack and then jump to address **.">call **</td>
+<td axis="----|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call z,**</td>
+<td axis="----|3|12|Push address of next instruction onto the stack and then jump to address **.">call **</td>
 <td axis="++++|2|8|Adds * and the carry flag to a.">adc a,*</td>
-<td axis="----|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 08h.">rst 08h</td>
+<td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 08h.">rst 08h</td>
 </tr>
 <tr>
 <th>D</th>
-<td axis="----|0|7|If condition cc is true, the top stack entry is popped into pc.">ret nc</td>
+<td axis="----|1|7|If condition cc is true, the top stack entry is popped into pc.">ret nc</td>
 <td axis="----|1|12|The memory location pointed to by sp is stored into e and sp is incremented. The memory location pointed to by sp is stored into d and sp is incremented again.">pop de</td>
-<td axis="----|0|12|If condition cc is true, ** is copied to pc.">jp nc,**</td>
+<td axis="----|3|12|If condition cc is true, ** is copied to pc.">jp nc,**</td>
 <td axis="----|1|4|Undefined.">und</td>
-<td axis="----|0|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call nc,**</td>
+<td axis="----|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call nc,**</td>
 <td axis="----|1|16|sp is decremented and d is stored into the memory location pointed to by sp. sp is decremented again and e is stored into the memory location pointed to by sp.">push de</td>
 <td axis="+1++|2|8|Subtracts * from a.">sub *</td>
-<td axis="----|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 10h.">rst 10h</td>
-<td axis="----|0|8|If condition cc is true, the top stack entry is popped into pc.">ret c</td>
-<td axis="----|0|8|Pop two bytes from stack & jump to that address then enable interupts.">reti</td>
-<td axis="----|0|12|If condition cc is true, ** is copied to pc.">jp c,**</td>
+<td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 10h.">rst 10h</td>
+<td axis="----|1|8|If condition cc is true, the top stack entry is popped into pc.">ret c</td>
+<td axis="----|1|8|Pop two bytes from stack & jump to that address then enable interupts.">reti</td>
+<td axis="----|3|12|If condition cc is true, ** is copied to pc.">jp c,**</td>
 <td axis="----|1|4|Undefined.">und</td>
-<td axis="----|0|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call c,**</td>
+<td axis="----|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call c,**</td>
 <td axis="----|1|4|Undefined.">und</td>
 <td axis="+1++|2|8|Subtracts * and the carry flag from a.">sbc *</td>
-<td axis="----|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 18h.">rst 18h</td>
+<td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 18h.">rst 18h</td>
 </tr>
 <tr>
 <th>E</th>
@@ -550,15 +550,15 @@
 <td axis="----|1|4|Undefined.">und</td>
 <td axis="----|1|16|sp is decremented and h is stored into the memory location pointed to by sp. sp is decremented again and l is stored into the memory location pointed to by sp.">push hl</td>
 <td axis="001+|2|8|Bitwise AND on a with *.">and *</td>
-<td axis="----|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 20h.">rst 20h</td>
+<td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 20h.">rst 20h</td>
 <td axis="+0+0|2|16|If condition cc is true, the top stack entry is popped into pc.">add sp,*</td>
-<td axis="----|0|4|Loads the value of hl into pc.">jp (hl)</td>
+<td axis="----|1|4|Loads the value of hl into pc.">jp (hl)</td>
 <td axis="----|3|16|Put a into memory location **.">ld (**),a</td>
 <td axis="----|1|4|Undefined.">und</td>
 <td axis="----|1|4|Undefined.">und</td>
 <td axis="----|1|4|Undefined.">und</td>
 <td axis="000+|2|8|Bitwise XOR on a with *.">xor *</td>
-<td axis="----|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 28h.">rst 28h</td>
+<td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 28h.">rst 28h</td>
 </tr>
 <tr>
 <th>F</th>
@@ -569,7 +569,7 @@
 <td axis="----|1|4|Undefined.">und</td>
 <td axis="----|1|16|sp is decremented and a is stored into the memory location pointed to by sp. sp is decremented again and f is stored into the memory location pointed to by sp.">push af</td>
 <td axis="000+|2|8|Bitwise OR on a with *.">or *</td>
-<td axis="----|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 30h.">rst 30h</td>
+<td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 30h.">rst 30h</td>
 <td axis="----|1|12|Put SP + * effective address into HL.">ldhl sp,*</td>
 <td axis="----|1|8|Loads the value of hl into sp.">ld sp,hl</td>
 <td axis="----|3|16|Put value at address ** into a.">ld a,(**)</td>
@@ -577,7 +577,7 @@
 <td axis="----|1|4|Undefined.">und</td>
 <td axis="----|1|4|Undefined.">und</td>
 <td axis="++++|2|8|Subtracts * from a and affects flags according to the result. a is not modified.">cp *</td>
-<td axis="----|0|32|The current pc value plus one is pushed onto the stack, then is loaded with 38h.">rst 38h</td>
+<td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 38h.">rst 38h</td>
 </tr>
 </table>
 <h3 id="table3">Bit instructions (CB)</h3>
