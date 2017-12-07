@@ -1258,7 +1258,7 @@ const struct s_cpu_z80 instructions[256] = {
 	{ 0xc0, "ret nz", ret_nz, 0},
 	{ 0xc1, "pop bc", pop_bc, 0},
 	{ 0xc2, "jump nz 16", jp_nz_16, 2 },
-	{ 0xc3, "JP addr 16", jp_addr_16, 0 },
+	{ 0xc3, "JP addr 16", jp_addr_16, 2 },
 	{ 0xc4, "CALL addr 16 if nz", call_16_nz, 2},
 	{ 0xc5, "push bc", push_bc, 0 },
 	{ 0xc6, "add a,n", add_a_n, 1},
