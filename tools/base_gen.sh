@@ -326,7 +326,7 @@ function generate_base_jr_code() {
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
 	if (${neg}${regs}.${cond: -1}f)
-		${pc} += (int8_t)read8bit(${pc} + 1, s_gb);
+		${pc} += (int8_t)read8bit(${pc} + 1, s_gb) + 2;
 	else
 		${pc} += 2;
 here_doc_delim
