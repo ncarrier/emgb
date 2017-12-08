@@ -237,7 +237,7 @@ here_doc_delim
 		target="${regs}.${operand}"
 	fi
 	cat <<here_doc_delim
-	${regs}.hf = ${target} & 0x0f;
+	${regs}.hf = !(${target} & 0x0f);
 
 	${target}--;
 
