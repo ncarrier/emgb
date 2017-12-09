@@ -331,7 +331,7 @@ function generate_base_jr_code() {
 		${pc} += 2;
 here_doc_delim
 	else
-		echo -e "\t${pc} += (int8_t)read8bit(${regs}.pc + 1, s_gb);"
+		echo -e "\t${pc} += (int8_t)read8bit(${regs}.pc + 1, s_gb) + 2;"
 	fi
 }
 
