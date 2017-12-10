@@ -284,7 +284,7 @@ static uint16_t pop16(struct s_gb *s_gb)
 	return value;
 }
 
-static void push16(uint8_t value, struct s_gb *s_gb)
+static void push16(uint16_t value, struct s_gb *s_gb)
 {
 	s_gb->gb_register.sp -= 2;
 	write16bitToAddr(s_gb->gb_register.sp, value, s_gb);
