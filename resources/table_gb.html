@@ -275,6 +275,7 @@
 </tr>
 <tr>
 <th>0</th>
+<!-- flags order is CNHZ -->
 <td axis="----|1|4|No operation is performed.">nop</td>
 <td axis="----|3|12|Loads ** into bc.">ld bc,**</td>
 <td axis="----|1|8|Stores a into the memory location pointed to by bc.">ld (bc),a</td>
@@ -284,7 +285,7 @@
 <td axis="----|2|8|Loads * into b.">ld b,*</td>
 <td axis="+00-|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlca</td>
 <td axis="----|3|20|Loads ** into sp.">ld (**),sp</td>
-<td axis="+++-|1|8|The value of bc is added to hl.">add hl,bc</td>
+<td axis="+0+-|1|8|The value of bc is added to hl.">add hl,bc</td>
 <td axis="----|1|8|Loads the value pointed to by bc into a.">ld a,(bc)</td>
 <td axis="----|1|8|Subtracts one from bc.">dec bc</td>
 <td axis="-0++|1|4|Adds one to c.">inc c</td>
