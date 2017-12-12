@@ -102,7 +102,7 @@ function generate_base_add_carry_code() {
 	fi
 	cat <<here_doc_delim
 	${regs}.cf = result & 0xffff0000;
-	${regs}.cf =((${regs}.${dst} & 0x0f) + (result & 0x0f)) > 0x0f;
+	${regs}.hf =((${regs}.${dst} & 0x0f) + (result & 0x0f)) > 0x0f;
 
 	${regs}.${dst} = 0xffffu & result;
 here_doc_delim
