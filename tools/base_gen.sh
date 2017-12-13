@@ -228,6 +228,8 @@ function generate_base_dec_code() {
 	local operand=$1
 	local target
 
+	regsize=${#operand}
+
 	if [ "${operand}" = "(hl)" ]; then
 		target="value";
 	cat <<here_doc_delim
@@ -236,14 +238,18 @@ here_doc_delim
 	else
 		target="${regs}.${operand}"
 	fi
-	cat <<here_doc_delim
-	${regs}.hf = !(${target} & 0x0f);
+	if [ ${regsize} -ne 2 ]; then
+		echo -e "\t${regs}.hf = !(${target} & 0x0f);"
+	fi
 
-	${target}--;
+	echo -e "\t${target}--;"
 
+	if [ ${regsize} -ne 2 ]; then
+		cat <<here_doc_delim
 	${regs}.zf = ${target} == 0;
 	${regs}.nf = true;
 here_doc_delim
+	fi
 	if [ "${operand}" = "(hl)" ]; then
 		cat <<here_doc_delim
 	write8bit(${regs}.hl, value, s_gb);
