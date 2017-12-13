@@ -87,7 +87,12 @@ function generate_base_add_carry_code() {
 	local src=${operands[1]}
 	local add_carry=$2
 
-	echo -e -n "\tuint32_t result = ${regs}.${dst} + "
+	cat <<here_doc_delim
+	uint16_t value;
+	uint32_t result;
+
+here_doc_delim
+	echo -n -e "\tvalue = "
 	if [ "${src}" = "*" ]; then
 		echo "read8bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "**" ]; then
@@ -97,12 +102,13 @@ function generate_base_add_carry_code() {
 	else
 		echo "${regs}.${src};"
 	fi
+	echo -e "\tresult = ${regs}.${dst} + value;"
 	if [ "${add_carry}" = "true" ]; then
 		echo -e "\tresult += ${regs}.cf;"
 	fi
 	cat <<here_doc_delim
 	${regs}.cf = result & 0xffff0000;
-	${regs}.hf =((${regs}.${dst} & 0x0f) + (result & 0x0f)) > 0x0f;
+	${regs}.hf = ((${regs}.${dst} & 0x0f) + (value & 0x0f)) > 0x0f;
 
 	${regs}.${dst} = 0xffffu & result;
 here_doc_delim
