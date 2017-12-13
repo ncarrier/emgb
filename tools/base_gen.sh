@@ -253,7 +253,6 @@ here_doc_delim
 	if [ ${regsize} -ne 2 ]; then
 		cat <<here_doc_delim
 	${regs}.zf = ${target} == 0;
-	${regs}.nf = true;
 here_doc_delim
 	fi
 	if [ "${operand}" = "(hl)" ]; then
