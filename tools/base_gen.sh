@@ -425,6 +425,9 @@ function generate_base_pop_code() {
 	local reg=$1
 
 	echo -e "\t${regs}.${reg} = pop16(s_gb);"
+	if [ ${reg} = "af" ]; then
+		echo -e "\t${regs}.f &= 0xf0;"
+	fi
 }
 
 function generate_base_push_code() {
