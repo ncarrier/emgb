@@ -397,6 +397,21 @@ static void console_debugger_next(struct console_debugger *debugger)
 	debugger->next = true;
 }
 
+void console_debugger_print_registers(const struct s_register *registers)
+{
+	printf("af = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->a, registers->f);
+	printf("bc = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->b, registers->c);
+	printf("pc = 0x%.04"PRIx16"\t", registers->pc);
+	printf("z (zero)       = %d  ", registers->zf);
+	printf("n (substract) = %d\n", registers->nf);
+
+	printf("hl = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->h, registers->l);
+	printf("de = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->d, registers->e);
+	printf("sp = 0x%.04"PRIx8"\t", registers->sp);
+	printf("h (half carry) = %d  ", registers->hf);
+	printf("c (carry)     = %d\n", registers->cf);
+}
+
 static void console_debugger_print(struct console_debugger *debugger)
 {
 	const char *expression;
@@ -437,21 +452,7 @@ static void console_debugger_print(struct console_debugger *debugger)
 	} else if (str_matches(expression, "sp")) {
 		printf("sp = %#.04"PRIx16"\n", registers->sp);
 	} else if (str_matches(expression, "registers")) {
-		printf("af = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->a,
-				registers->f);
-		printf("bc = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->b,
-				registers->c);
-		printf("pc = 0x%.04"PRIx16"\t", registers->pc);
-		f = registers->f;
-		printf("z (zero)       = %d  ", BIT(7, f));
-		printf("n (substract) = %d\n", BIT(6, f));
-		printf("hl = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->h,
-				registers->l);
-		printf("de = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->d,
-				registers->e);
-		printf("sp = 0x%.04"PRIx16"\t", registers->sp);
-		printf("h (half carry) = %d  ", BIT(5, f));
-		printf("c (carry)     = %d\n", BIT(4, f));
+		console_debugger_print_registers(registers);
 	} else {
 		if (*expression != '*' ||
 				!compute_expression(debugger, expression + 1,
@@ -671,7 +672,7 @@ int console_debugger_init(struct console_debugger *debugger,
 	 * TODO enable debugger by default, this should be decided with a
 	 * command-line switch
 	 */
-//	debugger->active = true;
+	debugger->active = true;
 
 	return 0;
 }

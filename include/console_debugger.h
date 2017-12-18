@@ -56,6 +56,7 @@ struct console_debugger {
 	} registers_map[NB_REGISTERS];
 };
 
+void console_debugger_print_registers(const struct s_register *registers);
 int console_debugger_init(struct console_debugger *debugger,
 		struct s_register *registers, struct s_gb *gb);
 int console_debugger_update(struct console_debugger *debugger);
