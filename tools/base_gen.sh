@@ -188,7 +188,7 @@ function generate_base_exec_code() {
 	cat <<here_doc_delim
 	uint8_t opcode;
 
-	opcode = read8bit(${pc}, s_gb);
+	opcode = read8bit(${pc} + 1, s_gb);
 	instructions_cb[opcode].func(s_gb);
 here_doc_delim
 }
