@@ -121,7 +121,7 @@ function generate_base_jp_uncond_code() {
 	if [ "${dest}" = "(hl)" ]; then
 		echo -e "\t${pc} = ${regs}.hl;"
 	else
-		echo -e "\t${pc} = read16bit(${regs}.pc + 1, s_gb);"
+		echo -e "\t${pc} = read16bit(${pc} + 1, s_gb);"
 	fi
 }
 
@@ -518,7 +518,7 @@ function generate_base_rst_code() {
 
 	cat <<here_doc_delim
 	${regs}.sp -= 2;
-	write16bitToAddr(${regs}.sp, ${pc}, s_gb);
+	write16bitToAddr(${regs}.sp, ${pc} + 1, s_gb);
 	${pc} = ${offset};
 here_doc_delim
 }
