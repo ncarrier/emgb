@@ -387,7 +387,7 @@ static void console_debugger_memory(struct console_debugger *debugger)
 			printf(" 0x%04"PRIx16, i);
 		if (i == stop)
 			printf(" %s = 0x%04"PRIx16, stop_str, stop);
-		printf("\033[%dG0x%04"PRIx16"\n", 40,
+		printf("\033[%dG%04"PRIx16"\n", 40,
 				read16bit(i, debugger->gb));
 	}
 }
