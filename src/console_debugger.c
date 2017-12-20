@@ -148,7 +148,7 @@ static void console_debugger_assembler(struct console_debugger *debugger)
 		printf("[0x%04"PRIx16"] (0x%02"PRIx8") %s", pc, opcode,
 				instruction->value);
 		printf("\033[%dG", 53);
-		for (cur = 1; cur + 1 <= instruction->real_size; cur++)
+		for (cur = instruction->real_size - 1; cur >= 1; cur--)
 			printf(" %02"PRIx8, read8bit(pc + cur, debugger->gb));
 		puts("");
 		pc += instruction->real_size;
