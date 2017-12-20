@@ -226,7 +226,7 @@ function generate_base_daa_code() {
 	${regs}.a = s & 0xff;
 
 	${regs}.zf = ${regs}.a == 0;
-	${regs}.cf = s >= 0x100;
+	${regs}.cf = ${regs}.a != s;
 here_doc_delim
 }
 
