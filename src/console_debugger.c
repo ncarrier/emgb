@@ -681,7 +681,7 @@ static void bold_color(void)
 	printf("\e[1m");
 }
 
-static void invert_color(void)
+static void inverted_color(void)
 {
 	printf("\e[7m");
 }
@@ -943,24 +943,47 @@ static void display_disassembly(struct console_debugger *debugger)
 		for (j = 0; value[j] != '*' && value[j] != '\0'; j++)
 			putchar(value[j]);
 		if (value[j] == '*') {
-			printf("0x");
-			for (cur = instruction->real_size - 1; cur >= 1; cur--)
-				printf("%02"PRIx8, read8bit(pc + cur,
-						debugger->gb));
-			for (; value[j] == '*'; j++)
-				;
-			printf("%s", value + j);
+			if (opcode == 0xcb) {
+				opcode = read8bit(pc + 1, debugger->gb);
+				printf("%.02"PRIx8":%s", opcode,
+						instructions_cb[opcode].value);
+			} else {
+				printf("0x");
+				for (cur = instruction->real_size - 1; cur >= 1;
+						cur--)
+					printf("%02"PRIx8,
+							read8bit(pc + cur,
+									debugger->gb));
+				for (; value[j] == '*'; j++)
+					;
+				printf("%s", value + j);
+			}
 		}
 		puts("");
 		if (i == 0)
 			restore_color();
 		pc += instruction->real_size;
 	}
-	invert_color();
+	inverted_color();
 	printf("%*s", debugger->terminal.columns, "");
 	restore_color();
 
 	cursor_restore_pos();
+}
+
+static int vprintf_attribute(bool enabled, void (*attribute)(void),
+		const char *fmt, va_list va)
+{
+	int ret;
+
+	if (enabled)
+		attribute();
+	ret = vprintf(fmt, va);
+	va_end(va);
+	if (enabled)
+		restore_color();
+
+	return ret;
 }
 
 static __attribute__((format (printf, 2, 3)))
@@ -969,13 +992,22 @@ int printf_bold(bool bold, const char *fmt, ...)
 	int ret;
 	va_list va;
 
-	if (bold)
-		bold_color();
 	va_start(va, fmt);
-	ret = vprintf(fmt, va);
+	ret = vprintf_attribute(bold, bold_color, fmt, va);
 	va_end(va);
-	if (bold)
-		restore_color();
+
+	return ret;
+}
+
+static __attribute__((format (printf, 2, 3)))
+int printf_inverted(bool inverted, const char *fmt, ...)
+{
+	int ret;
+	va_list va;
+
+	va_start(va, fmt);
+	ret = vprintf_attribute(inverted, inverted_color, fmt, va);
+	va_end(va);
 
 	return ret;
 }
@@ -993,26 +1025,26 @@ static void display_registers(struct console_debugger *debugger)
 	cursor_save_pos();
 
 	cursor_move_to(x, y++);
-	printf_bold(registers->af != debugger->previous_registers.af, "af");
+	printf_inverted(registers->af != debugger->previous_registers.af, "af");
 	printf(" %.04"PRIx16"  %d ", registers->af, registers->zf);
-	printf_bold(registers->zf != debugger->previous_registers.zf, "z");
+	printf_inverted(registers->zf != debugger->previous_registers.zf, "z");
 	cursor_move_to(x, y++);
-	printf_bold(registers->bc != debugger->previous_registers.bc, "bc");
+	printf_inverted(registers->bc != debugger->previous_registers.bc, "bc");
 	printf(" %.04"PRIx16"  %d ", registers->bc, registers->nf);
-	printf_bold(registers->nf != debugger->previous_registers.nf, "n");
+	printf_inverted(registers->nf != debugger->previous_registers.nf, "n");
 	cursor_move_to(x, y++);
-	printf_bold(registers->de != debugger->previous_registers.de, "de");
+	printf_inverted(registers->de != debugger->previous_registers.de, "de");
 	printf(" %.04"PRIx16"  %d ", registers->de, registers->hf);
-	printf_bold(registers->hf != debugger->previous_registers.hf, "h");
+	printf_inverted(registers->hf != debugger->previous_registers.hf, "h");
 	cursor_move_to(x, y++);
-	printf_bold(registers->hl != debugger->previous_registers.hl, "hl");
+	printf_inverted(registers->hl != debugger->previous_registers.hl, "hl");
 	printf(" %.04"PRIx16"  %d ", registers->hl, registers->cf);
-	printf_bold(registers->cf != debugger->previous_registers.cf, "c");
+	printf_inverted(registers->cf != debugger->previous_registers.cf, "c");
 	cursor_move_to(x, y++);
-	printf_bold(registers->sp != debugger->previous_registers.sp, "sp");
+	printf_inverted(registers->sp != debugger->previous_registers.sp, "sp");
 	printf(" %.04"PRIx16, registers->sp);
 	cursor_move_to(x, y++);
-	printf_bold(registers->pc != debugger->previous_registers.pc, "pc");
+	printf_inverted(registers->pc != debugger->previous_registers.pc, "pc");
 	printf(" %.04"PRIx16, registers->pc);
 
 	cursor_restore_pos();
