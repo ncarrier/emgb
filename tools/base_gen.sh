@@ -184,7 +184,7 @@ here_doc_delim
 	fi
 }
 
-function generate_base_exec_code() {
+function generate_base_cb_code() {
 	cat <<here_doc_delim
 	uint8_t opcode;
 

@@ -67,7 +67,7 @@ function parse_instruction_line() {
 
 function parse_exec_line() {
 	opcode=0x${high_nibble}${low_nibble}
-	text="exec ${opcode}"
+	text="cb *"
 	flags="----"
 	size=2
 	cycles=0
