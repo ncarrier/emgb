@@ -106,7 +106,7 @@ function generate_cb_rr_code() {
 
 	carry = ${regs}.cf;
 	value = ${value};
-	${regs}.f = BIT(0, value);
+	${regs}.cf = BIT(0, value);
 	value >>= 1;
 	value += (carry << 7);
 	${regs}.zf = value == 0;
@@ -261,9 +261,9 @@ function generate_cb_srl_code() {
 	uint8_t value;
 
 	value = ${value};
-	${regs}.f = BIT(0, value);
+	${regs}.cf = value & 0x01;
 	value >>= 1;
-	CLEAR_BIT(value, 7);
+	value &= 0x7f;
 	${regs}.zf = value == 0;
 here_doc_delim
 
