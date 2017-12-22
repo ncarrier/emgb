@@ -212,24 +212,24 @@ function generate_base_cpl_code() {
 
 function generate_base_daa_code() {
 	cat <<here_doc_delim
-	int8_t low_inc = 0x06;
-	int8_t high_inc = 0x60;
-	uint16_t s;
 
-	if (${regs}.nf) {
-		low_inc = -0x06;
-		high_inc = -0x60;
+	unsigned short s = s_gb->gb_register.a;
+	s_gb->gb_cpu.totalTick += 4;
+	if (NEG_FLAG) {
+		if (HALFC_FLAG) s = (s - 0x06) & 0xFF;
+		if (CARRY_FLAG) s -= 0x60;
 	}
-	s = ${regs}.a;
-	if (${regs}.hf || (s & 0xF) > 9)
-		s += low_inc;
-	if (${regs}.cf || s > 0x9F)
-		s += high_inc;
+	else {
+		if ( HALFC_FLAG || (s & 0xF) > 9) s += 0x06;
+		if (CARRY_FLAG || s > 0x9F) s += 0x60;
+	}
 
-	${regs}.a = s & 0xff;
+	s_gb->gb_register.a = (unsigned char)s;
 
-	${regs}.zf = ${regs}.a == 0;
-	${regs}.cf = ${regs}.a != s;
+	if (s_gb->gb_register.a) CLEAR_ZERO();
+	else SET_ZERO();
+
+	if (s >= 0x100) SET_CARRY();
 here_doc_delim
 }
 
