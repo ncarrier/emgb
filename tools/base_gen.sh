@@ -113,7 +113,7 @@ here_doc_delim
 	${regs}.${dst} = 0xffffu & result;
 here_doc_delim
 	if [ ${#dst} -eq 1 ]; then
-		echo -e "\t${regs}.zf = ${regs}.${dst} != 0;"
+		echo -e "\t${regs}.zf = ${regs}.${dst} == 0;"
 	fi
 }
 
