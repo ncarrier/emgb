@@ -1258,7 +1258,7 @@ const struct s_cpu_z80 instructions[256] = {
 	{ 0xc0, "ret nz", ret_nz, 0},
 	{ 0xc1, "pop bc", pop_bc, 0},
 	{ 0xc2, "jump nz 16", jp_nz_16, 2 },
-	{ 0xc3, "JP addr 16", jp_addr_16, 0 },
+	{ 0xc3, "JP addr 16", jp_addr_16, 2 },
 	{ 0xc4, "CALL addr 16 if nz", call_16_nz, 2},
 	{ 0xc5, "push bc", push_bc, 0 },
 	{ 0xc6, "add a,n", add_a_n, 1},
@@ -1323,7 +1323,34 @@ const struct s_cpu_z80 instructions[256] = {
 
 void initCpu(struct s_gb * gb_s)
 {
-	// TODO, should the other fields be initialized here ?
+	struct s_register *registers;
+
+	registers = &gb_s->gb_register;
+	/* test bit fields order */
+	registers->f = 0;
+	gb_s->gb_register.zf = true;
+	if (registers->f != 0x80) {
+		fprintf(stderr, "Unsupported bitfield order\n");
+		exit(1);
+	}
+	registers->f = 0;
+	gb_s->gb_register.nf = true;
+	if (registers->f != 0x40) {
+		fprintf(stderr, "Unsupported bitfield order\n");
+		exit(1);
+	}
+	registers->f = 0;
+	gb_s->gb_register.hf = true;
+	if (registers->f != 0x20) {
+		fprintf(stderr, "Unsupported bitfield order\n");
+		exit(1);
+	}
+	registers->f = 0;
+	gb_s->gb_register.cf = true;
+	if (registers->f != 0x10) {
+		fprintf(stderr, "Unsupported bitfield order\n");
+		exit(1);
+	}
 }
 
 bool is_opcode_undefined(uint8_t opcode)

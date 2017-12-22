@@ -10,6 +10,21 @@
 
 int imgui(void *p_s_gb);
 
+static bool print_log = false;
+
+static void log_instruction(struct s_gb *s_gb,
+		const struct s_cpu_z80 *instruction, uint16_t pc,
+		uint8_t fopcode, unsigned size)
+{
+	unsigned i;
+
+	printf("[%#"PRIx8"] (%#"PRIx8") %s   ", pc, fopcode,
+			instructions_base[fopcode].value);
+	for (i = 1; i < size; i++)
+		printf("%#"PRIx8" ", read8bit(pc + i, s_gb));
+	puts("");
+}
+
 static void instruction_gen(struct s_gb *s_gb)
 {
 	uint8_t fopcode;
@@ -17,6 +32,9 @@ static void instruction_gen(struct s_gb *s_gb)
 
 	fopcode = read8bit(s_gb->gb_register.pc, s_gb);
 	instruction = instructions_base + fopcode;
+	if (print_log)
+		log_instruction(s_gb, instruction, s_gb->gb_register.pc,
+				fopcode, instruction->real_size);
 	instruction->func(s_gb);
 	s_gb->gb_register.pc += instruction->size;
 	s_gb->gb_cpu.totalTick += instruction->cycles;
@@ -27,6 +45,10 @@ static void instruction_hw(struct s_gb *s_gb)
 	uint8_t fopcode;
 
 	fopcode = read8bit(s_gb->gb_register.pc, s_gb);
+	if (print_log)
+		log_instruction(s_gb, instructions + fopcode,
+				s_gb->gb_register.pc, fopcode,
+				instructions[fopcode].size + 1);
 	s_gb->gb_register.pc += 1; //retrieve func opcode
 	instructions[fopcode].func(s_gb); //call opcode func pointer
 	if (s_gb->gb_cpu.jmpf == 0) //if jmp opcode was called, no need to incr PC

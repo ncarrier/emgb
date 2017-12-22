@@ -27,10 +27,10 @@ re_td_ln='<td class="ln">'
 re_help='(.*)\|(.*)\|(.*)\|(.*)'
 re_sll='^sll (.*)'
 
-CARRY=0
-NEG=1
-HALFC=2
-ZERO=3
+cf=0
+nf=1
+hf=2
+zf=3
 
 line_number=0
 function text_to_func() {
@@ -67,7 +67,7 @@ function parse_instruction_line() {
 
 function parse_exec_line() {
 	opcode=0x${high_nibble}${low_nibble}
-	text="exec ${opcode}"
+	text="cb *"
 	flags="----"
 	size=2
 	cycles=0
@@ -191,7 +191,7 @@ function definition_body_gen() {
 	else
 		generate_base_opcode "${text}" ${opcode}
 	fi
-	for f in ZERO NEG HALFC CARRY; do
+	for f in zf nf hf cf; do
 		case ${flags[${f}]} in
 		"-")
 			echo "	/* ${f} unaffected */"
@@ -201,11 +201,11 @@ function definition_body_gen() {
 			;;
 		"1")
 			echo "	/* ${f} set */"
-			echo "	SET_${f}();"
+			echo "	s_gb->gb_register.${f} = true;"
 			;;
 		"0")
 			echo "	/* ${f} reset */"
-			echo "	CLEAR_${f}();"
+			echo "	s_gb->gb_register.${f} = false;"
 			;;
 		"*")
 			echo "	/* ${f} exceptional */"
@@ -236,9 +236,16 @@ function struct_body_gen() {
 	local text=$2
 	local doc=$3
 	local cycles=$4
-	local size=$5
+	local real_size=$5
 	local func=$6
 
+	size=${real_size}
+	for op in jp jr ret call rst reti; do
+		local re="^${op}"
+		if [[ "${func}" =~ ${re} ]]; then
+			size=0
+		fi
+	done
 	cat<<here_doc_delim
 	[${opcode}] = {
 		.opcode = ${opcode},
@@ -246,6 +253,7 @@ function struct_body_gen() {
 		.doc = "${doc}",
 		.cycles = ${cycles},
 		.size = ${size},
+		.real_size = ${real_size},
 		.func = ${func},
 	},
 here_doc_delim
@@ -276,7 +284,7 @@ static uint16_t pop16(struct s_gb *s_gb)
 	return value;
 }
 
-static void push16(uint8_t value, struct s_gb *s_gb)
+static void push16(uint16_t value, struct s_gb *s_gb)
 {
 	s_gb->gb_register.sp -= 2;
 	write16bitToAddr(s_gb->gb_register.sp, value, s_gb);

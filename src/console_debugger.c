@@ -1,5 +1,11 @@
 #if EMGB_CONSOLE_DEBUGGER
+#include <sys/ioctl.h>
+#include <unistd.h>
+
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
 #include <errno.h>
@@ -148,10 +154,10 @@ static void console_debugger_assembler(struct console_debugger *debugger)
 		printf("[0x%04"PRIx16"] (0x%02"PRIx8") %s", pc, opcode,
 				instruction->value);
 		printf("\033[%dG", 53);
-		for (cur = 1; cur <= instruction->size; cur++)
+		for (cur = instruction->real_size - 1; cur >= 1; cur--)
 			printf(" %02"PRIx8, read8bit(pc + cur, debugger->gb));
 		puts("");
-		pc += instruction->size + 1;
+		pc += instruction->real_size;
 	}
 }
 
@@ -233,7 +239,7 @@ static void doc_instruction(const struct s_cpu_z80 *instruction, bool cb)
 	printf("[0x%s%"PRIx8"] %s : %s\n", cb ? "cb" : "", instruction->opcode,
 			instruction->value, instruction->doc);
 	printf("\tcycles: %"PRIu8"\tsize: %"PRIu8"\n", instruction->cycles,
-			instruction->size);
+			instruction->real_size);
 }
 
 static void console_debugger_doc(struct console_debugger *debugger)
@@ -387,7 +393,7 @@ static void console_debugger_memory(struct console_debugger *debugger)
 			printf(" 0x%04"PRIx16, i);
 		if (i == stop)
 			printf(" %s = 0x%04"PRIx16, stop_str, stop);
-		printf("\033[%dG0x%04"PRIx16"\n", 40,
+		printf("\033[%dG%04"PRIx16"\n", 40,
 				read16bit(i, debugger->gb));
 	}
 }
@@ -395,6 +401,21 @@ static void console_debugger_memory(struct console_debugger *debugger)
 static void console_debugger_next(struct console_debugger *debugger)
 {
 	debugger->next = true;
+}
+
+void console_debugger_print_registers(const struct s_register *registers)
+{
+	printf("af = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->a, registers->f);
+	printf("bc = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->b, registers->c);
+	printf("pc = 0x%.04"PRIx16"\t", registers->pc);
+	printf("z (zero)       = %d  ", registers->zf);
+	printf("n (substract) = %d\n", registers->nf);
+
+	printf("hl = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->h, registers->l);
+	printf("de = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->d, registers->e);
+	printf("sp = 0x%.04"PRIx8"\t", registers->sp);
+	printf("h (half carry) = %d  ", registers->hf);
+	printf("c (carry)     = %d\n", registers->cf);
 }
 
 static void console_debugger_print(struct console_debugger *debugger)
@@ -437,21 +458,7 @@ static void console_debugger_print(struct console_debugger *debugger)
 	} else if (str_matches(expression, "sp")) {
 		printf("sp = %#.04"PRIx16"\n", registers->sp);
 	} else if (str_matches(expression, "registers")) {
-		printf("af = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->a,
-				registers->f);
-		printf("bc = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->b,
-				registers->c);
-		printf("pc = 0x%.04"PRIx16"\t", registers->pc);
-		f = registers->f;
-		printf("z (zero)       = %d  ", BIT(7, f));
-		printf("n (substract) = %d\n", BIT(6, f));
-		printf("hl = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->h,
-				registers->l);
-		printf("de = 0x%.02"PRIx16" %.02"PRIx16"\t", registers->d,
-				registers->e);
-		printf("sp = 0x%.04"PRIx16"\t", registers->sp);
-		printf("h (half carry) = %d  ", BIT(5, f));
-		printf("c (carry)     = %d\n", BIT(4, f));
+		console_debugger_print_registers(registers);
 	} else {
 		if (*expression != '*' ||
 				!compute_expression(debugger, expression + 1,
@@ -522,7 +529,7 @@ static struct debugger_command commands[] = {
 		.name = "memory",
 		.help = "Prints a memory region.\n"
 			"\t\t\tusage: memory start stop\n"
-			"\t\t\texample: memory *sp+0x50 0x200",
+			"\t\t\texample: memory sp+0x50 0x200",
 		.argc = 3,
 	},
 	{
@@ -539,8 +546,8 @@ static struct debugger_command commands[] = {
 			"pc}\n"
 			"\t\t\t       print registers\n"
 			"\t\t\t       print *REG_NAME[{+offset,-offset}]\n"
-		        "\t\t\texamples: print pc\n"
-		        "\t\t\t          print *sp-0x02",
+			"\t\t\texamples: print pc\n"
+			"\t\t\t          print *sp-0x02",
 		.argc = 2,
 	},
 
@@ -627,6 +634,85 @@ static void init_registers_map(struct console_debugger *debugger)
 	debugger->registers_map[index++].size = sizeof(registers->pc);
 }
 
+static int console_debugger_get_terminal_size(struct console_debugger *debugger)
+{
+	int ret;
+
+#ifdef TIOCGSIZE
+#define term_size_struct ttysize
+#define TERM_SIZE_IOCTL TIOCGSIZE
+#define cols_field ts_cols
+#define lines_field ts_lines
+#elif defined(TIOCGWINSZ)
+#define term_size_struct winsize
+#define TERM_SIZE_IOCTL TIOCGWINSZ
+#define cols_field ws_col
+#define lines_field ws_row
+#else
+	return -ENOSYS;
+#endif
+	struct term_size_struct ts;
+	ret = ioctl(STDIN_FILENO, TERM_SIZE_IOCTL, &ts);
+	if (ret == -1)
+		return -errno;
+	debugger->terminal.columns = ts.cols_field;
+	debugger->terminal.rows = ts.lines_field;
+
+	return 0;
+}
+
+static void cursor_save_pos(void)
+{
+	printf("\033[s");
+}
+
+static void cursor_restore_pos(void)
+{
+	printf("\033[u");
+}
+
+static void cursor_move_to(int x, int y)
+{
+	printf("\033[%d;%df", y, x);
+}
+
+static void bold_color(void)
+{
+	printf("\e[1m");
+}
+
+static void inverted_color(void)
+{
+	printf("\e[7m");
+}
+
+static void restore_color(void)
+{
+	printf("\e[0m");
+}
+
+static void erase_screen_lines(struct console_debugger *debugger,
+		unsigned first, unsigned last)
+{
+	unsigned i;
+
+	cursor_save_pos();
+	cursor_move_to(0, 0);
+	for (i = first; i <= last; i++)
+		printf("%*s", debugger->terminal.columns, "");
+	cursor_restore_pos();
+}
+
+static void erase_upper_screen_half(struct console_debugger *debugger)
+{
+	erase_screen_lines(debugger, 1, debugger->terminal.rows / 2 - 1);
+}
+
+static void erase_whole_screen(struct console_debugger *debugger)
+{
+	erase_screen_lines(debugger, 1, debugger->terminal.rows);
+}
+
 int console_debugger_init(struct console_debugger *debugger,
 		struct s_register *registers, struct s_gb *gb)
 {
@@ -666,12 +752,15 @@ int console_debugger_init(struct console_debugger *debugger,
 	if (debugger->tokenizer == NULL)
 		ERR("tok_init");
 
+	console_debugger_get_terminal_size(debugger);
+	erase_whole_screen(debugger);
+	cursor_move_to(1, debugger->terminal.rows / 2 + 1);
 	init_registers_map(debugger);
 	/*
 	 * TODO enable debugger by default, this should be decided with a
 	 * command-line switch
 	 */
-//	debugger->active = true;
+	debugger->active = true;
 
 	return 0;
 }
@@ -811,14 +900,13 @@ static void console_debugger_check_op_undefined(
 	}
 }
 
-int console_debugger_update(struct console_debugger *debugger)
+static void check_signal(struct console_debugger *debugger)
 {
-	int ret;
-
 	if (signal_received) {
 		switch (signal_received) {
 			case SIGWINCH:
 				el_resize(debugger->editline);
+				console_debugger_get_terminal_size(debugger);
 				break;
 
 			case SIGINT:
@@ -829,15 +917,203 @@ int console_debugger_update(struct console_debugger *debugger)
 				break;
 		}
 	}
+}
+
+static void display_disassembly(struct console_debugger *debugger)
+{
+	unsigned i;
+	unsigned cur;
+	unsigned j;
+	uint8_t opcode;
+	const struct s_cpu_z80 *instruction;
+	uint16_t pc;
+	const char *value;
+
+	cursor_save_pos();
+
+	cursor_move_to(1, 1);
+	pc = debugger->registers->pc;
+	for (i = 0; i < debugger->terminal.rows / 2; i++) {
+		opcode = read8bit(pc, debugger->gb);
+		instruction = instructions_base + opcode;
+		if (i == 0)
+			bold_color();
+		printf("[0x%04"PRIx16"] (0x%02"PRIx8") ", pc, opcode);
+		value = instruction->value;
+		for (j = 0; value[j] != '*' && value[j] != '\0'; j++)
+			putchar(value[j]);
+		if (value[j] == '*') {
+			if (opcode == 0xcb) {
+				opcode = read8bit(pc + 1, debugger->gb);
+				printf("%.02"PRIx8":%s", opcode,
+						instructions_cb[opcode].value);
+			} else {
+				printf("0x");
+				for (cur = instruction->real_size - 1; cur >= 1;
+						cur--)
+					printf("%02"PRIx8,
+							read8bit(pc + cur,
+									debugger->gb));
+				for (; value[j] == '*'; j++)
+					;
+				printf("%s", value + j);
+			}
+		}
+		puts("");
+		if (i == 0)
+			restore_color();
+		pc += instruction->real_size;
+	}
+	inverted_color();
+	printf("%*s", debugger->terminal.columns, "");
+	restore_color();
+
+	cursor_restore_pos();
+}
+
+static int vprintf_attribute(bool enabled, void (*attribute)(void),
+		const char *fmt, va_list va)
+{
+	int ret;
+
+	if (enabled)
+		attribute();
+	ret = vprintf(fmt, va);
+	va_end(va);
+	if (enabled)
+		restore_color();
+
+	return ret;
+}
+
+static __attribute__((format (printf, 2, 3)))
+int printf_bold(bool bold, const char *fmt, ...)
+{
+	int ret;
+	va_list va;
+
+	va_start(va, fmt);
+	ret = vprintf_attribute(bold, bold_color, fmt, va);
+	va_end(va);
+
+	return ret;
+}
+
+static __attribute__((format (printf, 2, 3)))
+int printf_inverted(bool inverted, const char *fmt, ...)
+{
+	int ret;
+	va_list va;
+
+	va_start(va, fmt);
+	ret = vprintf_attribute(inverted, inverted_color, fmt, va);
+	va_end(va);
+
+	return ret;
+}
+
+static void display_registers(struct console_debugger *debugger)
+{
+	struct s_register *registers;
+	int x;
+	int y;
+
+	registers = debugger->registers;
+	x = debugger->terminal.columns - 12;
+	y = 1;
+
+	cursor_save_pos();
+
+	cursor_move_to(x, y++);
+	printf_inverted(registers->af != debugger->previous_registers.af, "af");
+	printf(" %.04"PRIx16"  %d ", registers->af, registers->zf);
+	printf_inverted(registers->zf != debugger->previous_registers.zf, "z");
+	cursor_move_to(x, y++);
+	printf_inverted(registers->bc != debugger->previous_registers.bc, "bc");
+	printf(" %.04"PRIx16"  %d ", registers->bc, registers->nf);
+	printf_inverted(registers->nf != debugger->previous_registers.nf, "n");
+	cursor_move_to(x, y++);
+	printf_inverted(registers->de != debugger->previous_registers.de, "de");
+	printf(" %.04"PRIx16"  %d ", registers->de, registers->hf);
+	printf_inverted(registers->hf != debugger->previous_registers.hf, "h");
+	cursor_move_to(x, y++);
+	printf_inverted(registers->hl != debugger->previous_registers.hl, "hl");
+	printf(" %.04"PRIx16"  %d ", registers->hl, registers->cf);
+	printf_inverted(registers->cf != debugger->previous_registers.cf, "c");
+	cursor_move_to(x, y++);
+	printf_inverted(registers->sp != debugger->previous_registers.sp, "sp");
+	printf(" %.04"PRIx16, registers->sp);
+	cursor_move_to(x, y++);
+	printf_inverted(registers->pc != debugger->previous_registers.pc, "pc");
+	printf(" %.04"PRIx16, registers->pc);
+
+	cursor_restore_pos();
+}
+
+static void display_stack(struct console_debugger *debugger)
+{
+	int line;
+	unsigned lines;
+	unsigned mem;
+	uint16_t sp;
+	int x;
+
+	cursor_save_pos();
+
+	x = debugger->terminal.columns - 10;
+	sp = debugger->registers->sp;
+	lines = debugger->terminal.rows / 2 - (debugger->terminal.rows / 4);
+	mem = sp + lines;
+	if (mem > 0xffff)
+		mem = 0xffff;
+	for (line = debugger->terminal.rows / 4;
+			line < debugger->terminal.rows / 2 + 1; mem -= 2, line++) {
+		cursor_move_to(x, line);
+		printf_bold(mem / 2 == sp / 2, "%.04"PRIx16":%.04"PRIx16, mem,
+				read16bit(mem, debugger->gb));
+	}
+
+	cursor_restore_pos();
+}
+
+static void display_pre_prompt(struct console_debugger *debugger)
+{
+	uint16_t pc;
+	uint8_t opcode;
+	const struct s_cpu_z80 *instruction;
+	uint16_t cur;
+
+	pc = debugger->registers->pc;
+	opcode = read8bit(pc, debugger->gb);
+	instruction = instructions_base + opcode;
+
+	printf("pc = %#.04"PRIx16" %s", debugger->registers->pc,
+			instruction->value);
+	for (cur = instruction->real_size - 1; cur >= 1; cur--)
+		printf(" %02"PRIx8, read8bit(pc + cur, debugger->gb));
+	puts("");
+	erase_upper_screen_half(debugger);
+	display_disassembly(debugger);
+	display_registers(debugger);
+	display_stack(debugger);
+}
+
+int console_debugger_update(struct console_debugger *debugger)
+{
+	int ret;
+
+	check_signal(debugger);
 
 	console_debugger_check_breakpoints(debugger);
 	console_debugger_check_op_undefined(debugger);
 
 	if (debugger->next) {
 		debugger->next = false;
-		printf("pc = %#.04"PRIx16"\n", debugger->registers->pc);
 	}
 	while (debugger->active && !debugger->next) {
+		check_signal(debugger);
+		display_pre_prompt(debugger);
+		debugger->previous_registers = *debugger->registers;
 		ret = console_debugger_read(debugger);
 		if (ret < 0)
 			ERR("console_debugger_read: %s", strerror(-ret));
