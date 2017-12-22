@@ -428,22 +428,22 @@
 </tr>
 <tr>
 <th>8</th>
-<td axis="++++|1|4|Adds b to a.">add a,b</td>
-<td axis="++++|1|4|Adds c to a.">add a,c</td>
-<td axis="++++|1|4|Adds d to a.">add a,d</td>
-<td axis="++++|1|4|Adds e to a.">add a,e</td>
-<td axis="++++|1|4|Adds h to a.">add a,h</td>
-<td axis="++++|1|4|Adds l to a.">add a,l</td>
-<td axis="++++|1|8|Adds (hl) to a.">add a,(hl)</td>
-<td axis="++++|1|4|Adds a to a.">add a,a</td>
-<td axis="++++|1|4|Adds b and the carry flag to a.">adc a,b</td>
-<td axis="++++|1|4|Adds c and the carry flag to a.">adc a,c</td>
-<td axis="++++|1|4|Adds d and the carry flag to a.">adc a,d</td>
-<td axis="++++|1|4|Adds e and the carry flag to a.">adc a,e</td>
-<td axis="++++|1|4|Adds h and the carry flag to a.">adc a,h</td>
-<td axis="++++|1|4|Adds l and the carry flag to a.">adc a,l</td>
-<td axis="++++|1|8|Adds (hl) and the carry flag to a.">adc a,(hl)</td>
-<td axis="++++|1|4|Adds a and the carry flag to a.">adc a,a</td>
+<td axis="+0++|1|4|Adds b to a.">add a,b</td>
+<td axis="+0++|1|4|Adds c to a.">add a,c</td>
+<td axis="+0++|1|4|Adds d to a.">add a,d</td>
+<td axis="+0++|1|4|Adds e to a.">add a,e</td>
+<td axis="+0++|1|4|Adds h to a.">add a,h</td>
+<td axis="+0++|1|4|Adds l to a.">add a,l</td>
+<td axis="+0++|1|8|Adds (hl) to a.">add a,(hl)</td>
+<td axis="+0++|1|4|Adds a to a.">add a,a</td>
+<td axis="+0++|1|4|Adds b and the carry flag to a.">adc a,b</td>
+<td axis="+0++|1|4|Adds c and the carry flag to a.">adc a,c</td>
+<td axis="+0++|1|4|Adds d and the carry flag to a.">adc a,d</td>
+<td axis="+0++|1|4|Adds e and the carry flag to a.">adc a,e</td>
+<td axis="+0++|1|4|Adds h and the carry flag to a.">adc a,h</td>
+<td axis="+0++|1|4|Adds l and the carry flag to a.">adc a,l</td>
+<td axis="+0++|1|8|Adds (hl) and the carry flag to a.">adc a,(hl)</td>
+<td axis="+0++|1|4|Adds a and the carry flag to a.">adc a,a</td>
 </tr>
 <tr>
 <th>9</th>
@@ -510,7 +510,7 @@
 <td axis="----|3|12|** is copied to pc.">jp **</td>
 <td axis="----|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call nz,**</td>
 <td axis="----|1|12|sp is decremented and b is stored into the memory location pointed to by sp. sp is decremented again and c is stored into the memory location pointed to by sp.">push bc</td>
-<td axis="++++|2|8|Adds * to a.">add a,*</td>
+<td axis="+0++|2|8|Adds * to a.">add a,*</td>
 <td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 00h.">rst 00h</td>
 <td axis="----|1|8|If condition cc is true, the top stack entry is popped into pc.">ret z</td>
 <td axis="----|1|8|The top stack entry is popped into pc.">ret</td>
@@ -520,7 +520,7 @@
 </td>
 <td axis="----|3|12|If condition cc is true, the current pc value plus three is pushed onto the stack, then is loaded with **.">call z,**</td>
 <td axis="----|3|12|Push address of next instruction onto the stack and then jump to address **.">call **</td>
-<td axis="++++|2|8|Adds * and the carry flag to a.">adc a,*</td>
+<td axis="+0++|2|8|Adds * and the carry flag to a.">adc a,*</td>
 <td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 08h.">rst 08h</td>
 </tr>
 <tr>
