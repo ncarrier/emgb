@@ -8,16 +8,20 @@
 #include <error.h>
 #include <stdbool.h>
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_events.h>
 
 #define MAX_JOYSTICKS 10
 #define INPUT_LENGTH 4
 #define MAPPINGS_SIZE 8
+#define GUID_SIZE 33
 
 struct joystick {
 	SDL_Joystick *joystick;
 	const char *name;
+	char guid[GUID_SIZE];
 	int index;
+	SDL_JoystickID id;
 	struct {
 		int axes;
 		int balls;
@@ -118,19 +122,146 @@ static void next_button(enum gb_button *button)
 	else
 		(*button)++;
 
-	if (*button != GB_BUTTON_INVALID)
-		printf("Configuring button %s\n", gb_button_to_str(*button));
+	if (*button != GB_BUTTON_INVALID) {
+		printf("Configuring button %s: ", gb_button_to_str(*button));
+		fflush(stdout);
+	}
+}
+
+static const char *event_type_to_string(uint32_t type)
+{
+	switch (type) {
+	case SDL_QUIT:
+		return "SDL_QUIT";
+	case SDL_APP_TERMINATING:
+		return "SDL_APP_TERMINATING";
+	case SDL_APP_LOWMEMORY:
+		return "SDL_APP_LOWMEMORY";
+	case SDL_APP_WILLENTERBACKGROUND:
+		return "SDL_APP_WILLENTERBACKGROUND";
+	case SDL_APP_DIDENTERBACKGROUND:
+		return "SDL_APP_DIDENTERBACKGROUND";
+	case SDL_APP_WILLENTERFOREGROUND:
+		return "SDL_APP_WILLENTERFOREGROUND";
+	case SDL_APP_DIDENTERFOREGROUND:
+		return "SDL_APP_DIDENTERFOREGROUND";
+	case SDL_WINDOWEVENT:
+		return "SDL_WINDOWEVENT";
+	case SDL_SYSWMEVENT:
+		return "SDL_SYSWMEVENT";
+	case SDL_KEYDOWN:
+		return "SDL_KEYDOWN";
+	case SDL_KEYUP:
+		return "SDL_KEYUP";
+	case SDL_TEXTEDITING:
+		return "SDL_TEXTEDITING";
+	case SDL_TEXTINPUT:
+		return "SDL_TEXTINPUT";
+	case SDL_KEYMAPCHANGED:
+		return "SDL_KEYMAPCHANGED";
+	case SDL_MOUSEMOTION:
+		return "SDL_MOUSEMOTION";
+	case SDL_MOUSEBUTTONDOWN:
+		return "SDL_MOUSEBUTTONDOWN";
+	case SDL_MOUSEBUTTONUP:
+		return "SDL_MOUSEBUTTONUP";
+	case SDL_MOUSEWHEEL:
+		return "SDL_MOUSEWHEEL";
+	case SDL_JOYAXISMOTION:
+		return "SDL_JOYAXISMOTION";
+	case SDL_JOYBALLMOTION:
+		return "SDL_JOYBALLMOTION";
+	case SDL_JOYHATMOTION:
+		return "SDL_JOYHATMOTION";
+	case SDL_JOYBUTTONDOWN:
+		return "SDL_JOYBUTTONDOWN";
+	case SDL_JOYBUTTONUP:
+		return "SDL_JOYBUTTONUP";
+	case SDL_JOYDEVICEADDED:
+		return "SDL_JOYDEVICEADDED";
+	case SDL_JOYDEVICEREMOVED:
+		return "SDL_JOYDEVICEREMOVED";
+	case SDL_CONTROLLERAXISMOTION:
+		return "SDL_CONTROLLERAXISMOTION";
+	case SDL_CONTROLLERBUTTONDOWN:
+		return "SDL_CONTROLLERBUTTONDOWN";
+	case SDL_CONTROLLERBUTTONUP:
+		return "SDL_CONTROLLERBUTTONUP";
+	case SDL_CONTROLLERDEVICEADDED:
+		return "SDL_CONTROLLERDEVICEADDED";
+	case SDL_CONTROLLERDEVICEREMOVED:
+		return "SDL_CONTROLLERDEVICEREMOVED";
+	case SDL_CONTROLLERDEVICEREMAPPED:
+		return "SDL_CONTROLLERDEVICEREMAPPED";
+	case SDL_FINGERDOWN:
+		return "SDL_FINGERDOWN";
+	case SDL_FINGERUP:
+		return "SDL_FINGERUP";
+	case SDL_FINGERMOTION:
+		return "SDL_FINGERMOTION";
+	case SDL_DOLLARGESTURE:
+		return "SDL_DOLLARGESTURE";
+	case SDL_DOLLARRECORD:
+		return "SDL_DOLLARRECORD";
+	case SDL_MULTIGESTURE:
+		return "SDL_MULTIGESTURE";
+	case SDL_CLIPBOARDUPDATE:
+		return "SDL_CLIPBOARDUPDATE";
+	case SDL_DROPFILE:
+		return "SDL_DROPFILE";
+	case SDL_DROPTEXT:
+		return "SDL_DROPTEXT";
+	case SDL_DROPBEGIN:
+		return "SDL_DROPBEGIN";
+	case SDL_DROPCOMPLETE:
+		return "SDL_DROPCOMPLETE";
+	case SDL_AUDIODEVICEADDED:
+		return "SDL_AUDIODEVICEADDED";
+	case SDL_AUDIODEVICEREMOVED:
+		return "SDL_AUDIODEVICEREMOVED";
+	case SDL_RENDER_TARGETS_RESET:
+		return "SDL_RENDER_TARGETS_RESET";
+	case SDL_RENDER_DEVICE_RESET:
+		return "SDL_RENDER_DEVICE_RESET";
+	case SDL_USEREVENT:
+		return "SDL_USEREVENT";
+	case SDL_LASTEVENT:
+		return "SDL_LASTEVENT";
+	default:
+		return "(unknown)";
+	}
 }
 
 static bool handle_event(SDL_Event *event, struct mapping *mapping,
-		enum gb_button *button, int joystick)
+		enum gb_button *button, struct joystick *joystick)
 {
-	if (SDL_PollEvent(event) == 0)
+	static int flush = 10;
+	int has_event;
+
+	has_event = SDL_PollEvent(event);
+	/*
+	 * some spurious events are generated at startup, don't know why, but by
+	 * flushing them, things seem to work
+	 */
+	if (flush != 0) {
+		flush--;
+		return true;
+	}
+	if (has_event == 0)
 		return true;
 
 	switch (event->type) {
+	case SDL_JOYDEVICEADDED:
+		printf("Joystick %"PRIi32" detected.\n", event->jdevice.which);
+		break;
+
+	case SDL_JOYDEVICEREMOVED:
+		if (event->jdevice.which == joystick->id)
+			error(EXIT_FAILURE, 0, "Joystick removed, aborting\n");
+		break;
+
 	case SDL_JOYBUTTONDOWN:
-		if (event->jbutton.which != joystick)
+		if (event->jbutton.which != joystick->id)
 			return true;
 
 		printf("%s mapped to button %"PRIu8"\n",
@@ -146,7 +277,8 @@ static bool handle_event(SDL_Event *event, struct mapping *mapping,
 		return true;
 
 	case SDL_JOYAXISMOTION:
-		if (event->jaxis.which != joystick || event->jaxis.value == 0)
+		if (event->jaxis.which != joystick->id ||
+				event->jaxis.value == 0)
 			return true;
 
 		printf("%s mapped to axis %"PRIu8", value %"PRIi16"\n",
@@ -160,7 +292,7 @@ static bool handle_event(SDL_Event *event, struct mapping *mapping,
 		break;
 
 	case SDL_JOYHATMOTION:
-		if (event->jhat.which != joystick ||
+		if (event->jhat.which != joystick->id ||
 				event->jhat.value == SDL_HAT_CENTERED)
 			return true;
 
@@ -238,7 +370,7 @@ static char *canonicalize_joystick_name(char *name)
 }
 
 static int write_mapping(struct mapping mappings[MAPPINGS_SIZE],
-		const char *mappings_dir, const char *name)
+		const char *mappings_dir, const struct joystick *joystick)
 {
 	int ret;
 	enum gb_button button;
@@ -248,7 +380,7 @@ static int write_mapping(struct mapping mappings[MAPPINGS_SIZE],
 	struct mapping *mapping;
 	const char *type_name;
 
-	canon_name = strdup(name);
+	canon_name = strdup(joystick->name);
 	if (canon_name == NULL) {
 		perror("strdup");
 		return EXIT_FAILURE;
@@ -266,7 +398,8 @@ static int write_mapping(struct mapping mappings[MAPPINGS_SIZE],
 		return EXIT_FAILURE;
 	}
 
-	fprintf(mapping_file, "name=%s\n", name);
+	fprintf(mapping_file, "name=%s\n", joystick->name);
+	fprintf(mapping_file, "guid=%s\n", joystick->guid);
 	for (button = GB_BUTTON_FIRST; button <= GB_BUTTON_LAST; button++) {
 		mapping = mappings + button;
 		type_name = control_type_to_str(mapping->control.type);
@@ -299,6 +432,15 @@ static int write_mapping(struct mapping mappings[MAPPINGS_SIZE],
 	return EXIT_SUCCESS;
 }
 
+const char civis[] = { 0x1b, 0x5b, 0x3f, 0x32, 0x35, 0x6c, 0};
+const char cnorm[] = { 0x1b, 0x5b, 0x3f, 0x31, 0x32, 0x6c, 0x1b, 0x5b, 0x3f,
+		0x32, 0x35, 0x68, 0 };
+
+static void restore_cursor(void)
+{
+	printf(cnorm);
+}
+
 int main(int argc, char **argv)
 {
 	int i;
@@ -322,11 +464,10 @@ int main(int argc, char **argv)
 	mappings_dir = argv[1];
 
 	printf("%s[%jd] starting\n", progname, (intmax_t)getpid());
-	ret = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0;
+	ret = SDL_Init(SDL_INIT_JOYSTICK);
 	if (ret < 0)
 		error(EXIT_FAILURE, 0, "SDL_Init(SDL_INIT_JOYSTICK)");
 	atexit(SDL_Quit);
-	SDL_JoystickEventState(SDL_ENABLE);
 
 	num_joysticks = SDL_NumJoysticks();
 	if (num_joysticks == 0)
@@ -336,7 +477,7 @@ int main(int argc, char **argv)
 
 	for (i = 0; i < num_joysticks; i++)
 		printf("Joystick %d's name is \"%s\"\n", i,
-				SDL_JoystickName(i));
+				SDL_JoystickNameForIndex(i));
 
 	if (num_joysticks == 1) {
 		joystick.index = 0;
@@ -365,21 +506,30 @@ int main(int argc, char **argv)
 	joystick.joystick = SDL_JoystickOpen(joystick.index);
 	if (joystick.joystick == NULL)
 		error(EXIT_FAILURE, 0, "SDL_JoystickOpen(%d)", joystick.index);
-	joystick.name = SDL_JoystickName(joystick.index);
+	printf("SDL_JoystickGetAttached(%d) = %d\n", joystick.index,
+			SDL_JoystickGetAttached(joystick.joystick));
+	joystick.name = SDL_JoystickNameForIndex(joystick.index);
 	joystick.num.axes = SDL_JoystickNumAxes(joystick.joystick);
 	joystick.num.balls = SDL_JoystickNumBalls(joystick.joystick);
 	joystick.num.hats = SDL_JoystickNumHats(joystick.joystick);
 	joystick.num.buttons = SDL_JoystickNumButtons(joystick.joystick);
+	joystick.id = SDL_JoystickInstanceID(joystick.joystick);
+	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick.joystick),
+			joystick.guid, GUID_SIZE);
 
-	printf("Configuring joystick %d: %s\n", joystick.index, joystick.name);
+	printf("Configuring joystick %d, id %"PRIi32", GUID:%s: %s\n",
+			joystick.index, joystick.id, joystick.guid,
+			joystick.name);
 	printf("\tAxes: %d\n", joystick.num.axes);
 	printf("\tBalls: %d\n", joystick.num.balls);
 	printf("\tHats: %d\n", joystick.num.hats);
 	printf("\tButtons: %d\n", joystick.num.buttons);
 
+	printf(civis);
+	atexit(restore_cursor);
 	button = GB_BUTTON_INVALID;
 	next_button(&button);
-	while (handle_event(&event, mappings + button, &button, joystick.index))
+	while (handle_event(&event, mappings + button, &button, &joystick))
 		;
 
 	/* quit if mapping hasn't completed */
@@ -387,5 +537,5 @@ int main(int argc, char **argv)
 		return EXIT_SUCCESS;
 
 	/* otherwise, write to file */
-	return write_mapping(mappings, mappings_dir, joystick.name);
+	return write_mapping(mappings, mappings_dir, &joystick);
 }
