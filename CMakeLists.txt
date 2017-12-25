@@ -38,7 +38,7 @@ endif (UNIX)
 
 add_executable(gb ${SOURCE_FILES})
 add_executable(rom_info tools/rom_info/rom_info.c src/rom.c)
-add_executable(joypad_mapping tools/joypad_mapping/joypad_mapping.c)
+add_executable(joypad_mapping tools/joypad_mapping/joypad_mapping.c src/ae_config.c)
 
 if (WIN32 OR MSYS OR MINGW )
     target_link_libraries(gb -lmingw32 -lSDL2main -lSDL2  opengl32  glu32 m dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 version uuid)

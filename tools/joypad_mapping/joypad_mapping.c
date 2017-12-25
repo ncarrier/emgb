@@ -7,9 +7,12 @@
 #include <ctype.h>
 #include <error.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
+
+#include "ae_config.h"
 
 #define MAX_JOYSTICKS 10
 #define INPUT_LENGTH 4
@@ -31,10 +34,15 @@ struct joystick {
 };
 
 enum control_type {
-	CONTROL_TYPE_AXIS,
+	CONTROL_TYPE_FIRST,
+
+	CONTROL_TYPE_AXIS = CONTROL_TYPE_FIRST,
 	CONTROL_TYPE_BALL,
 	CONTROL_TYPE_HAT,
 	CONTROL_TYPE_BUTTON,
+
+	CONTROL_TYPE_LAST = CONTROL_TYPE_BUTTON,
+	CONTROL_TYPE_INVALID
 };
 
 enum gb_button {
@@ -418,7 +426,7 @@ static int write_mapping(struct mapping mappings[MAPPINGS_SIZE],
 			break;
 
 		case CONTROL_TYPE_HAT:
-			fprintf(mapping_file, "%"PRIu8";%"PRIi16"\n",
+			fprintf(mapping_file, "%"PRIu8";%"PRIi8"\n",
 					mapping->control.hat.index,
 					mapping->control.hat.value);
 			break;
@@ -441,6 +449,181 @@ static void restore_cursor(void)
 	printf(cnorm);
 }
 
+static enum control_type control_type_from_string_prefix(const char *str)
+{
+	enum control_type type;
+	const char *type_str;
+
+	for (type = CONTROL_TYPE_FIRST; type <= CONTROL_TYPE_LAST; type++) {
+		type_str = control_type_to_str(type);
+		if (strncmp(str, type_str, strlen(type_str)) == 0)
+			break;
+	}
+
+	return type;
+}
+
+static /* __attribute__((printf(2, 3))) */ int load_mapping(
+		struct mapping mappings[MAPPINGS_SIZE], const char *fmt, ...)
+{
+	int ret;
+	va_list args;
+	char __attribute__((cleanup(cleanup_string)))*path = NULL;
+	FILE __attribute__((cleanup(cleanup_file)))*f = NULL;
+	struct ae_config __attribute__((cleanup(ae_config_cleanup)))config = {
+			.argz = NULL,
+			.len = 0,
+	};
+	enum gb_button button;
+	const char *button_config;
+	enum control_type type;
+	struct mapping *mapping;
+
+	va_start(args, fmt);
+	ret = vasprintf(&path, fmt, args);
+	va_end(args);
+	if (ret < 0) {
+		path = NULL;
+		error(EXIT_FAILURE, 0, "vasprintf");
+	}
+	ret = ae_config_read(&config, path);
+	if (ret < 0) {
+		fprintf(stderr, "ae_config_read: %s\n", strerror(-ret));
+		return ret;
+	}
+
+	for (button = GB_BUTTON_FIRST; button <= GB_BUTTON_LAST; button++) {
+		button_config = ae_config_get(&config,
+				gb_button_to_str(button));
+		mapping = mappings + button;
+		mapping->button = button;
+		type = control_type_from_string_prefix(button_config);
+		mapping->control.type = type;
+		switch (type) {
+		case CONTROL_TYPE_BUTTON:
+			sscanf(button_config, "button;%"SCNu8,
+					&mapping->control.button.index);
+			break;
+
+		case CONTROL_TYPE_AXIS:
+			sscanf(button_config, "axis;%"SCNu8";%"SCNi16,
+					&mapping->control.axis.index,
+					&mapping->control.axis.value);
+			break;
+
+		case CONTROL_TYPE_HAT:
+			sscanf(button_config, "hat;%"SCNu8";%"SCNi8"\n",
+					&mapping->control.hat.index,
+					&mapping->control.hat.value);
+			break;
+
+		default:
+			printf("Type %s not handled yet.\n",
+					control_type_to_str(type));
+			break;
+		}
+	}
+
+	struct joystick joystick = {
+			.name = "dummy",
+			.guid = {
+					[0] = '\0'
+			},
+	};
+	write_mapping(mappings, ".", &joystick);
+	return 0;
+}
+
+static bool handle_test_event(const char *mappings_dir,
+		struct mapping mappings[MAPPINGS_SIZE])
+{
+	int ret;
+	bool has_event;
+	SDL_Event event;
+	const char *joystick_name;
+	char __attribute__((cleanup(cleanup_string)))*canon_name = NULL;
+
+	has_event = SDL_PollEvent(&event);
+	if (!has_event)
+		return true;
+
+	switch (event.type) {
+	case SDL_JOYDEVICEADDED:
+		joystick_name = SDL_JoystickNameForIndex(event.jdevice.which);
+		canon_name = strdup(joystick_name);
+		if (canon_name == NULL)
+			error(EXIT_FAILURE, errno, "strdup");
+		printf("Joystick %s (index = %"PRIi32") detected.\n",
+				canon_name, event.jdevice.which);
+		canonicalize_joystick_name(canon_name);
+		printf("looking for %s/%s.mapping\n", mappings_dir, canon_name);
+		ret = load_mapping(mappings, "%s/%s.mapping", mappings_dir,
+				canon_name);
+		if (ret == 0) {
+			printf("loaded mapping successfully\n");
+		} else {
+			printf("No mapping found for %s\n", joystick_name);
+		}
+		break;
+
+	case SDL_JOYDEVICEREMOVED:
+		printf("Joystick id = %"PRIi32" removed.\n",
+				event.jdevice.which);
+		break;
+
+	case SDL_JOYBUTTONDOWN:
+		break;
+
+	case SDL_JOYBUTTONUP:
+		return true;
+
+	case SDL_JOYAXISMOTION:
+		break;
+
+	case SDL_JOYHATMOTION:
+		break;
+
+	case SDL_QUIT:
+		printf("Quitting on user's request.\n");
+		return false;
+
+	default:
+		printf("Unhandled event %s\n",
+				event_type_to_string(event.type));
+	}
+
+	return true;
+}
+
+static int test_joypad(const char *mappings_dir)
+{
+	int i;
+	int ret;
+	struct mapping mappings[MAPPINGS_SIZE];
+
+	for (i = 0; i <= GB_BUTTON_LAST; i++)
+		mappings[i].button = GB_BUTTON_INVALID;
+	printf("Waiting for joystick detection\n");
+	ret = SDL_Init(SDL_INIT_JOYSTICK);
+	if (ret < 0)
+		error(EXIT_FAILURE, 0, "SDL_Init(SDL_INIT_JOYSTICK)");
+	atexit(SDL_Quit);
+
+	while (handle_test_event(mappings_dir, mappings))
+		;
+
+	return EXIT_SUCCESS;
+}
+
+__attribute__((noreturn))
+static void usage(const char *progname)
+{
+	error(EXIT_FAILURE, 0, "usage: %s [--test] mappings_dir", progname);
+
+	/* useless but otherwise, it seems gcc can't detect we don't return */
+	exit(EXIT_FAILURE);
+}
+
 int main(int argc, char **argv)
 {
 	int i;
@@ -459,11 +642,19 @@ int main(int argc, char **argv)
 	const char *mappings_dir;
 
 	progname = basename(argv[0]);
-	if (argc != 2)
-		error(EXIT_FAILURE, 0, "usage: %s mappings_dir", progname);
+	printf("%s[%jd] starting\n", progname, (intmax_t)getpid());
+	if (argc == 3) {
+		if (strcmp(argv[1], "--test") != 0)
+			usage(progname);
+
+		mappings_dir = argv[2];
+		return test_joypad(mappings_dir);
+	}
+	if (argc != 2 || strcmp(argv[1], "--test") == 0)
+		usage(progname);
+
 	mappings_dir = argv[1];
 
-	printf("%s[%jd] starting\n", progname, (intmax_t)getpid());
 	ret = SDL_Init(SDL_INIT_JOYSTICK);
 	if (ret < 0)
 		error(EXIT_FAILURE, 0, "SDL_Init(SDL_INIT_JOYSTICK)");
