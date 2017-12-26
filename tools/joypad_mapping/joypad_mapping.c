@@ -10,143 +10,12 @@
 #include <errno.h>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_events.h>
 
+#include "utils.h"
 #include "ae_config.h"
+#include "joystick_config.h"
 
-#define MAX_JOYSTICKS 10
 #define INPUT_LENGTH 4
-#define MAPPINGS_SIZE 8
-#define GUID_SIZE 33
-
-#define cleanup(f) __attribute((cleanup(f)))
-
-struct joystick {
-	SDL_Joystick *joystick;
-	const char *name;
-	char guid[GUID_SIZE];
-	int index;
-	SDL_JoystickID id;
-	struct {
-		int axes;
-		int balls;
-		int hats;
-		int buttons;
-	} num;
-};
-
-enum control_type {
-	CONTROL_TYPE_FIRST,
-
-	CONTROL_TYPE_BALL = CONTROL_TYPE_FIRST,
-	CONTROL_TYPE_AXIS,
-	CONTROL_TYPE_HAT,
-	CONTROL_TYPE_BUTTON,
-
-	CONTROL_TYPE_LAST = CONTROL_TYPE_BUTTON,
-	CONTROL_TYPE_INVALID
-};
-
-enum gb_button {
-	GB_BUTTON_FIRST,
-
-	GB_BUTTON_UP = GB_BUTTON_FIRST,
-	GB_BUTTON_RIGHT,
-	GB_BUTTON_DOWN,
-	GB_BUTTON_LEFT,
-	GB_BUTTON_A,
-	GB_BUTTON_B,
-	GB_BUTTON_START,
-	GB_BUTTON_SELECT,
-
-	GB_BUTTON_LAST = GB_BUTTON_SELECT,
-	GB_BUTTON_INVALID
-};
-
-struct control {
-	enum control_type type;
-	union {
-		struct {
-			uint8_t index;
-			int16_t value;
-		} axis;
-		struct {
-			uint8_t index;
-			uint8_t value;
-		} hat;
-		struct {
-			uint8_t index;
-		} button;
-	};
-};
-
-struct mapping {
-	enum gb_button button;
-	struct control control;
-};
-
-struct button_states {
-	union {
-		struct {
-			bool up;
-			bool right;
-			bool down;
-			bool left;
-			bool a;
-			bool b;
-			bool start;
-			bool select;
-		};
-		bool array[MAPPINGS_SIZE];
-	};
-};
-
-struct joystick_config {
-	bool initialized;
-	struct joystick joystick;
-	struct button_states buttons;
-	struct mapping mappings[MAPPINGS_SIZE];
-};
-
-static void close_joystick_config(struct joystick_config *jc)
-{
-	if (jc == NULL || jc->joystick.joystick == NULL)
-		return;
-
-	SDL_JoystickClose(jc->joystick.joystick);
-}
-
-static const char *gb_button_to_str(enum gb_button button)
-{
-	switch (button) {
-	case GB_BUTTON_UP:
-		return "up";
-
-	case GB_BUTTON_RIGHT:
-		return "right";
-
-	case GB_BUTTON_DOWN:
-		return "down";
-
-	case GB_BUTTON_LEFT:
-		return "left";
-
-	case GB_BUTTON_A:
-		return "A";
-
-	case GB_BUTTON_B:
-		return "B";
-
-	case GB_BUTTON_START:
-		return "start";
-
-	case GB_BUTTON_SELECT:
-		return "select";
-
-	default:
-		return "(unknown)";
-	}
-}
 
 static void next_button(enum gb_button *button)
 {
@@ -312,26 +181,6 @@ static bool check_mapping_is_available(
 	return true;
 }
 
-static const char *control_type_to_str(enum control_type type)
-{
-	switch (type) {
-	case CONTROL_TYPE_BUTTON:
-		return "button";
-
-	case CONTROL_TYPE_AXIS:
-		return "axis";
-
-	case CONTROL_TYPE_BALL:
-		return "ball";
-
-	case CONTROL_TYPE_HAT:
-		return "hat";
-
-	default:
-		return "(invalid)";
-	}
-}
-
 static bool handle_event(struct joystick_config *joystick_config,
 		SDL_Event *event, enum gb_button *button)
 {
@@ -441,38 +290,6 @@ static bool handle_event(struct joystick_config *joystick_config,
 	return *button != GB_BUTTON_INVALID;
 }
 
-static void cleanup_file(FILE **pfile)
-{
-	if (pfile == NULL || *pfile == NULL)
-		return;
-
-	fclose(*pfile);
-	*pfile = NULL;
-}
-
-static void cleanup_string(char **str)
-{
-	if (str == NULL || *str == NULL)
-		return;
-
-	free(*str);
-	*str = NULL;
-}
-
-static char *canonicalize_joystick_name(char *name)
-{
-	size_t len;
-
-	len = strlen(name);
-	while (len--)
-		if (!isalnum(name[len]))
-			name[len] = '_';
-		else
-			name[len] = tolower(name[len]);
-
-	return name;
-}
-
 static int write_mapping(const struct joystick_config *joystick_config,
 		const char *mappings_dir)
 {
@@ -549,148 +366,6 @@ static void restore_cursor(void)
 	printf(cnorm);
 }
 
-static enum control_type control_type_from_string_prefix(const char *str)
-{
-	enum control_type type;
-	const char *type_str;
-
-	for (type = CONTROL_TYPE_FIRST; type <= CONTROL_TYPE_LAST; type++) {
-		type_str = control_type_to_str(type);
-		if (strncmp(str, type_str, strlen(type_str)) == 0)
-			break;
-	}
-
-	return type;
-}
-
-static /* __attribute__((printf(2, 3))) */ int load_mapping(
-		struct mapping mappings[MAPPINGS_SIZE], const char *fmt, ...)
-{
-	int ret;
-	va_list args;
-	char cleanup(cleanup_string)*path = NULL;
-	FILE cleanup(cleanup_file)*f = NULL;
-	struct ae_config cleanup(ae_config_cleanup)config = {
-			.argz = NULL,
-			.len = 0,
-	};
-	enum gb_button button;
-	const char *button_config;
-	enum control_type type;
-	struct mapping *mapping;
-
-	va_start(args, fmt);
-	ret = vasprintf(&path, fmt, args);
-	va_end(args);
-	if (ret < 0) {
-		path = NULL;
-		error(EXIT_FAILURE, 0, "vasprintf");
-	}
-	ret = ae_config_read(&config, path);
-	if (ret < 0) {
-		fprintf(stderr, "ae_config_read: %s\n", strerror(-ret));
-		return ret;
-	}
-
-	for (button = GB_BUTTON_FIRST; button <= GB_BUTTON_LAST; button++) {
-		button_config = ae_config_get(&config,
-				gb_button_to_str(button));
-		mapping = mappings + button;
-		mapping->button = button;
-		type = control_type_from_string_prefix(button_config);
-		mapping->control.type = type;
-		switch (type) {
-		case CONTROL_TYPE_BUTTON:
-			sscanf(button_config, "button;%"SCNu8,
-					&mapping->control.button.index);
-			break;
-
-		case CONTROL_TYPE_AXIS:
-			sscanf(button_config, "axis;%"SCNu8";%"SCNi16,
-					&mapping->control.axis.index,
-					&mapping->control.axis.value);
-			break;
-
-		case CONTROL_TYPE_HAT:
-			sscanf(button_config, "hat;%"SCNu8";%"SCNi8"\n",
-					&mapping->control.hat.index,
-					&mapping->control.hat.value);
-			break;
-
-		default:
-			printf("Type %s not handled yet.\n",
-					control_type_to_str(type));
-			break;
-		}
-	}
-
-	return 0;
-}
-
-static void reset_mappings(struct mapping mappings[MAPPINGS_SIZE])
-{
-	int i;
-
-	memset(mappings, 0, sizeof(*mappings) * MAPPINGS_SIZE);
-
-	for (i = 0; i <= GB_BUTTON_LAST; i++)
-		mappings[i].button = GB_BUTTON_INVALID;
-}
-
-static void reset_joystick_config(struct joystick_config *joystick_config)
-{
-	memset(joystick_config, 0, sizeof(*joystick_config));
-	reset_mappings(joystick_config->mappings);
-}
-
-static void cleanup_joystick_config(struct joystick_config *joystick_config)
-{
-	close_joystick_config(joystick_config);
-	reset_joystick_config(joystick_config);
-}
-
-static int init_joystick_config(struct joystick_config *joystick_config,
-		int index, const char *mappings_dir)
-{
-	int ret;
-	struct joystick *joystick;
-	char cleanup(cleanup_string)* canon_name = NULL;
-
-	reset_joystick_config(joystick_config);
-
-	joystick_config->initialized = true;
-	joystick = &joystick_config->joystick;
-	joystick->index = index;
-	joystick->joystick = SDL_JoystickOpen(index);
-	if (joystick->joystick == NULL)
-		error(EXIT_FAILURE, 0, "SDL_JoystickOpen(%d)", index);
-	joystick->name = SDL_JoystickNameForIndex(index);
-	joystick->num.axes = SDL_JoystickNumAxes(joystick->joystick);
-	joystick->num.balls = SDL_JoystickNumBalls(joystick->joystick);
-	joystick->num.hats = SDL_JoystickNumHats(joystick->joystick);
-	joystick->num.buttons = SDL_JoystickNumButtons(joystick->joystick);
-	joystick->id = SDL_JoystickInstanceID(joystick->joystick);
-	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick),
-			joystick->guid, GUID_SIZE);
-
-	if (mappings_dir == NULL)
-		return 0;
-
-	canon_name = strdup(joystick->name);
-	if (canon_name == NULL)
-		return -errno;
-	canonicalize_joystick_name(canon_name);
-	printf("looking for %s/%s.mapping\n", mappings_dir, canon_name);
-	ret = load_mapping(joystick_config->mappings, "%s/%s.mapping",
-			mappings_dir, canon_name);
-	if (ret != 0)
-		return ret;
-
-	printf("loaded mapping successfully\n");
-
-	return 0;
-}
-
 static bool handle_test_event(const char *mappings_dir,
 		struct joystick_config *joystick_config)
 {
@@ -699,7 +374,7 @@ static bool handle_test_event(const char *mappings_dir,
 	bool has_event;
 	SDL_Event event;
 	const char *joystick_name;
-	static struct control *control;
+	struct control *control;
 
 	has_event = SDL_PollEvent(&event);
 	if (!has_event)

@@ -1,6 +1,8 @@
 #include "joypad.h"
 #include "GB.h"
 
+#define MAPPINGS_DIR "~/.emgb/"
+
 void keyDown(struct s_gb * gb_s)
 {
 	gb_s->gb_cpu.stopCpu = 0;
@@ -77,22 +79,46 @@ void keyUp(struct s_gb * gb_s)
 	}
 }
 
-void handleEvent(struct s_gb * gb_s)
+void handleEvent(struct s_gb *gb_s)
 {
-	if (SDL_PollEvent(&(gb_s->gb_gpu.event)) != 0)
-	{
-		switch (gb_s->gb_gpu.event.type) {
-		case SDL_QUIT: {
-			printf("see u.\n");
-			gb_s->running = 0;
+	int ret;
+	const char *joystick_name;
+	SDL_Event *event;
+	struct joystick_config *joystick_config;
+
+	joystick_config = &gb_s->joystick_config;
+	event = &(gb_s->gb_gpu.event);
+	if (SDL_PollEvent(event) == 0)
+		return;
+
+	switch (gb_s->gb_gpu.event.type) {
+	case SDL_QUIT: {
+		printf("see u.\n");
+		gb_s->running = 0;
+		break;
+	}
+
+	case SDL_JOYDEVICEADDED:
+		joystick_name = SDL_JoystickNameForIndex(event->jdevice.which);
+		printf("Joystick %s (index = %"PRIi32") detected.\n",
+				joystick_name, event->jdevice.which);
+		if (joystick_config->initialized) {
+			printf("Skipped, already using joystick %s\n",
+					joystick_config->joystick.name);
 			break;
 		}
-		case SDL_KEYDOWN:
-			keyDown(gb_s);
-			break;
-		case SDL_KEYUP:
-			keyUp(gb_s);
-			break;
+		ret = init_joystick_config(joystick_config,
+				event->jdevice.which, gb_s->config_dir_path);
+		if (ret < 0) {
+			printf("No mapping found for %s\n", joystick_name);
+			cleanup_joystick_config(joystick_config);
 		}
+		break;
+	case SDL_KEYDOWN:
+		keyDown(gb_s);
+		break;
+	case SDL_KEYUP:
+		keyUp(gb_s);
+		break;
 	}
 }

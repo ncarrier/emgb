@@ -1,13 +1,16 @@
 #ifndef _UTILS_H
 #define _UTILS_H
-
+#include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define BIT0(v) ((v) & 1)
 #define BIT(i, v) BIT0((v) >> (i))
 
 #define SET_BIT(f, b) ((f) |= (1 << (b)))
 #define CLEAR_BIT(f, b) ((f) &= ~(1 << (b)))
+
+#define cleanup(f) __attribute((cleanup(f)))
 
 static inline bool str_matches(const char *s1, const char *s2)
 {
@@ -29,5 +32,8 @@ static inline char *str_diff_chr(const char *s1, const char *s2)
 
 	return (char *)s1;
 }
+
+void cleanup_string(char **str);
+void cleanup_file(FILE **pfile);
 
 #endif /* _UTILS_H */
