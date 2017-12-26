@@ -625,20 +625,27 @@ static void reset_joystick_config(struct joystick_config *joystick_config)
 	reset_mappings(joystick_config->mappings);
 }
 
-static int init_joystick_config(struct joystick_config *joystick_config,
-		int index)
+static void cleanup_joystick_config(struct joystick_config *joystick_config)
 {
+	close_joystick_config(joystick_config);
+	reset_joystick_config(joystick_config);
+}
+
+static int init_joystick_config(struct joystick_config *joystick_config,
+		int index, const char *mappings_dir)
+{
+	int ret;
 	struct joystick *joystick;
+	char cleanup(cleanup_string)* canon_name = NULL;
 
 	reset_joystick_config(joystick_config);
 
+	joystick_config->initialized = true;
 	joystick = &joystick_config->joystick;
 	joystick->index = index;
 	joystick->joystick = SDL_JoystickOpen(index);
 	if (joystick->joystick == NULL)
 		error(EXIT_FAILURE, 0, "SDL_JoystickOpen(%d)", index);
-	printf("SDL_JoystickGetAttached(%d) = %d\n", index,
-			SDL_JoystickGetAttached(joystick->joystick));
 	joystick->name = SDL_JoystickNameForIndex(index);
 	joystick->num.axes = SDL_JoystickNumAxes(joystick->joystick);
 	joystick->num.balls = SDL_JoystickNumBalls(joystick->joystick);
@@ -647,6 +654,22 @@ static int init_joystick_config(struct joystick_config *joystick_config,
 	joystick->id = SDL_JoystickInstanceID(joystick->joystick);
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick),
 			joystick->guid, GUID_SIZE);
+
+	if (mappings_dir == NULL)
+		return 0;
+
+	canon_name = strdup(joystick->name);
+	if (canon_name == NULL)
+		return -errno;
+	canonicalize_joystick_name(canon_name);
+	printf("looking for %s/%s.mapping\n", mappings_dir, canon_name);
+	ret = load_mapping(joystick_config->mappings, "%s/%s.mapping",
+			mappings_dir, canon_name);
+	if (ret != 0)
+		return ret;
+
+	printf("loaded mapping successfully\n");
+
 	return 0;
 }
 
@@ -657,7 +680,6 @@ static bool handle_test_event(const char *mappings_dir,
 	bool has_event;
 	SDL_Event event;
 	const char *joystick_name;
-	char cleanup(cleanup_string)*canon_name = NULL;
 
 	has_event = SDL_PollEvent(&event);
 	if (!has_event)
@@ -665,35 +687,31 @@ static bool handle_test_event(const char *mappings_dir,
 
 	switch (event.type) {
 	case SDL_JOYDEVICEADDED:
-	{
-		char cleanup(cleanup_string)* canon_name = NULL;
 		joystick_name = SDL_JoystickNameForIndex(event.jdevice.which);
-		canon_name = strdup(joystick_name);
-		if (canon_name == NULL)
-			error(EXIT_FAILURE, errno, "strdup");
 		printf("Joystick %s (index = %"PRIi32") detected.\n",
-				canon_name, event.jdevice.which);
-		canonicalize_joystick_name(canon_name);
-		printf("looking for %s/%s.mapping\n", mappings_dir, canon_name);
-		ret = load_mapping(joystick_config->mappings, "%s/%s.mapping",
-				mappings_dir, canon_name);
-		if (ret == 0) {
-			printf("loaded mapping successfully\n");
-		} else {
-			printf("No mapping found for %s\n", joystick_name);
+				joystick_name, event.jdevice.which);
+		if (joystick_config->initialized) {
+			printf("Skipped, already using joystick %s\n",
+					joystick_config->joystick.name);
+			break;
 		}
-	}
+		ret = init_joystick_config(joystick_config, event.jdevice.which,
+				mappings_dir);
+		if (ret < 0) {
+			printf("No mapping found for %s\n", joystick_name);
+			cleanup_joystick_config(joystick_config);
+		}
 		break;
 
 	case SDL_JOYDEVICEREMOVED:
-		/*
-		 * TODO only if the joystick removed is the one we read the
-		 * config of
-		 */
-		reset_mappings(joystick_config->mappings);
-
 		printf("Joystick SDL_JoystickID = %"PRIi32" removed.\n",
 				event.jdevice.which);
+		if (!joystick_config->initialized)
+			break;
+		if (joystick_config->joystick.id != event.jdevice.which)
+			break;
+
+		cleanup_joystick_config(joystick_config);
 		break;
 
 	case SDL_JOYBUTTONDOWN:
@@ -816,7 +834,7 @@ int main(int argc, char **argv)
 					value);
 	}
 
-	ret = init_joystick_config(&joystick_config, value);
+	ret = init_joystick_config(&joystick_config, value, NULL);
 	if (ret < 0)
 		error(EXIT_FAILURE, -ret, "init_joystick_config");
 
