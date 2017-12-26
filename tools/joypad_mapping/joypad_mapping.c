@@ -38,8 +38,8 @@ struct joystick {
 enum control_type {
 	CONTROL_TYPE_FIRST,
 
-	CONTROL_TYPE_AXIS = CONTROL_TYPE_FIRST,
-	CONTROL_TYPE_BALL,
+	CONTROL_TYPE_BALL = CONTROL_TYPE_FIRST,
+	CONTROL_TYPE_AXIS,
 	CONTROL_TYPE_HAT,
 	CONTROL_TYPE_BUTTON,
 
@@ -248,112 +248,51 @@ static const char *event_type_to_string(uint32_t type)
 	}
 }
 
-static bool handle_event(struct joystick_config *joystick_config,
-		SDL_Event *event, enum gb_button *button)
+#define have_same_sign(n1, n2) (((n1) * (n2)) > 0)
+
+static bool controls_are_equal(const struct control *c1,
+		const struct control *c2)
 {
-	static int flush = 10;
-	int has_event;
-	struct joystick *joystick;
-	struct mapping *mapping;
-
-	has_event = SDL_PollEvent(event);
-	/*
-	 * some spurious events are generated at startup, don't know why, but by
-	 * flushing them, things seem to work
-	 */
-	if (flush != 0) {
-		flush--;
-		return true;
-	}
-	if (has_event == 0)
-		return true;
-
-	joystick = &joystick_config->joystick;
-	mapping = joystick_config->mappings + *button;
-
-	switch (event->type) {
-	case SDL_JOYDEVICEADDED:
-		printf("Joystick %"PRIi32" detected.\n", event->jdevice.which);
-		break;
-
-	case SDL_JOYDEVICEREMOVED:
-		if (event->jdevice.which == joystick->id)
-			error(EXIT_FAILURE, 0, "Joystick removed, aborting\n");
-		break;
-
-	case SDL_JOYBUTTONDOWN:
-		if (event->jbutton.which != joystick->id)
-			return true;
-
-		printf("%s mapped to button %"PRIu8"\n",
-				gb_button_to_str(*button),
-				event->jbutton.button);
-		mapping->button = *button;
-		mapping->control.type = CONTROL_TYPE_BUTTON;
-		mapping->control.button.index = event->jbutton.button;
-		next_button(button);
-		break;
-
-	case SDL_JOYBUTTONUP:
-		return true;
-
-	case SDL_JOYAXISMOTION:
-		if (event->jaxis.which != joystick->id ||
-				event->jaxis.value == 0)
-			return true;
-
-		printf("%s mapped to axis %"PRIu8", value %"PRIi16"\n",
-				gb_button_to_str(*button), event->jaxis.axis,
-				event->jaxis.value);
-		mapping->button = *button;
-		mapping->control.type = CONTROL_TYPE_AXIS;
-		mapping->control.axis.index = event->jaxis.axis;
-		mapping->control.axis.value = event->jaxis.value;
-		next_button(button);
-		break;
-
-	case SDL_JOYHATMOTION:
-		if (event->jhat.which != joystick->id ||
-				event->jhat.value == SDL_HAT_CENTERED)
-			return true;
-
-		printf("%s mapped to hat %"PRIu8", value %"PRIi16"\n",
-				gb_button_to_str(*button), event->jhat.hat,
-				event->jhat.value);
-		mapping->button = *button;
-		mapping->control.type = CONTROL_TYPE_HAT;
-		mapping->control.hat.index = event->jhat.hat;
-		mapping->control.hat.value = event->jhat.value;
-		next_button(button);
-		break;
-
-	case SDL_QUIT:
-		printf("Quitting on user's request.\n");
+	if (c1->type != c2->type)
 		return false;
 
+	switch (c1->type) {
+	case CONTROL_TYPE_AXIS:
+		return c2->axis.index == c1->axis.index &&
+				have_same_sign(c2->axis.value, c1->axis.value);
+
+	case CONTROL_TYPE_BALL:
+		return false; /* TODO not handled yet */
+
+	case CONTROL_TYPE_HAT:
+		return c2->hat.index == c1->hat.index &&
+				have_same_sign(c2->hat.value, c1->hat.value);
+
+	case CONTROL_TYPE_BUTTON:
+		return c2->button.index == c1->button.index;
+
 	default:
-		printf("Unhandled event %"PRIu8"\n", event->type);
+		return false;
+	}
+}
+
+static bool check_mapping_is_available(
+		const struct mapping mappings[MAPPINGS_SIZE],
+		const struct mapping *mapping)
+{
+	unsigned i;
+	const struct mapping *cur;
+
+	for (i = 0; i < MAPPINGS_SIZE; i++) {
+		cur = mappings + i;
+		if (cur->button == GB_BUTTON_INVALID)
+			continue;
+
+		if (controls_are_equal(&mapping->control, &cur->control))
+			return false;
 	}
 
-	return *button != GB_BUTTON_INVALID;
-}
-
-static void cleanup_file(FILE **pfile)
-{
-	if (pfile == NULL || *pfile == NULL)
-		return;
-
-	fclose(*pfile);
-	*pfile = NULL;
-}
-
-static void cleanup_string(char **str)
-{
-	if (str == NULL || *str == NULL)
-		return;
-
-	free(*str);
-	*str = NULL;
+	return true;
 }
 
 static const char *control_type_to_str(enum control_type type)
@@ -374,6 +313,132 @@ static const char *control_type_to_str(enum control_type type)
 	default:
 		return "(invalid)";
 	}
+}
+
+static bool handle_event(struct joystick_config *joystick_config,
+		SDL_Event *event, enum gb_button *button)
+{
+	static int flush = 10;
+	int has_event;
+	struct joystick *joystick;
+	struct mapping mapping;
+	struct mapping *mappings;
+
+	has_event = SDL_PollEvent(event);
+	/*
+	 * some spurious events are generated at startup, don't know why, but by
+	 * flushing them, things seem to work
+	 */
+	if (flush != 0) {
+		flush--;
+		return true;
+	}
+	if (has_event == 0)
+		return true;
+
+	joystick = &joystick_config->joystick;
+	mappings = joystick_config->mappings;
+
+	switch (event->type) {
+	case SDL_JOYDEVICEADDED:
+		printf("Joystick %"PRIi32" detected.\n", event->jdevice.which);
+		return true;
+
+	case SDL_JOYDEVICEREMOVED:
+		if (event->jdevice.which == joystick->id)
+			error(EXIT_FAILURE, 0, "Joystick removed, aborting\n");
+		return true;
+
+	case SDL_JOYBUTTONDOWN:
+		if (event->jbutton.which != joystick->id)
+			return true;
+
+		mapping.button = *button;
+		mapping.control.type = CONTROL_TYPE_BUTTON;
+		mapping.control.button.index = event->jbutton.button;
+		if (!check_mapping_is_available(mappings, &mapping)) {
+			printf("Button %"PRIu8" already assigned.\n",
+					event->jbutton.button);
+			return true;
+		}
+		printf("%s mapped to button %"PRIu8"\n",
+				gb_button_to_str(*button),
+				event->jbutton.button);
+		break;
+
+	case SDL_JOYBUTTONUP:
+		return true;
+
+	case SDL_JOYAXISMOTION:
+		if (event->jaxis.which != joystick->id ||
+				event->jaxis.value == 0)
+			return true;
+
+		mapping.button = *button;
+		mapping.control.type = CONTROL_TYPE_AXIS;
+		mapping.control.axis.index = event->jaxis.axis;
+		mapping.control.axis.value = event->jaxis.value;
+		if (!check_mapping_is_available(mappings, &mapping)) {
+			printf("Axis %"PRIu8"%s already assigned.\n",
+					event->jaxis.axis,
+					event->jaxis.value > 0 ? "+" : "-");
+			return true;
+		}
+		printf("%s mapped to axis %"PRIu8", value %"PRIi16"\n",
+				gb_button_to_str(*button), event->jaxis.axis,
+				event->jaxis.value);
+		break;
+
+	case SDL_JOYHATMOTION:
+		if (event->jhat.which != joystick->id ||
+				event->jhat.value == SDL_HAT_CENTERED)
+			return true;
+
+		mapping.button = *button;
+		mapping.control.type = CONTROL_TYPE_HAT;
+		mapping.control.hat.index = event->jhat.hat;
+		mapping.control.hat.value = event->jhat.value;
+		if (!check_mapping_is_available(mappings, &mapping)) {
+			printf("Hat %"PRIu8"%s already assigned.\n",
+					event->jhat.hat,
+					event->jhat.value > 0 ? "+" : "-");
+			return true;
+		}
+		printf("%s mapped to hat %"PRIu8", value %"PRIi16"\n",
+				gb_button_to_str(*button), event->jhat.hat,
+				event->jhat.value);
+		break;
+
+	case SDL_QUIT:
+		printf("Quitting on user's request.\n");
+		return false;
+
+	default:
+		printf("Unhandled event %"PRIu8"\n", event->type);
+	}
+
+	mappings[*button] = mapping;
+	next_button(button);
+
+	return *button != GB_BUTTON_INVALID;
+}
+
+static void cleanup_file(FILE **pfile)
+{
+	if (pfile == NULL || *pfile == NULL)
+		return;
+
+	fclose(*pfile);
+	*pfile = NULL;
+}
+
+static void cleanup_string(char **str)
+{
+	if (str == NULL || *str == NULL)
+		return;
+
+	free(*str);
+	*str = NULL;
 }
 
 static char *canonicalize_joystick_name(char *name)
