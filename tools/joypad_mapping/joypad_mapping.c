@@ -394,7 +394,8 @@ static bool handle_event(struct joystick_config *joystick_config,
 		mapping.button = *button;
 		mapping.control.type = CONTROL_TYPE_AXIS;
 		mapping.control.axis.index = event->jaxis.axis;
-		mapping.control.axis.value = event->jaxis.value;
+		mapping.control.axis.value =
+				event->jaxis.value > 0 ? INT16_MAX : INT16_MIN;
 		if (!check_mapping_is_available(mappings, &mapping)) {
 			printf("Axis %"PRIu8"%s already assigned.\n",
 					event->jaxis.axis,
