@@ -85,9 +85,26 @@ struct mapping {
 	struct control control;
 };
 
+struct button_states {
+	union {
+		struct {
+			bool up;
+			bool right;
+			bool down;
+			bool left;
+			bool a;
+			bool b;
+			bool start;
+			bool select;
+		};
+		bool array[MAPPINGS_SIZE];
+	};
+};
+
 struct joystick_config {
 	bool initialized;
 	struct joystick joystick;
+	struct button_states buttons;
 	struct mapping mappings[MAPPINGS_SIZE];
 };
 
@@ -248,7 +265,7 @@ static const char *event_type_to_string(uint32_t type)
 	}
 }
 
-#define have_same_sign(n1, n2) (((n1) * (n2)) > 0)
+#define have_same_sign(n1, n2) (((n1) * (n2)) >= 0)
 
 static bool controls_are_equal(const struct control *c1,
 		const struct control *c2)
@@ -676,10 +693,12 @@ static int init_joystick_config(struct joystick_config *joystick_config,
 static bool handle_test_event(const char *mappings_dir,
 		struct joystick_config *joystick_config)
 {
+	enum gb_button button;
 	int ret;
 	bool has_event;
 	SDL_Event event;
 	const char *joystick_name;
+	static struct control *control;
 
 	has_event = SDL_PollEvent(&event);
 	if (!has_event)
@@ -704,26 +723,68 @@ static bool handle_test_event(const char *mappings_dir,
 		break;
 
 	case SDL_JOYDEVICEREMOVED:
-		printf("Joystick SDL_JoystickID = %"PRIi32" removed.\n",
-				event.jdevice.which);
+		printf("Joystick SDL_JoystickID = %"PRIi32" removed.%*s\n",
+				event.jdevice.which, 25, "");
 		if (!joystick_config->initialized)
 			break;
 		if (joystick_config->joystick.id != event.jdevice.which)
 			break;
+		printf("Waiting for joystick detection\n");
 
 		cleanup_joystick_config(joystick_config);
 		break;
 
 	case SDL_JOYBUTTONDOWN:
+		if (!joystick_config->initialized)
+			break;
+		for (button = GB_BUTTON_FIRST; button <= GB_BUTTON_LAST;
+				button++) {
+			control = &joystick_config->mappings[button].control;
+			if (control->type != CONTROL_TYPE_BUTTON)
+				continue;
+			if (control->button.index == event.jbutton.button)
+				joystick_config->buttons.array[button] = true;
+		}
 		break;
 
 	case SDL_JOYBUTTONUP:
-		return true;
+		if (!joystick_config->initialized)
+			break;
+		for (button = GB_BUTTON_FIRST; button <= GB_BUTTON_LAST;
+				button++) {
+			control = &joystick_config->mappings[button].control;
+			if (control->type != CONTROL_TYPE_BUTTON)
+				continue;
+			if (control->button.index == event.jbutton.button)
+				joystick_config->buttons.array[button] = false;
+		}
+		break;
 
 	case SDL_JOYAXISMOTION:
+		if (!joystick_config->initialized)
+			break;
+		for (button = GB_BUTTON_FIRST; button <= GB_BUTTON_LAST;
+				button++) {
+			control = &joystick_config->mappings[button].control;
+			if (control->type != CONTROL_TYPE_AXIS)
+				continue;
+			if (control->axis.index != event.jaxis.axis)
+				continue;
+			if (!have_same_sign(event.jaxis.value,
+					control->axis.value))
+				continue;
+
+			joystick_config->buttons.array[button] = abs(
+					event.jaxis.value)
+					> abs(control->axis.value) / 2;
+		}
 		break;
 
 	case SDL_JOYHATMOTION:
+		if (!joystick_config->initialized)
+			break;
+		printf("event %s%*s\n", event_type_to_string(event.type), 50,
+						"");
 		break;
 
 	case SDL_QUIT:
@@ -738,6 +799,20 @@ static bool handle_test_event(const char *mappings_dir,
 	return true;
 }
 
+static void log_buttons_state(const struct joystick_config *joystick_config)
+{
+	const struct button_states *s;
+
+	s = &joystick_config->buttons;
+	if (joystick_config->initialized)
+		printf("up: %d, right %d, down %d, left %d, a %d, b %d, "
+				"start %d, select %d\r", s->up, s->right,
+				s->down, s->left, s->a, s->b, s->start,
+				s->select);
+	else
+		printf("%*s\r", 50, "");
+}
+
 static int test_joypad(const char *mappings_dir)
 {
 	int ret;
@@ -745,6 +820,8 @@ static int test_joypad(const char *mappings_dir)
 
 	reset_joystick_config(&joystick_config);
 
+	printf(civis);
+	atexit(restore_cursor);
 	printf("Waiting for joystick detection\n");
 	ret = SDL_Init(SDL_INIT_JOYSTICK);
 	if (ret < 0)
@@ -752,7 +829,7 @@ static int test_joypad(const char *mappings_dir)
 	atexit(SDL_Quit);
 
 	while (handle_test_event(mappings_dir, &joystick_config))
-		;
+		log_buttons_state(&joystick_config);
 
 	return EXIT_SUCCESS;
 }
