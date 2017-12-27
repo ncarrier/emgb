@@ -134,8 +134,6 @@ static const char *event_type_to_string(uint32_t type)
 	}
 }
 
-#define have_same_sign(n1, n2) (((n1) * (n2)) >= 0)
-
 static bool controls_are_equal(const struct control *c1,
 		const struct control *c2)
 {

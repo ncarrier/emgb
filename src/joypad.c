@@ -1,5 +1,6 @@
 #include "joypad.h"
 #include "GB.h"
+#include "utils.h"
 
 #define MAPPINGS_DIR "~/.emgb/"
 
@@ -135,11 +136,26 @@ static void joy_device_removed(struct s_gb *gb, const union SDL_Event *event)
 	cleanup_joystick_config(joystick_config);
 }
 
-/*
- * TODO factor the joy_button_down and joy_button_up, this should be done when
- * button flags have been properly broken up using bit fields
- */
-static void joy_button_down(struct s_gb *gb, const union SDL_Event *event)
+static void button_down(struct s_gb *gb, enum gb_button button)
+{
+	gb->gb_interrupts.interFlag |= INT_JOYPAD;
+	gb->gb_cpu.stopCpu = 0;
+	if (BUTTON_IS_KEY(button))
+		gb->gb_pad.button_key &= ~BUTTON_TO_KEY(button);
+	else
+		gb->gb_pad.button_dir &= ~BUTTON_TO_DIR(button);
+}
+
+static void button_up(struct s_gb *gb, enum gb_button button)
+{
+	if (BUTTON_IS_KEY(button))
+		gb->gb_pad.button_key |= BUTTON_TO_KEY(button);
+	else
+		gb->gb_pad.button_dir |= BUTTON_TO_DIR(button);
+}
+
+static void joy_button_action(struct s_gb *gb, const union SDL_Event *event,
+		void (*action)(struct s_gb *, enum gb_button))
 {
 	struct joystick_config *joystick_config;
 	enum gb_button button;
@@ -154,19 +170,23 @@ static void joy_button_down(struct s_gb *gb, const union SDL_Event *event)
 		control = &joystick_config->mappings[button].control;
 		if (control->type != CONTROL_TYPE_BUTTON)
 			continue;
-		if (control->button.index == event->jbutton.button) {
-			gb->gb_interrupts.interFlag |= INT_JOYPAD;
-			gb->gb_cpu.stopCpu = 0;
-			if (BUTTON_IS_KEY(button))
-				gb->gb_pad.button_key &= ~BUTTON_TO_KEY(button);
-			else
-				gb->gb_pad.button_dir &= ~BUTTON_TO_DIR(button);
-		}
+		if (control->button.index == event->jbutton.button)
+			action(gb, button);
 	}
+}
+
+static void joy_button_down(struct s_gb *gb, const union SDL_Event *event)
+{
+	joy_button_action(gb, event, button_down);
 }
 
 static void joy_button_up(struct s_gb *gb, const union SDL_Event *event)
 {
+	joy_button_action(gb, event, button_up);
+}
+
+static void joy_axis_motion(struct s_gb *gb, const union SDL_Event *event)
+{
 	struct joystick_config *joystick_config;
 	enum gb_button button;
 	struct control *control;
@@ -178,14 +198,19 @@ static void joy_button_up(struct s_gb *gb, const union SDL_Event *event)
 	for (button = GB_BUTTON_FIRST; button <= GB_BUTTON_LAST;
 			button++) {
 		control = &joystick_config->mappings[button].control;
-		if (control->type != CONTROL_TYPE_BUTTON)
+		if (control->type != CONTROL_TYPE_AXIS)
 			continue;
-		if (control->button.index == event->jbutton.button) {
-			if (BUTTON_IS_KEY(button))
-				gb->gb_pad.button_key |= BUTTON_TO_KEY(button);
-			else
-				gb->gb_pad.button_dir |= BUTTON_TO_DIR(button);
-		}
+		if (control->axis.index != event->jaxis.axis)
+			continue;
+		if (!have_same_sign(event->jaxis.value,
+				control->axis.value))
+			continue;
+
+		if (abs(event->jaxis.value) > abs(control->axis.value) / 2)
+			button_down(gb, button);
+		else
+			button_up(gb, button);
+
 	}
 }
 
@@ -218,6 +243,10 @@ void handleEvent(struct s_gb *gb_s)
 
 	case SDL_JOYBUTTONUP:
 		joy_button_up(gb_s, event);
+		break;
+
+	case SDL_JOYAXISMOTION:
+		joy_axis_motion(gb_s, event);
 		break;
 
 	case SDL_KEYDOWN:

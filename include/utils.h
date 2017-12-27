@@ -11,6 +11,7 @@
 #define CLEAR_BIT(f, b) ((f) &= ~(1 << (b)))
 
 #define cleanup(f) __attribute((cleanup(f)))
+#define have_same_sign(n1, n2) (((n1) * (n2)) >= 0)
 
 static inline bool str_matches(const char *s1, const char *s2)
 {
