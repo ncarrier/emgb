@@ -96,23 +96,22 @@ void keyUp(struct s_gb * gb_s)
 	}
 }
 
-static void joy_device_added(struct s_gb *gb, const union SDL_Event *event)
+static void joy_device_added(struct s_gb *gb, uint32_t index)
 {
 	int ret;
 	const char *joystick_name;
 	struct joystick_config *joystick_config;
 
 	joystick_config = &gb->joystick_config;
-	joystick_name = SDL_JoystickNameForIndex(event->jdevice.which);
+	joystick_name = SDL_JoystickNameForIndex(index);
 	printf("Joystick %s (index = %"PRIi32") detected.\n",
-			joystick_name, event->jdevice.which);
+			joystick_name, index);
 	if (joystick_config->initialized) {
 		printf("Skipped, already using joystick %s\n",
 				joystick_config->joystick.name);
 		return;
 	}
-	ret = init_joystick_config(joystick_config,
-			event->jdevice.which, gb->config_dir_path);
+	ret = init_joystick_config(joystick_config, index, gb->config_dir_path);
 	if (ret < 0) {
 		printf("No mapping found for %s, use joypad_mapping to "
 				"create one\n", joystick_name);
@@ -134,6 +133,10 @@ static void joy_device_removed(struct s_gb *gb, const union SDL_Event *event)
 			joystick_config->joystick.name);
 
 	cleanup_joystick_config(joystick_config);
+
+	/* try to reconnect to another joystick if any */
+	if (SDL_NumJoysticks() != 0)
+		joy_device_added(gb, event->jdevice.which);
 }
 
 static void button_down(struct s_gb *gb, enum gb_button button)
@@ -230,7 +233,7 @@ void handleEvent(struct s_gb *gb_s)
 	}
 
 	case SDL_JOYDEVICEADDED:
-		joy_device_added(gb_s, event);
+		joy_device_added(gb_s, event->jdevice.which);
 		break;
 
 	case SDL_JOYDEVICEREMOVED:
