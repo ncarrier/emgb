@@ -39,6 +39,10 @@ void close_joystick_config(struct joystick_config *jc)
 		return;
 
 	SDL_JoystickClose(jc->joystick.joystick);
+	if (jc->joystick.name == NULL)
+		return;
+
+	free(jc->joystick.name);
 }
 
 void cleanup_joystick_config(struct joystick_config *joystick_config)
@@ -70,7 +74,9 @@ int init_joystick_config(struct joystick_config *joystick_config,
 		fprintf(stderr, "SDL_JoystickOpen(%d)\n", index);
 		return -EINVAL;
 	}
-	joystick->name = SDL_JoystickNameForIndex(index);
+	joystick->name = strdup(SDL_JoystickNameForIndex(index));
+	if (joystick->name == NULL)
+		return -errno;
 	joystick->num.axes = SDL_JoystickNumAxes(joystick->joystick);
 	joystick->num.balls = SDL_JoystickNumBalls(joystick->joystick);
 	joystick->num.hats = SDL_JoystickNumHats(joystick->joystick);
