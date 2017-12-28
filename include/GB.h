@@ -1,6 +1,8 @@
 #ifndef __GB__
 #define __GB__
 
+#include <linux/limits.h>
+
 #include "stdlib.h"
 #include <stdio.h>
 #include <string.h>
@@ -14,6 +16,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "log.h"
+#include "joystick_config.h"
 
 //main struct
 
@@ -30,6 +33,8 @@ struct						s_gb
 	struct s_memory			gb_mem;
 	struct s_joypad			gb_pad;
 	struct s_cpu			gb_cpu;
+	struct joystick_config joystick_config;
+	char config_dir_path[PATH_MAX];
 
 	unsigned char			stopdbg;
 };

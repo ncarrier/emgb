@@ -9,7 +9,7 @@ void initDisplay(struct s_gb *s_gb)
 #ifdef EMGB_CONSOLE_DEBUGGER
   SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif /* EMGB_CONSOLE_DEBUGGER */
-  SDL_Init(SDL_INIT_VIDEO);
+  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 	
   s_gb->gb_gpu.window = SDL_CreateWindow("GB",
 					 300, 300, GB_W, GB_H, 0);

@@ -2,9 +2,9 @@
 
 
 
-struct s_gb	*initGb(char *fileName)
+struct s_gb *initGb(char *fileName)
 {
-	struct s_gb		*s_gb = NULL;
+	struct s_gb *s_gb = NULL;
 
 	s_gb = malloc(sizeof(*s_gb));
 	if (s_gb == NULL)
@@ -16,7 +16,10 @@ struct s_gb	*initGb(char *fileName)
 	initGpu(s_gb);
 	initTimer(s_gb);
 	initCpu(s_gb);
-	return (s_gb);
+	reset_joystick_config(&s_gb->joystick_config);
+	snprintf(s_gb->config_dir_path, PATH_MAX, "%s/.emgb/", getenv("HOME"));
+
+	return s_gb;
 }
 
 void	initRegister(struct s_gb *s_gb)
