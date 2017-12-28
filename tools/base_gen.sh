@@ -94,12 +94,16 @@ function generate_base_add_carry_code() {
 here_doc_delim
 	echo -n -e "\tvalue = "
 	if [ "${src}" = "*" ]; then
+		carry_mask="0xff00u"
 		echo "read8bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "**" ]; then
+		carry_mask="0xffff0000u"
 		echo "read16bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "(hl)" ]; then
+		carry_mask="0xff00u"
 		echo "read16bit(${regs}.hl, s_gb);"
 	else
+		carry_mask="0xffff0000u"
 		echo "${regs}.${src};"
 	fi
 	echo -e "\tresult = ${regs}.${dst} + value;"
@@ -107,7 +111,7 @@ here_doc_delim
 		echo -e "\tresult += ${regs}.cf;"
 	fi
 	cat <<here_doc_delim
-	${regs}.cf = result & 0xffff0000;
+	${regs}.cf = result & ${carry_mask};
 	${regs}.hf = ((${regs}.${dst} & 0x0f) + (value & 0x0f)) > 0x0f;
 
 	${regs}.${dst} = 0xffffu & result;
