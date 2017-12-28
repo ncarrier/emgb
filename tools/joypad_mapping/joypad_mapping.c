@@ -111,12 +111,14 @@ static const char *event_type_to_string(uint32_t type)
 		return "SDL_CLIPBOARDUPDATE";
 	case SDL_DROPFILE:
 		return "SDL_DROPFILE";
+		/* not present for every SDL2 version
 	case SDL_DROPTEXT:
 		return "SDL_DROPTEXT";
 	case SDL_DROPBEGIN:
 		return "SDL_DROPBEGIN";
 	case SDL_DROPCOMPLETE:
 		return "SDL_DROPCOMPLETE";
+		*/
 	case SDL_AUDIODEVICEADDED:
 		return "SDL_AUDIODEVICEADDED";
 	case SDL_AUDIODEVICEREMOVED:
