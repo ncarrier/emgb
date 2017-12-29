@@ -109,10 +109,12 @@ here_doc_delim
 	echo -e "\tresult = ${regs}.${dst} + value;"
 	if [ "${add_carry}" = "true" ]; then
 		echo -e "\tresult += ${regs}.cf;"
+		echo -e "\t${regs}.hf = ((${regs}.${dst} & 0x0f) + (value & 0x0f) + ${regs}.cf) > 0x0f;"
+	else
+		echo -e "\t${regs}.hf = ((${regs}.${dst} & 0x0f) + (value & 0x0f)) > 0x0f;"
 	fi
 	cat <<here_doc_delim
 	${regs}.cf = result & ${carry_mask};
-	${regs}.hf = ((${regs}.${dst} & 0x0f) + (value & 0x0f)) > 0x0f;
 
 	${regs}.${dst} = 0xffffu & result;
 here_doc_delim
