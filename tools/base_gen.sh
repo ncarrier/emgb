@@ -48,9 +48,7 @@ function generate_base_sub_gen_code() {
 	local target
 
 	if [ "${operand}" = "a" ]; then
-		cat <<here_doc_delim
-	${regs}.a = 0;
-here_doc_delim
+		# flag values are hardcoded in table_gb.html
 		return 0
 	fi
 
