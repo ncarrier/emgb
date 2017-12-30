@@ -49,6 +49,9 @@ function generate_base_sub_gen_code() {
 
 	if [ "${operand}" = "a" ]; then
 		# flag values are hardcoded in table_gb.html
+		if [ "${apply}" = "true" ]; then
+			echo -e "\t${regs}.a = 0;"
+		fi
 		return 0
 	fi
 
