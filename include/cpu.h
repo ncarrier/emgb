@@ -19,11 +19,11 @@ struct s_register
 				union {
 					uint8_t f;
 					struct {
-						uint8_t zero:4;
-						bool cf:1;
-						bool hf:1;
-						bool nf:1;
-						bool zf:1;
+						uint8_t zero:4; /* bits 0->3 */
+						bool cf:1; /* bit 4 */
+						bool hf:1; /* bit 5 */
+						bool nf:1; /* bit 6 */
+						bool zf:1; /* bit 7 */
 					};
 				};
 				uint8_t a;
