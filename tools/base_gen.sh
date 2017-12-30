@@ -103,9 +103,13 @@ here_doc_delim
 		carry_mask="0xff00u"
 		half_carry_mask="0x0fu"
 		echo "read16bit(${regs}.hl, s_gb);"
-	else
+	elif [ ${#dst} -eq 2 ]; then
 		carry_mask="0xffff0000u"
 		half_carry_mask="0x0fffu"
+		echo "${regs}.${src};"
+	else
+		carry_mask="0xff00u"
+		half_carry_mask="0x0fu"
 		echo "${regs}.${src};"
 	fi
 	echo -e "\tresult = ${regs}.${dst} + value;"
