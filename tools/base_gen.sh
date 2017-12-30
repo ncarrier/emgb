@@ -497,14 +497,9 @@ here_doc_delim
 
 function generate_base_rlca_code() {
 	cat <<here_doc_delim
-	bool carry;
-
-	carry = ${regs}.a & 0x80;
-	${regs}.cf = carry;
-
+	${regs}.cf = ${regs}.a & 0x80;
 	${regs}.a <<= 1;
-	${regs}.a += carry;
-	${regs}.zf = ${regs}.a == 0;
+	${regs}.a += ${regs}.cf;
 here_doc_delim
 }
 
