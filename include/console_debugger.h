@@ -37,6 +37,7 @@ struct console_debugger {
 	char path[EMGB_CONSOLE_DEBUGGER_PATH_MAX];
 	bool active;
 	bool next;
+	bool hud;
 	struct editline *editline;
 	struct history *history;
 	struct HistEvent histevent;
