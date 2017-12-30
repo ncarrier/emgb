@@ -537,6 +537,7 @@ here_doc_delim
 function generate_base_sbc_code() {
 	local operand=$1
 
+	echo -e "\tbool carry = ${regs}.cf;"
 	echo -e -n "\tuint8_t value = "
 	if [ "${operand}" = "(hl)" ]; then
 		echo  "read8bit(${regs}.hl, s_gb);"
@@ -547,14 +548,14 @@ function generate_base_sbc_code() {
 	fi
 
 	cat <<here_doc_delim
-	value += ${regs}.cf;
-	${regs}.cf = value > ${regs}.a;
 
-	${regs}.hf = (value & 0x0f) > (${regs}.a & 0x0f);
+	${regs}.cf = value + carry > ${regs}.a;
+	${regs}.hf = (value & 0x0f) + carry > (${regs}.a & 0x0f);
 
+	value += carry;
 	${regs}.a -= value;
 
-	${regs}.zf = ${regs}.a != 0;
+	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 
