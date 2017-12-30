@@ -95,23 +95,27 @@ here_doc_delim
 	echo -n -e "\tvalue = "
 	if [ "${src}" = "*" ]; then
 		carry_mask="0xff00u"
+		half_carry_mask="0x0fu"
 		echo "read8bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "**" ]; then
 		carry_mask="0xffff0000u"
+		half_carry_mask="0x0fffu"
 		echo "read16bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "(hl)" ]; then
 		carry_mask="0xff00u"
+		half_carry_mask="0x0fu"
 		echo "read16bit(${regs}.hl, s_gb);"
 	else
 		carry_mask="0xffff0000u"
+		half_carry_mask="0x0fffu"
 		echo "${regs}.${src};"
 	fi
 	echo -e "\tresult = ${regs}.${dst} + value;"
 	if [ "${add_carry}" = "true" ]; then
 		echo -e "\tresult += ${regs}.cf;"
-		echo -e "\t${regs}.hf = ((${regs}.${dst} & 0x0f) + (value & 0x0f) + ${regs}.cf) > 0x0f;"
+		echo -e "\t${regs}.hf = ((${regs}.${dst} & ${half_carry_mask}) + (value & ${half_carry_mask}) + ${regs}.cf) > ${half_carry_mask};"
 	else
-		echo -e "\t${regs}.hf = ((${regs}.${dst} & 0x0f) + (value & 0x0f)) > 0x0f;"
+		echo -e "\t${regs}.hf = ((${regs}.${dst} & ${half_carry_mask}) + (value & ${half_carry_mask})) > ${half_carry_mask};"
 	fi
 	cat <<here_doc_delim
 	${regs}.cf = result & ${carry_mask};
