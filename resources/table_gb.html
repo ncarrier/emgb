@@ -284,7 +284,7 @@
 <td axis="-1++|1|4|Subtracts one from b.">dec b</td>
 <td axis="----|2|8|Loads * into b.">ld b,*</td>
 <td axis="+000|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlca</td>
-<td axis="----|3|20|Loads ** into sp.">ld (**),sp</td>
+<td axis="----|3|20|Put Stack Pointer (SP) at address **.">ld (**),sp</td>
 <td axis="+0+-|1|8|The value of bc is added to hl.">add hl,bc</td>
 <td axis="----|1|8|Loads the value pointed to by bc into a.">ld a,(bc)</td>
 <td axis="----|1|8|Subtracts one from bc.">dec bc</td>
@@ -552,7 +552,7 @@
 <td axis="----|1|16|sp is decremented and h is stored into the memory location pointed to by sp. sp is decremented again and l is stored into the memory location pointed to by sp.">push hl</td>
 <td axis="001+|2|8|Bitwise AND on a with *.">and *</td>
 <td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 20h.">rst 20h</td>
-<td axis="+0+0|2|16|If condition cc is true, the top stack entry is popped into pc.">add sp,*</td>
+<td axis="+0+0|2|16|Add * to Stack Pointer (SP).">add sp,*</td>
 <td axis="----|1|4|Loads the value of hl into pc.">jp (hl)</td>
 <td axis="----|3|16|Put a into memory location **.">ld (**),a</td>
 <td axis="----|1|4|Undefined.">und</td>
