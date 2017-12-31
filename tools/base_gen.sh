@@ -487,11 +487,10 @@ function generate_base_rla_code() {
 	cat <<here_doc_delim
 	bool carry;
 
-	carry = ${regs}.a & 0x80;
-	${regs}.cf = carry;
-
+	carry = ${regs}.cf;
+	${regs}.cf = ${regs}.a & 0x80;
 	${regs}.a <<= 1;
-	${regs}.zf = ${regs}.a == 0;
+	${regs}.a += carry;
 here_doc_delim
 }
 
@@ -511,20 +510,14 @@ function generate_base_rra_code() {
 	${regs}.cf = ${regs}.a & 0x01;
 	${regs}.a >>= 1;
 	${regs}.a += carry << 7;
-
-	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 
 function generate_base_rrca_code() {
 	cat <<here_doc_delim
-	bool carry = ${regs}.a & 0x01;
-
-	${regs}.cf = carry;
+	${regs}.cf = ${regs}.a & 0x01;
 	${regs}.a >>= 1;
-
-	${regs}.a |= carry << 7;
-	${regs}.zf = ${regs}.a == 0;
+	${regs}.a += (${regs}.cf << 7);
 here_doc_delim
 }
 
