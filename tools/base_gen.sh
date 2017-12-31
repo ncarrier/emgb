@@ -404,7 +404,11 @@ function generate_base_ld_code() {
 		if [[ ${dst} =~ ${adress_re} ]]; then
 			dst_adress=${BASH_REMATCH[1]}
 			generate_base_ld_dst_adress_code ${dst_adress}
-			echo -e "\twrite8bit(dst_adr, src_val, s_gb);"
+			if [ ${#src} -eq 1 ]; then
+				echo -e "\twrite8bit(dst_adr, src_val, s_gb);"
+			else
+				echo -e "\twrite16bitToAddr(dst_adr, src_val, s_gb);"
+			fi
 		else
 			echo -e "\t${regs}.${dst} = src_val;"
 		fi
