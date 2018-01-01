@@ -1065,7 +1065,7 @@ static void display_stack(struct console_debugger *debugger)
 {
 	int line;
 	unsigned lines;
-	unsigned mem;
+	int mem;
 	uint16_t sp;
 	int x;
 
@@ -1078,7 +1078,8 @@ static void display_stack(struct console_debugger *debugger)
 	if (mem > 0xffff)
 		mem = 0xffff;
 	for (line = debugger->terminal.rows / 4;
-			line < debugger->terminal.rows / 2 + 1; mem -= 2, line++) {
+			line < debugger->terminal.rows / 2 + 1 &&
+			mem >= 0; mem -= 2, line++) {
 		cursor_move_to(x, line);
 		printf_bold(mem / 2 == sp / 2, "%.04"PRIx16":%.04"PRIx16, mem,
 				read16bit(mem, debugger->gb));
