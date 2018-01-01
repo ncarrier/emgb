@@ -94,36 +94,41 @@ function generate_base_add_carry_code() {
 
 here_doc_delim
 	echo -n -e "\tvalue = "
-	if [ "${src}" = "*" ]; then
-		carry_mask="0xff00u"
+	if [ ${#dst} -eq 2 ]; then
+		carry_mask="0x0000ffffu"
+		half_carry_mask="0x0fffu"
+	else
+		carry_mask="0x00ffu"
 		half_carry_mask="0x0fu"
+	fi
+	# special quirk for "ADD  SP,*"
+	if [ "$3" = "0xE8" ]; then
+		carry_mask="0x00ffu"
+		half_carry_mask="0x0fu"
+	fi
+	if [ "${src}" = "*" ]; then
 		echo "read8bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "**" ]; then
-		carry_mask="0xffff0000u"
-		half_carry_mask="0x0fffu"
 		echo "read16bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "(hl)" ]; then
-		carry_mask="0xff00u"
-		half_carry_mask="0x0fu"
 		echo "read16bit(${regs}.hl, s_gb);"
-	elif [ ${#dst} -eq 2 ]; then
-		carry_mask="0xffff0000u"
-		half_carry_mask="0x0fffu"
-		echo "${regs}.${src};"
 	else
-		carry_mask="0xff00u"
-		half_carry_mask="0x0fu"
 		echo "${regs}.${src};"
 	fi
 	echo -e "\tresult = ${regs}.${dst} + value;"
 	if [ "${add_carry}" = "true" ]; then
 		echo -e "\tresult += ${regs}.cf;"
-		echo -e "\t${regs}.hf = ((${regs}.${dst} & ${half_carry_mask}) + (value & ${half_carry_mask}) + ${regs}.cf) > ${half_carry_mask};"
+		mask=${half_carry_mask}
+		echo -e "\t${regs}.hf = ((${regs}.${dst} & ${mask}) + (value & ${mask}) + ${regs}.cf) > ${mask};"
+		mask=${carry_mask}
+		echo -e "\t${regs}.cf = ((${regs}.${dst} & ${mask}) + (value & ${mask}) + ${regs}.cf) > ${mask};"
 	else
-		echo -e "\t${regs}.hf = ((${regs}.${dst} & ${half_carry_mask}) + (value & ${half_carry_mask})) > ${half_carry_mask};"
+		mask=${half_carry_mask}
+		echo -e "\t${regs}.hf = ((${regs}.${dst} & ${mask}) + (value & ${mask})) > ${mask};"
+		mask=${carry_mask}
+		echo -e "\t${regs}.cf = ((${regs}.${dst} & ${mask}) + (value & ${mask})) > ${mask};"
 	fi
 	cat <<here_doc_delim
-	${regs}.cf = result & ${carry_mask};
 
 	${regs}.${dst} = 0xffffu & result;
 here_doc_delim
@@ -165,11 +170,11 @@ here_doc_delim
 
 # start of functions generating instructions code
 function generate_base_add_code() {
-	generate_base_add_carry_code "$1" false
+	generate_base_add_carry_code "$1" false $2
 }
 
 function generate_base_adc_code() {
-	generate_base_add_carry_code "$1" true
+	generate_base_add_carry_code "$1" true $2
 }
 
 function generate_base_and_code() {
