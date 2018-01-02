@@ -88,12 +88,7 @@ function generate_base_add_carry_code() {
 	local src=${operands[1]}
 	local add_carry=$2
 
-	cat <<here_doc_delim
-	uint16_t value;
-	uint32_t result;
-
-here_doc_delim
-	echo -n -e "\tvalue = "
+	value_type="uint16_t"
 	if [ ${#dst} -eq 2 ]; then
 		carry_mask="0x0000ffffu"
 		half_carry_mask="0x0fffu"
@@ -105,7 +100,14 @@ here_doc_delim
 	if [ "$3" = "0xE8" ]; then
 		carry_mask="0x00ffu"
 		half_carry_mask="0x0fu"
+		value_type="int8_t"
 	fi
+	cat <<here_doc_delim
+	${value_type} value;
+	uint32_t result;
+
+here_doc_delim
+	echo -n -e "\tvalue = "
 	if [ "${src}" = "*" ]; then
 		echo "read8bit(${pc} + 1, s_gb);"
 	elif [ "${src}" = "**" ]; then
