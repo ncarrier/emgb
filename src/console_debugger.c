@@ -899,18 +899,6 @@ static void console_debugger_check_breakpoints(
 	}
 }
 
-static void console_debugger_check_op_undefined(
-		struct console_debugger *debugger)
-{
-	uint8_t opcode;
-
-	opcode = read8bit(debugger->registers->pc, debugger->gb);
-	if (is_opcode_undefined(opcode)) {
-		printf("opcode 0x%02"PRIx8" is undefined\n", opcode);
-		debugger->active = true;
-	}
-}
-
 static void check_signal(struct console_debugger *debugger)
 {
 	if (signal_received) {
@@ -1119,7 +1107,6 @@ int console_debugger_update(struct console_debugger *debugger)
 	check_signal(debugger);
 
 	console_debugger_check_breakpoints(debugger);
-	console_debugger_check_op_undefined(debugger);
 
 	if (debugger->next) {
 		debugger->next = false;
