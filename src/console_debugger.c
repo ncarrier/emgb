@@ -398,6 +398,65 @@ static void console_debugger_memory(struct console_debugger *debugger)
 	}
 }
 
+static void cursor_save_pos(void)
+{
+	printf("\033[s");
+}
+
+static void cursor_restore_pos(void)
+{
+	printf("\033[u");
+}
+
+static void cursor_move_to(int x, int y)
+{
+	printf("\033[%d;%df", y, x);
+}
+
+static void bold_color(void)
+{
+	printf("\e[1m");
+}
+
+static void inverted_color(void)
+{
+	printf("\e[7m");
+}
+
+static void restore_color(void)
+{
+	printf("\e[0m");
+}
+
+static void erase_screen_lines(struct console_debugger *debugger,
+		unsigned first, unsigned last)
+{
+	unsigned i;
+
+	cursor_save_pos();
+	cursor_move_to(0, 0);
+	for (i = first; i <= last; i++)
+		printf("%*s", debugger->terminal.columns, "");
+	cursor_restore_pos();
+}
+
+static void erase_upper_screen_half(struct console_debugger *debugger)
+{
+	erase_screen_lines(debugger, 1, debugger->terminal.rows / 2 - 1);
+}
+
+static void erase_whole_screen(struct console_debugger *debugger)
+{
+	erase_screen_lines(debugger, 1, debugger->terminal.rows);
+}
+
+static void console_debugger_layout(struct console_debugger *debugger)
+{
+	debugger->hud = !debugger->hud;
+	if (debugger->hud)
+		erase_whole_screen(debugger);
+}
+
 static void console_debugger_next(struct console_debugger *debugger)
 {
 	debugger->next = true;
@@ -522,6 +581,12 @@ static struct debugger_command commands[] = {
 		.fn = console_debugger_help,
 		.name = "help",
 		.help = "Shows a little help about available commands.",
+		.argc = 1,
+	},
+	{
+		.fn = console_debugger_layout,
+		.name = "layout",
+		.help = "Toggles display of the HUD.\n",
 		.argc = 1,
 	},
 	{
@@ -661,58 +726,6 @@ static int console_debugger_get_terminal_size(struct console_debugger *debugger)
 	return 0;
 }
 
-static void cursor_save_pos(void)
-{
-	printf("\033[s");
-}
-
-static void cursor_restore_pos(void)
-{
-	printf("\033[u");
-}
-
-static void cursor_move_to(int x, int y)
-{
-	printf("\033[%d;%df", y, x);
-}
-
-static void bold_color(void)
-{
-	printf("\e[1m");
-}
-
-static void inverted_color(void)
-{
-	printf("\e[7m");
-}
-
-static void restore_color(void)
-{
-	printf("\e[0m");
-}
-
-static void erase_screen_lines(struct console_debugger *debugger,
-		unsigned first, unsigned last)
-{
-	unsigned i;
-
-	cursor_save_pos();
-	cursor_move_to(0, 0);
-	for (i = first; i <= last; i++)
-		printf("%*s", debugger->terminal.columns, "");
-	cursor_restore_pos();
-}
-
-static void erase_upper_screen_half(struct console_debugger *debugger)
-{
-	erase_screen_lines(debugger, 1, debugger->terminal.rows / 2 - 1);
-}
-
-static void erase_whole_screen(struct console_debugger *debugger)
-{
-	erase_screen_lines(debugger, 1, debugger->terminal.rows);
-}
-
 int console_debugger_init(struct console_debugger *debugger,
 		struct s_register *registers, struct s_gb *gb)
 {
@@ -753,14 +766,12 @@ int console_debugger_init(struct console_debugger *debugger,
 		ERR("tok_init");
 
 	console_debugger_get_terminal_size(debugger);
-	erase_whole_screen(debugger);
-	cursor_move_to(1, debugger->terminal.rows / 2 + 1);
 	init_registers_map(debugger);
 	/*
 	 * TODO enable debugger by default, this should be decided with a
 	 * command-line switch
 	 */
-	debugger->active = true;
+	debugger->active = false;
 
 	return 0;
 }
@@ -1054,7 +1065,7 @@ static void display_stack(struct console_debugger *debugger)
 {
 	int line;
 	unsigned lines;
-	unsigned mem;
+	int mem;
 	uint16_t sp;
 	int x;
 
@@ -1067,7 +1078,8 @@ static void display_stack(struct console_debugger *debugger)
 	if (mem > 0xffff)
 		mem = 0xffff;
 	for (line = debugger->terminal.rows / 4;
-			line < debugger->terminal.rows / 2 + 1; mem -= 2, line++) {
+			line < debugger->terminal.rows / 2 + 1 &&
+			mem >= 0; mem -= 2, line++) {
 		cursor_move_to(x, line);
 		printf_bold(mem / 2 == sp / 2, "%.04"PRIx16":%.04"PRIx16, mem,
 				read16bit(mem, debugger->gb));
@@ -1092,10 +1104,12 @@ static void display_pre_prompt(struct console_debugger *debugger)
 	for (cur = instruction->real_size - 1; cur >= 1; cur--)
 		printf(" %02"PRIx8, read8bit(pc + cur, debugger->gb));
 	puts("");
-	erase_upper_screen_half(debugger);
-	display_disassembly(debugger);
-	display_registers(debugger);
-	display_stack(debugger);
+	if (debugger->hud) {
+		erase_upper_screen_half(debugger);
+		display_disassembly(debugger);
+		display_registers(debugger);
+		display_stack(debugger);
+	}
 }
 
 int console_debugger_update(struct console_debugger *debugger)

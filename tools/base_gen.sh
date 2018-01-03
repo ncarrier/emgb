@@ -48,9 +48,10 @@ function generate_base_sub_gen_code() {
 	local target
 
 	if [ "${operand}" = "a" ]; then
-		cat <<here_doc_delim
-	${regs}.a = 0;
-here_doc_delim
+		# flag values are hardcoded in table_gb.html
+		if [ "${apply}" = "true" ]; then
+			echo -e "\t${regs}.a = 0;"
+		fi
 		return 0
 	fi
 
@@ -87,8 +88,22 @@ function generate_base_add_carry_code() {
 	local src=${operands[1]}
 	local add_carry=$2
 
+	value_type="uint16_t"
+	if [ ${#dst} -eq 2 ]; then
+		carry_mask="0x0000ffffu"
+		half_carry_mask="0x0fffu"
+	else
+		carry_mask="0x00ffu"
+		half_carry_mask="0x0fu"
+	fi
+	# special quirk for "ADD  SP,*"
+	if [ "$3" = "0xE8" ]; then
+		carry_mask="0x00ffu"
+		half_carry_mask="0x0fu"
+		value_type="int8_t"
+	fi
 	cat <<here_doc_delim
-	uint16_t value;
+	${value_type} value;
 	uint32_t result;
 
 here_doc_delim
@@ -105,10 +120,17 @@ here_doc_delim
 	echo -e "\tresult = ${regs}.${dst} + value;"
 	if [ "${add_carry}" = "true" ]; then
 		echo -e "\tresult += ${regs}.cf;"
+		mask=${half_carry_mask}
+		echo -e "\t${regs}.hf = ((${regs}.${dst} & ${mask}) + (value & ${mask}) + ${regs}.cf) > ${mask};"
+		mask=${carry_mask}
+		echo -e "\t${regs}.cf = ((${regs}.${dst} & ${mask}) + (value & ${mask}) + ${regs}.cf) > ${mask};"
+	else
+		mask=${half_carry_mask}
+		echo -e "\t${regs}.hf = ((${regs}.${dst} & ${mask}) + (value & ${mask})) > ${mask};"
+		mask=${carry_mask}
+		echo -e "\t${regs}.cf = ((${regs}.${dst} & ${mask}) + (value & ${mask})) > ${mask};"
 	fi
 	cat <<here_doc_delim
-	${regs}.cf = result & 0xffff0000;
-	${regs}.hf = ((${regs}.${dst} & 0x0f) + (value & 0x0f)) > 0x0f;
 
 	${regs}.${dst} = 0xffffu & result;
 here_doc_delim
@@ -150,11 +172,11 @@ here_doc_delim
 
 # start of functions generating instructions code
 function generate_base_add_code() {
-	generate_base_add_carry_code "$1" false
+	generate_base_add_carry_code "$1" false $2
 }
 
 function generate_base_adc_code() {
-	generate_base_add_carry_code "$1" true
+	generate_base_add_carry_code "$1" true $2
 }
 
 function generate_base_and_code() {
@@ -389,7 +411,11 @@ function generate_base_ld_code() {
 		if [[ ${dst} =~ ${adress_re} ]]; then
 			dst_adress=${BASH_REMATCH[1]}
 			generate_base_ld_dst_adress_code ${dst_adress}
-			echo -e "\twrite8bit(dst_adr, src_val, s_gb);"
+			if [ ${#src} -eq 1 ]; then
+				echo -e "\twrite8bit(dst_adr, src_val, s_gb);"
+			else
+				echo -e "\twrite16bitToAddr(dst_adr, src_val, s_gb);"
+			fi
 		else
 			echo -e "\t${regs}.${dst} = src_val;"
 		fi
@@ -402,15 +428,15 @@ function generate_base_ldd_code() {
 
 function generate_base_ldhl_code() {
 	cat <<here_doc_delim
-	int8_t value = read8bit(${regs}.pc, s_gb);
-	int res;
+	int8_t value = read8bit(${regs}.pc +  1, s_gb);
+	int32_t res;
 
 	res = value + ${regs}.sp;
 
-	${regs}.cf = res & 0xffff0000;
 	${regs}.hf = ((${regs}.sp & 0x0f) + (value & 0x0f)) > 0x0f;
+	${regs}.cf = ((${regs}.sp & 0x0ff) + (value & 0x0ff)) > 0x0ff;
 
-	${regs}.hl = res & 0x0000ffff;
+	${regs}.hl = res & 0xffffu;
 here_doc_delim
 }
 
@@ -472,24 +498,18 @@ function generate_base_rla_code() {
 	cat <<here_doc_delim
 	bool carry;
 
-	carry = ${regs}.a & 0x80;
-	${regs}.cf = carry;
-
+	carry = ${regs}.cf;
+	${regs}.cf = ${regs}.a & 0x80;
 	${regs}.a <<= 1;
-	${regs}.zf = ${regs}.a == 0;
+	${regs}.a += carry;
 here_doc_delim
 }
 
 function generate_base_rlca_code() {
 	cat <<here_doc_delim
-	bool carry;
-
-	carry = ${regs}.a & 0x80;
-	${regs}.cf = carry;
-
+	${regs}.cf = ${regs}.a & 0x80;
 	${regs}.a <<= 1;
-	${regs}.a += carry;
-	${regs}.zf = ${regs}.a == 0;
+	${regs}.a += ${regs}.cf;
 here_doc_delim
 }
 
@@ -501,20 +521,14 @@ function generate_base_rra_code() {
 	${regs}.cf = ${regs}.a & 0x01;
 	${regs}.a >>= 1;
 	${regs}.a += carry << 7;
-
-	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 
 function generate_base_rrca_code() {
 	cat <<here_doc_delim
-	bool carry = ${regs}.a & 0x01;
-
-	${regs}.cf = carry;
+	${regs}.cf = ${regs}.a & 0x01;
 	${regs}.a >>= 1;
-
-	${regs}.a |= carry << 7;
-	${regs}.zf = ${regs}.a == 0;
+	${regs}.a += (${regs}.cf << 7);
 here_doc_delim
 }
 
@@ -531,6 +545,7 @@ here_doc_delim
 function generate_base_sbc_code() {
 	local operand=$1
 
+	echo -e "\tbool carry = ${regs}.cf;"
 	echo -e -n "\tuint8_t value = "
 	if [ "${operand}" = "(hl)" ]; then
 		echo  "read8bit(${regs}.hl, s_gb);"
@@ -541,14 +556,14 @@ function generate_base_sbc_code() {
 	fi
 
 	cat <<here_doc_delim
-	value += ${regs}.cf;
-	${regs}.cf = value > ${regs}.a;
 
-	${regs}.hf = (value & 0x0f) > (${regs}.a & 0x0f);
+	${regs}.cf = value + carry > ${regs}.a;
+	${regs}.hf = (value & 0x0f) + carry > (${regs}.a & 0x0f);
 
+	value += carry;
 	${regs}.a -= value;
 
-	${regs}.zf = ${regs}.a != 0;
+	${regs}.zf = ${regs}.a == 0;
 here_doc_delim
 }
 

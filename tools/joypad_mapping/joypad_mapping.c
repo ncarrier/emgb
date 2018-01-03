@@ -111,12 +111,14 @@ static const char *event_type_to_string(uint32_t type)
 		return "SDL_CLIPBOARDUPDATE";
 	case SDL_DROPFILE:
 		return "SDL_DROPFILE";
+		/* not present for every SDL2 version
 	case SDL_DROPTEXT:
 		return "SDL_DROPTEXT";
 	case SDL_DROPBEGIN:
 		return "SDL_DROPBEGIN";
 	case SDL_DROPCOMPLETE:
 		return "SDL_DROPCOMPLETE";
+		*/
 	case SDL_AUDIODEVICEADDED:
 		return "SDL_AUDIODEVICEADDED";
 	case SDL_AUDIODEVICEREMOVED:
@@ -361,7 +363,7 @@ const char cnorm[] = { 0x1b, 0x5b, 0x3f, 0x31, 0x32, 0x6c, 0x1b, 0x5b, 0x3f,
 
 static void restore_cursor(void)
 {
-	printf(cnorm);
+	printf("%s", cnorm);
 }
 
 static bool handle_test_event(const char *mappings_dir,
@@ -494,7 +496,7 @@ static int test_joypad(const char *mappings_dir)
 
 	reset_joystick_config(&joystick_config);
 
-	printf(civis);
+	printf("%s", civis);
 	atexit(restore_cursor);
 	printf("Waiting for joystick detection\n");
 	ret = SDL_Init(SDL_INIT_JOYSTICK);
@@ -599,7 +601,7 @@ int main(int argc, char **argv)
 	printf("\tHats: %d\n", joystick_config.joystick.num.hats);
 	printf("\tButtons: %d\n", joystick_config.joystick.num.buttons);
 
-	printf(civis);
+	printf("%s", civis);
 	atexit(restore_cursor);
 	button = GB_BUTTON_INVALID;
 	next_button(&button);

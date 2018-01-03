@@ -283,15 +283,15 @@
 <td axis="-0++|1|4|Adds one to b.">inc b</td>
 <td axis="-1++|1|4|Subtracts one from b.">dec b</td>
 <td axis="----|2|8|Loads * into b.">ld b,*</td>
-<td axis="+00-|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlca</td>
-<td axis="----|3|20|Loads ** into sp.">ld (**),sp</td>
+<td axis="+000|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and bit 0.">rlca</td>
+<td axis="----|3|20|Put Stack Pointer (SP) at address **.">ld (**),sp</td>
 <td axis="+0+-|1|8|The value of bc is added to hl.">add hl,bc</td>
 <td axis="----|1|8|Loads the value pointed to by bc into a.">ld a,(bc)</td>
 <td axis="----|1|8|Subtracts one from bc.">dec bc</td>
 <td axis="-0++|1|4|Adds one to c.">inc c</td>
 <td axis="-1++|1|4|Subtracts one from c.">dec c</td>
 <td axis="----|2|8|Loads * into c.">ld c,*</td>
-<td axis="+00-|1|4|The contents of a are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrca</td>
+<td axis="+000|1|4|The contents of a are rotated right one bit position. The contents of bit 0 are copied to the carry flag and bit 7.">rrca</td>
 </tr>
 <tr>
 <th>1</th>
@@ -302,7 +302,7 @@
 <td axis="-0++|1|4|Adds one to d.">inc d</td>
 <td axis="-1++|1|4|Subtracts one from d.">dec d</td>
 <td axis="----|2|8|Loads * into d.">ld d,*</td>
-<td axis="+00-|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rla</td>
+<td axis="+000|1|4|The contents of a are rotated left one bit position. The contents of bit 7 are copied to the carry flag and the previous contents of the carry flag are copied to bit 0.">rla</td>
 <td axis="----|2|8|The signed value * is added to pc. The jump is measured from the start of the instruction opcode.">jr *</td>
 <td axis="+0+-|1|8|The value of de is added to hl.">add hl,de</td>
 <td axis="----|1|8|Loads the value pointed to by de into a.">ld a,(de)</td>
@@ -310,7 +310,7 @@
 <td axis="-0++|1|4|Adds one to e.">inc e</td>
 <td axis="-1++|1|4|Subtracts one from e.">dec e</td>
 <td axis="----|2|8|Loads * into e.">ld e,*</td>
-<td axis="+00-|1|4|The contents of a are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rra</td>
+<td axis="+000|1|4|The contents of a are rotated right one bit position. The contents of bit 0 are copied to the carry flag and the previous contents of the carry flag are copied to bit 7.">rra</td>
 </tr>
 <tr>
 <th>2</th>
@@ -348,7 +348,7 @@
 <td axis="-0++|1|4|Adds one to a.">inc a</td>
 <td axis="-1++|1|4|Subtracts one from a.">dec a</td>
 <td axis="----|2|8|Loads * into a.">ld a,*</td>
-<td axis="*0*-|1|4|Inverts the carry flag.">ccf</td>
+<td axis="*00-|1|4|Inverts the carry flag.">ccf</td>
 </tr>
 <tr>
 <th>4</th>
@@ -500,7 +500,7 @@
 <td axis="+1++|1|4|Subtracts h from a and affects flags according to the result. a is not modified.">cp h</td>
 <td axis="+1++|1|4|Subtracts l from a and affects flags according to the result. a is not modified.">cp l</td>
 <td axis="+1++|1|8|Subtracts (hl) from a and affects flags according to the result. a is not modified.">cp (hl)</td>
-<td axis="+1++|1|4|Subtracts a from a and affects flags according to the result. a is not modified.">cp a</td>
+<td axis="0101|1|4|Subtracts a from a and affects flags according to the result. a is not modified.">cp a</td>
 </tr>
 <tr>
 <th>C</th>
@@ -552,7 +552,7 @@
 <td axis="----|1|16|sp is decremented and h is stored into the memory location pointed to by sp. sp is decremented again and l is stored into the memory location pointed to by sp.">push hl</td>
 <td axis="001+|2|8|Bitwise AND on a with *.">and *</td>
 <td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 20h.">rst 20h</td>
-<td axis="+0+0|2|16|If condition cc is true, the top stack entry is popped into pc.">add sp,*</td>
+<td axis="+0+0|2|16|Add * to Stack Pointer (SP).">add sp,*</td>
 <td axis="----|1|4|Loads the value of hl into pc.">jp (hl)</td>
 <td axis="----|3|16|Put a into memory location **.">ld (**),a</td>
 <td axis="----|1|4|Undefined.">und</td>
@@ -571,7 +571,7 @@
 <td axis="----|1|16|sp is decremented and a is stored into the memory location pointed to by sp. sp is decremented again and f is stored into the memory location pointed to by sp.">push af</td>
 <td axis="000+|2|8|Bitwise OR on a with *.">or *</td>
 <td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 30h.">rst 30h</td>
-<td axis="----|1|12|Put SP + * effective address into HL.">ldhl sp,*</td>
+<td axis="-0-0|2|12|Put SP + * effective address into HL.">ldhl sp,*</td>
 <td axis="----|1|8|Loads the value of hl into sp.">ld sp,hl</td>
 <td axis="----|3|16|Put value at address ** into a.">ld a,(**)</td>
 <td axis="----|1|4|Enable interrupts. This instruction enables interrupts but not immediately. Interrupts are enabled after instruction after EI is executed.">ei</td>

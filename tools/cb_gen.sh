@@ -46,7 +46,7 @@ function generate_cb_rl_code() {
 
 	carry = ${regs}.cf;
 	value = ${value};
-	${regs}.cf = !BIT(7, value);
+	${regs}.cf = BIT(7, value);
 	value <<= 1;
 	value += carry;
 	${regs}.zf = value == 0;
