@@ -571,7 +571,7 @@
 <td axis="----|1|16|sp is decremented and a is stored into the memory location pointed to by sp. sp is decremented again and f is stored into the memory location pointed to by sp.">push af</td>
 <td axis="000+|2|8|Bitwise OR on a with *.">or *</td>
 <td axis="----|1|32|The current pc value plus one is pushed onto the stack, then is loaded with 30h.">rst 30h</td>
-<td axis="----|2|12|Put SP + * effective address into HL.">ldhl sp,*</td>
+<td axis="-0-0|2|12|Put SP + * effective address into HL.">ldhl sp,*</td>
 <td axis="----|1|8|Loads the value of hl into sp.">ld sp,hl</td>
 <td axis="----|3|16|Put value at address ** into a.">ld a,(**)</td>
 <td axis="----|1|4|Enable interrupts. This instruction enables interrupts but not immediately. Interrupts are enabled after instruction after EI is executed.">ei</td>

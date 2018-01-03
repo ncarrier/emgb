@@ -428,15 +428,15 @@ function generate_base_ldd_code() {
 
 function generate_base_ldhl_code() {
 	cat <<here_doc_delim
-	int8_t value = read8bit(${regs}.pc, s_gb);
-	int res;
+	int8_t value = read8bit(${regs}.pc +  1, s_gb);
+	int32_t res;
 
 	res = value + ${regs}.sp;
 
-	${regs}.cf = res & 0xffff0000;
 	${regs}.hf = ((${regs}.sp & 0x0f) + (value & 0x0f)) > 0x0f;
+	${regs}.cf = ((${regs}.sp & 0x0ff) + (value & 0x0ff)) > 0x0ff;
 
-	${regs}.hl = res & 0x0000ffff;
+	${regs}.hl = res & 0xffffu;
 here_doc_delim
 }
 
