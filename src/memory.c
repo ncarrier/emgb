@@ -229,3 +229,19 @@ unsigned char memoperation(unsigned short addr, signed char value, struct s_gb *
 	}
 	return 0;
 }
+
+void push(uint16_t value, struct s_gb *s_gb)
+{
+	s_gb->gb_register.sp -= 2;
+	write16bitToAddr(s_gb->gb_register.sp, value, s_gb);
+}
+
+uint16_t pop(struct s_gb *s_gb)
+{
+	uint16_t value;
+
+	value = read16bit(s_gb->gb_register.sp, s_gb);
+	s_gb->gb_register.sp += 2;
+
+	return value;
+}
