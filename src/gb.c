@@ -6,7 +6,7 @@
 #include "instructions.h"
 
 // main loop function
-// retrieve opcode & execute it. update gpu interupt & timer
+// retrieve opcode & execute it. update gpu interrupt & timer
 
 int imgui(void *p_s_gb);
 

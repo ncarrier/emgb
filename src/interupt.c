@@ -63,26 +63,23 @@ void doInterupt(struct s_gb * gb_s)
 			vblanck(gb_s);
 		}
 		if (inter & INT_LCDSTAT) {
-			{
-				printf("LCD interupt\n");
-				gb_s->gb_interrupts.interFlag &= ~(INT_LCDSTAT);
-				lcd(gb_s);
-			}
+			printf("LCD interrupt\n");
+			gb_s->gb_interrupts.interFlag &= ~(INT_LCDSTAT);
+			lcd(gb_s);
 		}
 		if (inter & INT_TIMER) {
 			timer(gb_s);
 			gb_s->gb_interrupts.interFlag &= ~(INT_TIMER);
 		}
 		if (inter & INT_JOYPAD) {
-			printf("JOYPAD interupt\n");
+			printf("JOYPAD interrupt\n");
 			joypad(gb_s);
 			gb_s->gb_interrupts.interFlag &= ~(INT_JOYPAD);
 		}
 		if (inter & INT_SERIAL) {
-			printf("serial interupt\n");
+			printf("serial interrupt\n");
 			serial(gb_s);
 			gb_s->gb_interrupts.interFlag &= ~(INT_SERIAL);
 		}
-		return;
 	}
 }
