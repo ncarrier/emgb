@@ -6,7 +6,8 @@
 #define INCLUDE_SPECIAL_REGISTERS_H_
 
 enum special_register {
-	SPECIAL_REGISTER_START = 0xff00u,
+	SPECIAL_REGISTER_INVALID = 0u,
+	SPECIAL_REGISTER_FIRST = 0xff00u,
 
 	/*
 	 * Register for reading joy pad info and determining system type (R/W)
@@ -33,7 +34,7 @@ enum special_register {
 	 * P13-------O-Down-----O-Start
 	 *           |          |
 	 */
-	SPECIAL_REGISTER_P1 = SPECIAL_REGISTER_START,
+	SPECIAL_REGISTER_P1 = SPECIAL_REGISTER_FIRST,
 	/*
 	 * Serial transfer data (R/W)
 	 *
@@ -640,6 +641,11 @@ enum special_register {
 	 * 1: enable
 	 */
 	SPECIAL_REGISTER_IE = 0xffffu,
+
+	SPECIAL_REGISTER_LAST = SPECIAL_REGISTER_IE,
 };
+
+const char *special_register_to_str(enum special_register reg);
+enum special_register special_register_from_string(const char *str);
 
 #endif /* INCLUDE_SPECIAL_REGISTERS_H_ */
