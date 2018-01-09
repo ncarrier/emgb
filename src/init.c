@@ -33,6 +33,7 @@ void	initRegister(struct s_gb *s_gb)
 
 	s_gb->gb_cpu.stopCpu = 0;
 	s_gb->gb_cpu.totalTick = 0;
+	s_gb->gb_cpu.last_tick = 0;
 	s_gb->gb_cpu.jmpf = 0;
 
 	s_gb->gb_gpu.gpuMode = HBLANK;

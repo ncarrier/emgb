@@ -73,6 +73,7 @@ extern const struct extendedInstruction extendedInstructions[256];
 
 struct	       			s_cpu {
 	unsigned int		totalTick;
+	unsigned int		last_tick;
 	unsigned char		stopCpu;
 	unsigned char		jmpf; // TODO remove
 } __attribute__((__packed__));

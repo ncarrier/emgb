@@ -52,8 +52,6 @@ void	seeu(struct s_gb *s_gb); //leaving
 struct	s_gb	*initGb(char *fileName); //init
 void	initRegister(struct s_gb *s_gb);
 
-#define CLOCKSPEED 4194304
-
 enum FLAG { ZERO, NEG, HALF, CARRY };
 
 //cb
