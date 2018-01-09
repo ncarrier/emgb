@@ -19,6 +19,7 @@
 #include "instructions.h"
 #include "log.h"
 #include "memory.h"
+#include "special_registers.h"
 
 static volatile sig_atomic_t signal_received;
 
@@ -483,6 +484,7 @@ static void console_debugger_print(struct console_debugger *debugger)
 	struct s_register *registers;
 	uint16_t f;
 	uint16_t address;
+	enum special_register reg;
 
 	registers = debugger->registers;
 	expression = debugger->command.argv[1];
@@ -518,6 +520,9 @@ static void console_debugger_print(struct console_debugger *debugger)
 		printf("sp = %#.04"PRIx16"\n", registers->sp);
 	} else if (str_matches(expression, "registers")) {
 		console_debugger_print_registers(registers);
+	} else if ((reg = special_register_from_string(expression)) != 0) {
+		printf("%s (%#.04"PRIx16") = %#.04"PRIx16"\n", expression, reg,
+				read8bit(reg, debugger->gb));
 	} else {
 		if (*expression != '*' ||
 				!compute_expression(debugger, expression + 1,
