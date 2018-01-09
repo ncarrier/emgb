@@ -13,6 +13,7 @@ struct s_cpu_z80 {
 	uint8_t real_size;
 	char *doc;
 	uint8_t cycles;
+	uint8_t cycles_cond;
 };
 
 #endif /* INCLUDE_CPU_OP_H_ */
