@@ -24,7 +24,7 @@ grep -E '</?tr|td|th|table' ${file} > ${temp_file}
 
 re_td='<td [^>]*axis="(.*)">(.*)<.*'
 re_td_ln='<td class="ln">'
-re_help='(.*)\|(.*)\|(.*)\|(.*)'
+re_help='(.*)\|(.*)\|(.*)\|(.*)\|(.*)'
 re_sll='^sll (.*)'
 
 cf=0
@@ -60,8 +60,9 @@ function parse_instruction_line() {
 	flags="${BASH_REMATCH[1]}"
 	size=${BASH_REMATCH[2]}
 	cycles=${BASH_REMATCH[3]}
+	cycles_cond=${BASH_REMATCH[4]}
 	opcode=0x${high_nibble}${low_nibble}
-	doc=${BASH_REMATCH[4]}
+	doc=${BASH_REMATCH[5]}
 	func=$(text_to_func "${title}" ${text})
 }
 
