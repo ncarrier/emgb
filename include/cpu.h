@@ -6,7 +6,6 @@
 #include "cpu_op.h"
 
 struct s_gb;
-void initCpu(struct s_gb * s_gb);
 bool is_opcode_undefined(uint8_t opcode);
 
 #pragma pack(push, 1)
