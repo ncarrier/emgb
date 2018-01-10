@@ -149,6 +149,7 @@ function generate_cb_opcode() {
 function generate_base_opcode() {
 	local text=( $1 )
 	local opcode=$2
+	local cycles_cond=$3
 
 	if [ ${#text[*]} -eq 1 ]; then
 		operands=""
@@ -159,7 +160,7 @@ function generate_base_opcode() {
 
 	# call if function is defined
 	if type -t generate_base_${op}_code > /dev/null; then
-		generate_base_${op}_code "${operands}" ${opcode}
+		generate_base_${op}_code "${operands}" ${opcode} ${cycles_cond}
 	else
 		echo "not implemented yet: [${opcode}] ${op} \"${operands}\"" > /dev/stderr
 	fi
@@ -193,7 +194,7 @@ function definition_body_gen() {
 	if [ "${title}" = "CB" ]; then
 		generate_cb_opcode "${text}" ${opcode}
 	else
-		generate_base_opcode "${text}" ${opcode}
+		generate_base_opcode "${text}" ${opcode} ${cycles_cond}
 	fi
 	for f in zf nf hf cf; do
 		case ${flags[${f}]} in
