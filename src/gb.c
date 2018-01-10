@@ -17,9 +17,8 @@ static void instruction_gen(struct s_gb *s_gb)
 
 	fopcode = read8bit(s_gb->gb_register.pc, s_gb);
 	instruction = instructions_base + fopcode;
-	instruction->func(s_gb);
+	s_gb->gb_cpu.totalTick += instruction->func(s_gb);
 	s_gb->gb_register.pc += instruction->size;
-	s_gb->gb_cpu.totalTick += instruction->cycles;
 }
 
 void gb(char *fileName)
