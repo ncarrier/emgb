@@ -542,17 +542,8 @@ void cb(struct s_gb *s_gb) { handle_cb(read8(s_gb), s_gb); }
 //pop
 unsigned short pop16(struct s_gb *s_gb)
 {
-	unsigned short value;
-
 	s_gb->gb_cpu.totalTick += 12;
-	
-	value = read16bit(s_gb->gb_register.sp, s_gb);
-	s_gb->gb_register.sp += 2;
-#ifdef GB_DEBUG
-	//prvoidf("pop 16bit %x stack povoider %x\n", value, s_gb->gb_register.sp);
-#endif
-
-	return (value);
+	return pop(s_gb);
 }
 
 void	pop_hl(struct s_gb *s_gb) { s_gb->gb_register.hl = pop16(s_gb);}
@@ -564,8 +555,7 @@ void	pop_af(struct s_gb *s_gb) { s_gb->gb_register.af = pop16(s_gb); s_gb->gb_re
 void push16(unsigned short value, struct s_gb *s_gb)
 {
 	s_gb->gb_cpu.totalTick += 16;
-	s_gb->gb_register.sp -= 2;
-	write16bitToAddr(s_gb->gb_register.sp, value, s_gb);
+	push(value, s_gb);
 }
 
 void push_de(struct s_gb *s_gb) { push16(s_gb->gb_register.de, s_gb); }
