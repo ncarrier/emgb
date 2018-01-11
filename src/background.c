@@ -3,7 +3,6 @@
 
 int getRealPosition(struct s_gb *s_gb)
 {
-	
 	int yPos = s_gb->gb_io.scrollY + s_gb->gb_gpu.scanline;
 	int yDataLine = yPos / 8;
 	if (yDataLine > 0x1f)
