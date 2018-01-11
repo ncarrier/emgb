@@ -21,6 +21,7 @@
 #include "memory.h"
 #include "special_registers.h"
 
+/* checkpatch[volatile] */
 static volatile sig_atomic_t signal_received;
 
 typedef void (*debugger_command_fn)(struct console_debugger *debugger);
@@ -89,8 +90,7 @@ static bool compute_expression(const struct console_debugger *debugger,
 	}
 	if (nb_match == 1) {
 		if (strlen(expression) != strlen(start_str)) {
-			printf("Spurious chars \"%s\" at the end of expression "
-					"\"%s\"\n",
+			printf("Spurious chars \"%s\" at the end of \"%s\"\n",
 					expression + strlen(start_str),
 					expression);
 			return false;
@@ -98,9 +98,8 @@ static bool compute_expression(const struct console_debugger *debugger,
 		address = start;
 	} else {
 		if ((unsigned)length != strlen(expression)) {
-			printf("Spurious chars \"%s\" at the end of expression "
-					"\"%s\"\n", expression + length,
-					expression);
+			printf("Spurious chars \"%s\" at the end of \"%s\"\n",
+					expression + length, expression);
 			return false;
 		}
 		address = start + offset;
@@ -266,9 +265,8 @@ static void console_debugger_doc(struct console_debugger *debugger)
 	} else {
 		if (opcode < 0 || opcode > UINT16_MAX
 				|| (!cb && upper_byte != 0)) {
-			printf("Opcode must have the form 0x00XX or 0xcb00, "
-					"with XX in [0, %"PRIu8"]\n",
-					UINT8_MAX);
+			printf("Opcode must be 0xXX or 0xcbXX, XX in [0, %"
+					PRIu8"]\n", UINT8_MAX);
 			return;
 		}
 		opcode &= 0xff;
@@ -488,6 +486,7 @@ static void console_debugger_print(struct console_debugger *debugger)
 
 	registers = debugger->registers;
 	expression = debugger->command.argv[1];
+	reg = special_register_from_string(expression);
 	if (str_matches(expression, "af")) {
 		printf("af = %#.04"PRIx16"\n", registers->af);
 	} else if (str_matches(expression, "a")) {
@@ -520,7 +519,7 @@ static void console_debugger_print(struct console_debugger *debugger)
 		printf("sp = %#.04"PRIx16"\n", registers->sp);
 	} else if (str_matches(expression, "registers")) {
 		console_debugger_print_registers(registers);
-	} else if ((reg = special_register_from_string(expression)) != 0) {
+	} else if (reg != 0) {
 		printf("%s (%#.04"PRIx16") = %#.04"PRIx16"\n", expression, reg,
 				read8bit(reg, debugger->gb));
 	} else {
@@ -741,7 +740,7 @@ int console_debugger_init(struct console_debugger *debugger,
 	debugger->gb = gb;
 	signal(SIGINT, console_debugger_init_signal_handler);
 	signal(SIGWINCH, console_debugger_init_signal_handler);
-	// TODO how to perform a cleanup ?
+	/* TODO how to perform a cleanup ? */
 	debugger->editline = el = el_init("emgb", stdin, stdout, stderr);
 	if (el == NULL)
 		ERR("el_init");
@@ -749,7 +748,7 @@ int console_debugger_init(struct console_debugger *debugger,
 
 	/* configure history */
 	debugger->history = history_init();
-	if (debugger-> history == NULL)
+	if (debugger->history == NULL)
 		ERR("history_init");
 	snprintf(debugger->path, EMGB_CONSOLE_DEBUGGER_PATH_MAX,
 			"%s/"EMGB_CONSOLE_DEBUGGER_HISTORY_FILE,
@@ -810,14 +809,14 @@ static bool is_ambiguous(const char *name, const struct debugger_command *dc,
 
 	for (cur = dc + 1, count = 0; cur->name != NULL; cur++) {
 		diff_char = str_diff_chr(name, cur->name);
-		if (*diff_char == '\0') {
-			count++;
-			if (count == 1)
-				printf("Command \"%s\" is ambiguous, "
-						"candidates: %s", name,
-						dc->name);
-			printf(", %s", cur->name);
-		}
+		if (*diff_char != '\0')
+			continue;
+
+		count++;
+		if (count == 1)
+			printf("Command \"%s\" is ambiguous, candidates: %s",
+					name, dc->name);
+		printf(", %s", cur->name);
 	}
 
 	if (count > 0) {
@@ -898,29 +897,32 @@ static void console_debugger_check_breakpoints(
 
 	for (i = 0; i < EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS; i++) {
 		pc = debugger->registers->pc;
-		if (breakpoint_hit(debugger->breakpoints + i, pc)) {
-			debugger->active = true;
-			printf("Breakpoint %d hit (pc = %#.04"PRIx16")\n", i, pc);
-		}
+		if (!breakpoint_hit(debugger->breakpoints + i, pc))
+			continue;
+
+		debugger->active = true;
+		printf("Breakpoint %d hit (pc = %#.04"PRIx16")\n", i, pc);
+		break;
 	}
 }
 
 static void check_signal(struct console_debugger *debugger)
 {
-	if (signal_received) {
-		switch (signal_received) {
-			case SIGWINCH:
-				el_resize(debugger->editline);
-				console_debugger_get_terminal_size(debugger);
-				break;
+	if (signal_received == 0)
+		return;
 
-			case SIGINT:
-				if (!debugger->active)
-					puts("\rentering debugger, type help");
-				debugger->active = true;
-				signal_received = 0;
-				break;
-		}
+	switch (signal_received) {
+	case SIGWINCH:
+		el_resize(debugger->editline);
+		console_debugger_get_terminal_size(debugger);
+		break;
+
+	case SIGINT:
+		if (!debugger->active)
+			puts("\rentering debugger, type help");
+		debugger->active = true;
+		signal_received = 0;
+		break;
 	}
 }
 
@@ -933,13 +935,15 @@ static void display_disassembly(struct console_debugger *debugger)
 	const struct s_cpu_z80 *instruction;
 	uint16_t pc;
 	const char *value;
+	struct s_gb *gb;
 
+	gb = debugger->gb;
 	cursor_save_pos();
 
 	cursor_move_to(1, 1);
 	pc = debugger->registers->pc;
 	for (i = 0; i < debugger->terminal.rows / 2; i++) {
-		opcode = read8bit(pc, debugger->gb);
+		opcode = read8bit(pc, gb);
 		instruction = instructions_base + opcode;
 		if (i == 0)
 			bold_color();
@@ -949,7 +953,7 @@ static void display_disassembly(struct console_debugger *debugger)
 			putchar(value[j]);
 		if (value[j] == '*') {
 			if (opcode == 0xcb) {
-				opcode = read8bit(pc + 1, debugger->gb);
+				opcode = read8bit(pc + 1, gb);
 				printf("%.02"PRIx8":%s", opcode,
 						instructions_cb[opcode].value);
 			} else {
@@ -957,8 +961,7 @@ static void display_disassembly(struct console_debugger *debugger)
 				for (cur = instruction->real_size - 1; cur >= 1;
 						cur--)
 					printf("%02"PRIx8,
-							read8bit(pc + cur,
-									debugger->gb));
+							read8bit(pc + cur, gb));
 				for (; value[j] == '*'; j++)
 					;
 				printf("%s", value + j);
