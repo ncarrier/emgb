@@ -177,59 +177,6 @@ int write8bit(unsigned short addr, unsigned char value, struct s_gb *s_gb)
 	exit(-1);
 }
 
-
-unsigned char memoperation(unsigned short addr, signed char value, struct s_gb *s_gb)
-{
-	if (addr < 0x8000)
-	{
-//		s_rom->rom[addr] += value;
-		printf("error memoperation on ROM space\n");
-		exit(-2);
-		return s_gb->gb_rom.rom[addr];
-	}
-	if (addr >= 0x8000 && addr < 0xA000)
-	{
-		s_gb->gb_mem.vram[addr - 0x8000] += value;
-		 return s_gb->gb_mem.vram[addr - 0x8000];
-	}
-	if (addr >= 0xA000 && addr < 0xC000)
-	{
-		s_gb->gb_mem.sram[addr - 0xA000] += value;
-		return s_gb->gb_mem.sram[addr - 0xA000];
-	}
-	else if (addr >= 0xC000 && addr < 0xE000)
-	{
-		s_gb->gb_mem.ram[addr - 0xC000] += value;
-		return s_gb->gb_mem.ram[addr - 0xC000];
-	}
-	else if (addr >= 0xE000 && addr < 0xFE00)
-	{
-		s_gb->gb_mem.ram[addr - 0xE000] += value;
-		return s_gb->gb_mem.ram[addr - 0xE000];
-	}
-	else if (addr >= 0xFE00 && addr < 0xFEFF)
-	{
-		s_gb->gb_mem.oam[addr - 0xFE00] += value;
-		return s_gb->gb_mem.oam[addr - 0xFE00];
-	}
-	else if (addr >= 0xFF00 && addr < 0xFF80)
-	{
-		s_gb->gb_mem.io_ports[addr - 0xFF00] += value;
-		return s_gb->gb_mem.io_ports[addr - 0xFF00];
-	}
-	else if (addr >= 0xFF80 && addr < 0xFFFF)
-	{
-		s_gb->gb_mem.hram[addr - 0xFF80] += value;
-		return s_gb->gb_mem.hram[addr - 0xFF80];
-	}
-	else if (addr == 0xFFFF)
-	{
-		s_gb->gb_interrupts.interEnable = value;
-		return s_gb->gb_interrupts.interEnable;
-	}
-	return 0;
-}
-
 void push(uint16_t value, struct s_gb *s_gb)
 {
 	s_gb->gb_register.sp -= 2;
