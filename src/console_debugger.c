@@ -777,6 +777,7 @@ int console_debugger_init(struct console_debugger *debugger,
 	 * command-line switch
 	 */
 	debugger->active = false;
+	printf("program's pid is %jd\n", (intmax_t)getpid());
 
 	return 0;
 }
@@ -1113,9 +1114,9 @@ int console_debugger_update(struct console_debugger *debugger)
 
 	console_debugger_check_breakpoints(debugger);
 
-	if (debugger->next) {
+	if (debugger->next)
 		debugger->next = false;
-	}
+
 	while (debugger->active && !debugger->next) {
 		check_signal(debugger);
 		display_pre_prompt(debugger);
