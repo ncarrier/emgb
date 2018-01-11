@@ -22,10 +22,8 @@
 
 void keyDown(struct s_gb * gb_s)
 {
-	gb_s->gb_cpu.stopCpu = 0;
 	switch (gb_s->gb_gpu.event.key.keysym.sym)
 	{
-		gb_s->gb_cpu.stopCpu = 0;
 	case SDLK_ESCAPE:
 		gb_s->running = 0;
 		break;
@@ -142,7 +140,6 @@ static void joy_device_removed(struct s_gb *gb, const union SDL_Event *event)
 static void button_down(struct s_gb *gb, enum gb_button button)
 {
 	gb->gb_interrupts.interFlag |= INT_JOYPAD;
-	gb->gb_cpu.stopCpu = 0;
 	if (BUTTON_IS_KEY(button))
 		gb->gb_pad.button_key &= ~BUTTON_TO_KEY(button);
 	else

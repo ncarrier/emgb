@@ -1,5 +1,7 @@
 #include "GB.h"
 #include "memory.h"
+#include "special_registers.h"
+
 static unsigned char MCB_romBanking = 1;
 static unsigned char romBankingFlag = 0;
 
@@ -123,58 +125,47 @@ void	mcbHandleBanking(unsigned short addr, unsigned char value, struct s_gb *s_g
 		MCB_romBanking = 1;
 }
 
-int write8bit(unsigned short addr, unsigned char value, struct s_gb *s_gb)
+int write8bit(uint16_t addr, uint8_t value, struct s_gb *s_gb)
 {
-	if (addr < 0x8000)
-	{
+	if (addr == 0xffffu)
+		puts("IE");
+	if (addr < 0x8000) {
 		mcbHandleBanking(addr, value, s_gb);
 		return 0;
-	}
-	else if (addr >= 0x8000 && addr < 0xA000)
-	{
+	} else if (addr >= 0x8000 && addr < 0xA000) {
 		s_gb->gb_mem.vram[addr - 0x8000] = value;
 		return 0;
-	}
-	else if (addr >= 0xA000 && addr < 0xC000)
-	{
+	} else if (addr >= 0xA000 && addr < 0xC000) {
 		s_gb->gb_mem.sram[addr - 0xA000] = value;
 		return 0;
-	}
-	else if (addr >= 0xC000 && addr < 0xE000)
-	{
+	} else if (addr >= 0xC000 && addr < 0xE000) {
 		s_gb->gb_mem.ram[addr - 0xC000] = value;
 		return 0;
-	}
-	else if (addr >= 0xE000 && addr < 0xFE00)
-	{
+	} else if (addr >= 0xE000 && addr < 0xFE00) {
 		s_gb->gb_mem.ram[addr - 0xE000] = value;
 		return 0;
-	}
-	else if (addr >= 0xFE00 && addr < 0xFF00)
-	{
+	} else if (addr >= 0xFE00 && addr < SPECIAL_REGISTER_FIRST) {
 		s_gb->gb_mem.oam[addr - 0xFE00] = value;
 		return 0;
-	}
-	else if (addr >= 0xFF00 && addr < 0xFF80) {
-		s_gb->gb_mem.io_ports[addr - 0xFF00] = value;
-		if (addr == 0xff41)
-		{
+	} else if (addr >= SPECIAL_REGISTER_FIRST
+			&& addr < SPECIAL_REGISTER_HIGH_RAM_START) {
+		s_gb->gb_mem.io_ports[addr - SPECIAL_REGISTER_FIRST] = value;
+		if (addr == SPECIAL_REGISTER_STAT)
 			printf("writing lcd stat %x\n", value);
-		}
-		ctrlIo(addr, (unsigned char *)s_gb->gb_mem.io_ports, s_gb);
+		ctrlIo(addr, (unsigned char *) s_gb->gb_mem.io_ports, s_gb);
 		return 0;
-	}
-	else if (addr >= 0xFF80 && addr < 0xFFFF)
-	{
-		s_gb->gb_mem.hram[addr - 0xFF80] = value;
+	} else if (addr >= SPECIAL_REGISTER_HIGH_RAM_START
+			&& addr < SPECIAL_REGISTER_HIGH_RAM_END) {/* TODO in hram */
+		s_gb->gb_mem.hram[addr - SPECIAL_REGISTER_HIGH_RAM_START] =
+				value;
 		return 0;
-	}
-	else if (addr >= 0xffff) {
+	} else if (addr == SPECIAL_REGISTER_IE) {
+		printf("%s interEnable = %"PRIu8"\n", __func__, value);
 		s_gb->gb_interrupts.interEnable = value;
 		return 0;
 	}
-	printf("write error addr = %x\n", addr);
-	exit(-1);
+	/* never reached */
+	return -1;
 }
 
 void push(uint16_t value, struct s_gb *s_gb)

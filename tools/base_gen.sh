@@ -300,7 +300,7 @@ function generate_base_ei_code() {
 }
 
 function generate_base_halt_code() {
-	echo -e "\ts_gb->gb_cpu.stopCpu = 1;"
+	echo -e "\ts_gb->gb_cpu.halted = true; puts(\"halted\");"
 }
 
 function generate_base_inc_code() {
@@ -584,7 +584,7 @@ function generate_base_scf_code() {
 
 function generate_base_stop_code() {
 	cat <<here_doc_delim
-	s_gb->gb_cpu.stopCpu = 1;
+	s_gb->gb_cpu.stopped = true;
 here_doc_delim
 }
 

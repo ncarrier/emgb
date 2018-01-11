@@ -157,12 +157,12 @@ void ctrlIo(unsigned short addr, unsigned char *io_ports, struct s_gb *s_gb)
 	}
 	case 0xff4A: //scroll Y
 	{
-		printf("win y = %x\n", io_ports[0x4A]);
+//		printf("win y = %x\n", io_ports[0x4A]);
 		break;
 	}
 	case 0xff4B: //scroll Y
 	{
-		printf("win x = %x\n", io_ports[0x4B]);
+//		printf("win x = %x\n", io_ports[0x4B]);
 		break;
 	}
 

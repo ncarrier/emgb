@@ -50,17 +50,18 @@ void gb(char *fileName)
 	while (s_gb->running)
 	{
 #if EMGB_CONSOLE_DEBUGGER
-          ret = console_debugger_update(&debugger);
-          if (ret < 0)
-            ERR("console_debugger_update: %s", strerror(-ret));
+		ret = console_debugger_update(&debugger);
+		if (ret < 0)
+			ERR("console_debugger_update: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
-	  /* debug(s_gb); */
-	  handleEvent(s_gb);
-	  if (s_gb->gb_cpu.stopCpu == 0)
+		handleEvent(s_gb);
+		if (!s_gb->gb_cpu.stopped) {
+			if (!s_gb->gb_cpu.halted)
 				instruction_gen(s_gb);
-	  updateGpu(s_gb);
-	  doInterupt(s_gb);
-	  updateTimer(s_gb);
+			updateGpu(s_gb);
+		}
+		doInterupt(s_gb);
+		updateTimer(s_gb);
 	}
 #ifdef IMDBG
 	if (thr != NULL)

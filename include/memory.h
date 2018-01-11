@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-int write8bit(unsigned short addr, unsigned char value, struct s_gb *s_gb);
+int write8bit(uint16_t addr, uint8_t value, struct s_gb *s_gb);
 void	mcbHandleBanking(unsigned short addr, unsigned char value, struct s_gb *s_gb);
 unsigned char read8bit(unsigned short addr, struct s_gb *s_gb);
 unsigned short read16bit(unsigned short addr, struct s_gb *s_gb);

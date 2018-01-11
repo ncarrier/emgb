@@ -51,13 +51,25 @@ void timer(struct s_gb * gb_s)
 
 void doInterupt(struct s_gb * gb_s)
 {
-//	printf("inter master %x interenable %x inter flag %x\n", gb_s->gb_interrupts.interMaster, gb_s->gb_interrupts.interEnable, gb_s->gb_interrupts.interFlag);
-	if (gb_s->gb_interrupts.interMaster && gb_s->gb_interrupts.interEnable && gb_s->gb_interrupts.interFlag)
-	{
-		//printf("\ninterupt !\n");
-		gb_s->gb_cpu.stopCpu = 0;
-		unsigned char inter = gb_s->gb_interrupts.interEnable & gb_s->gb_interrupts.interFlag;
-		//getchar();
+	unsigned char inter;
+
+//	printf("master, %"PRIu8"master, %"PRIu8", %"PRIu8"\n",
+//			gb_s->gb_interrupts.interMaster,
+//			gb_s->gb_interrupts.interEnable,
+//			gb_s->gb_interrupts.interFlag);
+	if (gb_s->gb_interrupts.interFlag & INT_JOYPAD)
+		gb_s->gb_cpu.stopped = false;
+	gb_s->gb_cpu.halted = false;
+	if (gb_s->gb_interrupts.interMaster && gb_s->gb_interrupts.interEnable
+			&& gb_s->gb_interrupts.interFlag) {
+		inter = gb_s->gb_interrupts.interEnable
+				& gb_s->gb_interrupts.interFlag;
+//		if (gb_s->gb_interrupts.interFlag != 0)
+//		gb_s->gb_cpu.halted = false;
+		if (inter != 0) {
+			gb_s->gb_cpu.halted = false;
+			puts("de-halted");
+		}
 		if (inter & INT_VBLANK) {
 			gb_s->gb_interrupts.interFlag &= ~(INT_VBLANK);
 			vblanck(gb_s);
@@ -68,10 +80,12 @@ void doInterupt(struct s_gb * gb_s)
 			lcd(gb_s);
 		}
 		if (inter & INT_TIMER) {
+			printf("TIMER interrupt\n");
 			timer(gb_s);
 			gb_s->gb_interrupts.interFlag &= ~(INT_TIMER);
 		}
 		if (inter & INT_JOYPAD) {
+			gb_s->gb_cpu.stopped = false;
 			printf("JOYPAD interrupt\n");
 			joypad(gb_s);
 			gb_s->gb_interrupts.interFlag &= ~(INT_JOYPAD);

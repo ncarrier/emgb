@@ -70,12 +70,13 @@ struct extendedInstruction {
 extern const struct s_cpu_z80 instructions[256];
 extern const struct extendedInstruction extendedInstructions[256];
 
-struct	       			s_cpu {
-	unsigned int		totalTick;
-	unsigned int		last_tick;
-	unsigned char		stopCpu;
-	unsigned char		jmpf; // TODO remove
-} __attribute__((__packed__));
+struct s_cpu {
+	unsigned int totalTick;
+	int last_tick;
+	bool stopped;
+	bool halted;
+	unsigned char jmpf; // TODO remove
+}__attribute__((__packed__));
 
 #pragma pack(pop)
 
