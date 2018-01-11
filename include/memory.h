@@ -11,7 +11,7 @@ void write16bitToAddr(unsigned short addr, unsigned short value, struct s_gb *s_
 void push(uint16_t value, struct s_gb *s_gb);
 uint16_t pop(struct s_gb *s_gb);
 
-struct						s_memory 
+struct						s_memory
 {
 	unsigned char			sram[0x2000];
 	unsigned char			vram[0x2000];

@@ -10,7 +10,7 @@ void initDisplay(struct s_gb *s_gb)
   SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif /* EMGB_CONSOLE_DEBUGGER */
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
-	
+
   s_gb->gb_gpu.window = SDL_CreateWindow("GB",
 					 300, 300, GB_W, GB_H, 0);
   if (s_gb->gb_gpu.window == NULL)
@@ -23,8 +23,8 @@ void initDisplay(struct s_gb *s_gb)
     ERR("cannot create SDL texture");
   s_gb->gb_gpu.pixels = malloc(sizeof(Uint32) * GB_W * GB_H);
   if (s_gb->gb_gpu.pixels == NULL)
-    ERR("cannot alloc pixels");		
-	
+    ERR("cannot alloc pixels");
+
   /* s_gb->gb_gpu.window_d = SDL_CreateWindow("GB", */
   /* 					   400, 400, 456, 456, 0); */
   /* s_gb->gb_gpu.renderer_d = SDL_CreateRenderer(s_gb->gb_gpu.window_d, -1, SDL_RENDERER_TARGETTEXTURE); */
@@ -43,7 +43,7 @@ void displayAll(struct s_gb *s_gb)
 
 	for (int index = 0x8000; index < 0x9800; index += 0x10)
 	{
-	
+
 		int tmpaddr = index;
 		for (y = 0; y < 8; y++)
 		{
@@ -131,7 +131,7 @@ void renderingSprite(struct s_gb *s_gb)
 	int dec;
 
 	unsigned short limit = 0xFE9F;
-	
+
 	int baseaddr = 0x8000;
 
 
@@ -152,7 +152,7 @@ void renderingSprite(struct s_gb *s_gb)
 
 			for (x = 0; x < 8; x++)
 			{
-				
+
 				color = ((line >> dec) & 0x01);
 				if ((line >> (dec - 8)) & 0x01)
 					color += 2;
@@ -167,7 +167,7 @@ void renderingSprite(struct s_gb *s_gb)
 				if ((160 * (posy + y) + (posx + x)) < (160 *  144))  //check mem coruption error -> need to refactor this
 					s_gb->gb_gpu.pixels[160 * (posy + y ) + (posx + x)] = color;
 				dec--;
-	
+
 
 			}
 			tmpaddr += 2;
@@ -185,7 +185,7 @@ void rendering(struct s_gb *s_gb)
 	SDL_LockTexture(s_gb->gb_gpu.texture, NULL, &pixels, &pitch);
 	memcpy(s_gb->gb_gpu.pixels, pixels , 160 * 144 * 4);
 
-	
+
 	if (s_gb->gb_io.lcd.BgWindowDisplay == 1)
 		renderingBg(s_gb);
 	/*if (s_gb->gb_io.lcd.WindowIsOn == 1)
@@ -194,12 +194,12 @@ void rendering(struct s_gb *s_gb)
 		renderingSprite(s_gb);
 	memcpy(pixels, s_gb->gb_gpu.pixels, 160 * 144 * 4);
 	SDL_UnlockTexture(s_gb->gb_gpu.texture);
-	
+
 	SDL_RenderCopy(s_gb->gb_gpu.renderer, s_gb->gb_gpu.texture, NULL, NULL);
 	SDL_RenderPresent(s_gb->gb_gpu.renderer);
 
 	/* step 2 debug */
-	
+
 	//	memset(s_gb->gb_gpu.pixels_d, 0x00ff0000, 256 * 256 * sizeof(Uint32));
 	/* SDL_RenderClear(s_gb->gb_gpu.renderer_d); */
 	/* SDL_LockTexture(s_gb->gb_gpu.texture_d, NULL, &pixels, &pitch); */
@@ -231,7 +231,7 @@ void setLcdStatus(struct s_gb *s_gb)
 		//s_gb->gb_cpu.totalTick = 0;
 		s_gb->gb_gpu.scanline = 0;
 		printf("reset scanline & s_gb->gb_cpu.totalTick\n");
-		
+
 		write8bit(0xff41, 253, s_gb);
 		return;
 	}
@@ -252,7 +252,7 @@ void updateGpu(struct s_gb *s_gb)
 		if (s_gb->gb_gpu.tick >= 204)
 		{
 			s_gb->gb_gpu.scanline += 1;
-			
+
 			if (s_gb->gb_gpu.scanline >= 144)
 			{
 		//		if (gb_s->gb_interrupts.interEnable & INT_VBLANK)
@@ -271,7 +271,7 @@ void updateGpu(struct s_gb *s_gb)
 		if (s_gb->gb_gpu.tick >= 456)
 		{
 			s_gb->gb_gpu.scanline += 1;
-			
+
 			if (s_gb->gb_gpu.scanline >= 153)
 			{
 				s_gb->gb_gpu.scanline = 0;
@@ -284,7 +284,7 @@ void updateGpu(struct s_gb *s_gb)
 		////
 		if (s_gb->gb_gpu.tick >= 80)
 		{
-		
+
 			s_gb->gb_gpu.scanline = 0;
 			s_gb->gb_gpu.gpuMode = VRAM;
 			s_gb->gb_gpu.tick -= 80;
@@ -293,7 +293,7 @@ void updateGpu(struct s_gb *s_gb)
 	case VRAM:
 		if (s_gb->gb_gpu.tick >= 172)
 		{
-			
+
 			s_gb->gb_gpu.gpuMode = HBLANK;
 			s_gb->gb_gpu.tick -= 172;
 		}
