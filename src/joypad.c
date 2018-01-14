@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include "joypad.h"
 #include "GB.h"
 #include "utils.h"
@@ -214,9 +216,21 @@ static void joy_axis_motion(struct s_gb *gb, const union SDL_Event *event)
 	}
 }
 
+static bool is_fullscreen(const struct SDL_WindowEvent *we)
+{
+	int ret;
+	SDL_DisplayMode dm;
+	ret = SDL_GetCurrentDisplayMode(0, &dm);
+	if (ret != 0)
+		return false;
+
+	return dm.w == we->data1 && dm.h == we->data2;
+}
+
 void handleEvent(struct s_gb *gb_s)
 {
 	union SDL_Event *event;
+	struct SDL_WindowEvent *we;
 
 	event = &(gb_s->gb_gpu.event);
 	if (SDL_PollEvent(event) == 0)
@@ -228,6 +242,27 @@ void handleEvent(struct s_gb *gb_s)
 		gb_s->running = 0;
 		break;
 	}
+
+	case SDL_WINDOWEVENT:
+		we = &gb_s->gb_gpu.event.window;
+		switch (we->event) {
+		case SDL_WINDOWEVENT_SIZE_CHANGED:
+			if (is_fullscreen(we)) {
+				if (gb_s->gb_gpu.mouse_visible) {
+					SDL_ShowCursor(SDL_DISABLE);
+					gb_s->gb_gpu.mouse_visible = false;
+				}
+			} else {
+				if (!gb_s->gb_gpu.mouse_visible) {
+					SDL_ShowCursor(SDL_ENABLE);
+					gb_s->gb_gpu.mouse_visible = true;
+				}
+			}
+			break;
+		case SDL_WINDOWEVENT_MOVED:
+			break;
+		}
+		break;
 
 	case SDL_JOYDEVICEADDED:
 		joy_device_added(gb_s, event->jdevice.which);

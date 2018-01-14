@@ -1,6 +1,8 @@
 #ifndef GB_GPU
 #define GB_GPU
 
+#include <stdbool.h>
+
 #include "io.h"
 #include "GB.h"
 
@@ -32,6 +34,7 @@ struct				s_gpu
 	SDL_Texture		*texture;
 	SDL_Renderer	*renderer;
 	unsigned int	*pixels;
+	bool mouse_visible;
 
 	SDL_Window		*window_d;
 	SDL_Surface		*screenSurface_d;
