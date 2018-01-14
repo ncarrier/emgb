@@ -22,10 +22,9 @@
 #define BUTTON_TO_KEY(b) (1 << ((b) & ~BUTTON_KEY_OR_DIR_MASK))
 #define BUTTON_TO_DIR(b) (1 << (b))
 
-void keyDown(struct s_gb * gb_s)
+void keyDown(struct s_gb *gb_s)
 {
-	switch (gb_s->gb_gpu.event.key.keysym.sym)
-	{
+	switch (gb_s->gb_gpu.event.key.keysym.sym) {
 	case SDLK_ESCAPE:
 		gb_s->running = 0;
 		break;
@@ -65,10 +64,9 @@ void keyDown(struct s_gb * gb_s)
 	return;
 }
 
-void keyUp(struct s_gb * gb_s)
+void keyUp(struct s_gb *gb_s)
 {
-	switch (gb_s->gb_gpu.event.key.keysym.sym)
-	{
+	switch (gb_s->gb_gpu.event.key.keysym.sym) {
 	case SDLK_w:
 		gb_s->gb_pad.button_key |= BUTTON_DOWN_FLAG;
 		break;
@@ -113,8 +111,8 @@ static void joy_device_added(struct s_gb *gb, uint32_t index)
 	}
 	ret = init_joystick_config(joystick_config, index, gb->config_dir_path);
 	if (ret < 0) {
-		printf("No mapping found for %s, use joypad_mapping to "
-				"create one\n", joystick_name);
+		printf("No mapping for %s, create one with joypad_mapping\n",
+				joystick_name);
 		cleanup_joystick_config(joystick_config);
 	}
 }
