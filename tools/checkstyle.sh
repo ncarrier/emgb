@@ -7,7 +7,7 @@ my_dir=$(dirname ${me})/
 
 checkpatch=${my_dir}checkpatch2.pl
 
-sources=$(find -name '*.c' -o -name '*.h')
+sources=$(find src -name '*.c' -o -name '*.h')
 
 exclude=""
 
