@@ -3,45 +3,57 @@
 
 int getRealPosition(struct s_gb *s_gb)
 {
-	int yPos = s_gb->gb_io.scrollY + s_gb->gb_gpu.scanline;
-	int yDataLine = yPos / 8;
+	int yPos;
+	int yDataLine;
+	int lineOffset;
+	int dataOffset;
+	struct s_io *io;
+
+	io = &s_gb->gb_io;
+	yPos = io->scrollY + s_gb->gb_gpu.scanline;
+	yDataLine = yPos / 8;
 	if (yDataLine > 0x1f)
 		yDataLine -= 0x20;
-	int lineOffset = (yDataLine)* 32;
-	int dataOffset = s_gb->gb_io.lcd.BgTileMapSelect + lineOffset + s_gb->gb_io.scrollX;
+	lineOffset = yDataLine * 32;
+	dataOffset = io->lcd.BgTileMapSelect + lineOffset + io->scrollX;
 
-	return (dataOffset);
+	return dataOffset;
 }
 
-void renderingBg(struct s_gb *s_gb)
+void renderingBg(struct s_gb *gb)
 {
 	unsigned short line;
-	int color = 0;
+	int color;
 	int dec;
-	int posx, x;
+	int posx;
+	int x;
 	unsigned char tileindex;
 	signed char stileindex;
-	int baseaddr = s_gb->gb_io.lcd.BgWindowTileData;
-	int dataOffset = getRealPosition(s_gb);
+	int baseaddr;
+	int dataOffset;
+	int index;
+	int tileAddr;
+	struct s_io *io;
+	struct s_gpu *gpu;
+	int pixel_index;
+
+	gpu = &gb->gb_gpu;
+	io = &gb->gb_io;
+	baseaddr = io->lcd.BgWindowTileData;
+	dataOffset = getRealPosition(gb);
 	posx = 0;
-	for (int index = 0; index < 20; index += 1)
-	{
-		int tileAddr;
-		if (s_gb->gb_io.lcd.BgWindowTileData == 0x8800)
-		{
-			stileindex = (signed)(read8bit(index + dataOffset, s_gb));
-			tileAddr = baseaddr + ((stileindex + 128) * 16);
-		}
-		else
-		{
-			tileindex = read8bit(index + dataOffset, s_gb);
-			tileAddr = baseaddr + (tileindex * 16);
+	for (index = 0; index < 20; index++) {
+		if (io->lcd.BgWindowTileData == 0x8800) {
+			stileindex = (signed)(read8bit(index + dataOffset, gb));
+			tileAddr = baseaddr + (stileindex + 128) * 16;
+		} else {
+			tileindex = read8bit(index + dataOffset, gb);
+			tileAddr = baseaddr + tileindex * 16;
 		}
 		dec = 15;
-		line = read16bit(tileAddr + ((s_gb->gb_gpu.scanline % 8) * 2), s_gb);
-		for (x = 0; x < 8; x++)
-		{
-			color = ((line >> dec) & 0x01);
+		line = read16bit(tileAddr + (gpu->scanline % 8) * 2, gb);
+		for (x = 0; x < 8; x++) {
+			color = (line >> dec) & 0x01;
 			if ((line >> (dec - 8)) & 0x01)
 				color += 2;
 			if (color == 0)
@@ -52,8 +64,9 @@ void renderingBg(struct s_gb *s_gb)
 				color = 0x00aaaaaa;
 			else if (color == 3)
 				color = 0x00000000;
-			if ((160 * (s_gb->gb_gpu.scanline) + (posx + x)) < (160 * 144))
-				s_gb->gb_gpu.pixels[(160 * s_gb->gb_gpu.scanline) + (posx + x)] = color;
+			pixel_index = 160 * gpu->scanline + posx + x;
+			if (pixel_index < (160 * 144))
+				gpu->pixels[pixel_index] = color;
 			dec--;
 		}
 		posx += 8;
