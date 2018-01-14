@@ -21,7 +21,7 @@
 #include "memory.h"
 #include "special_registers.h"
 
-/* checkpatch[volatile] */
+/* codecheck_ignore[VOLATILE] */
 static volatile sig_atomic_t signal_received;
 
 typedef void (*debugger_command_fn)(struct console_debugger *debugger);
