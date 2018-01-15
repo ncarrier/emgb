@@ -55,30 +55,31 @@ struct s_gb *initGb(const char *fileName)
 
 void	initRegister(struct s_gb *s_gb)
 {
-	s_gb->gb_register.af = 0x01B0;
-	s_gb->gb_register.bc = 0x0013;
-	s_gb->gb_register.de = 0x00D8;
-	s_gb->gb_register.hl = 0x014D;
-	s_gb->gb_register.pc = 0x0100;
-	s_gb->gb_register.sp = 0xFFFA;
+	struct s_register *registers;
+	struct s_cpu *cpu;
+	struct s_joypad *pad;
 
-	s_gb->gb_cpu.stopped = false;
-	s_gb->gb_cpu.halted = false;
-	s_gb->gb_cpu.totalTick = 0;
-	s_gb->gb_cpu.last_tick = 0;
-	s_gb->gb_cpu.jmpf = 0;
+	registers = &s_gb->gb_register;
+	registers->af = 0x01B0;
+	registers->bc = 0x0013;
+	registers->de = 0x00D8;
+	registers->hl = 0x014D;
+	registers->pc = 0x0100;
+	registers->sp = 0xFFFA;
+
+	cpu = &s_gb->gb_cpu;
+	cpu->stopped = false;
+	cpu->halted = false;
+	cpu->totalTick = 0;
+	cpu->last_tick = 0;
 
 	s_gb->gb_gpu.gpuMode = HBLANK;
 
 	memoryInit(s_gb);
 
-
-	s_gb->gb_pad.button_key = 0x0f;
-	s_gb->gb_pad.button_dir = 0x0f;
+	pad = &s_gb->gb_pad;
+	pad->button_key = 0x0f;
+	pad->button_dir = 0x0f;
 
 	s_gb->running = 1;
-	SET_ZERO();
-	SET_HALFC();
-	SET_CARRY();
-	CLEAR_NEG();
 }

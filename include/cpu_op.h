@@ -3,7 +3,7 @@
 #include <inttypes.h>
 
 struct s_gb;
-typedef unsigned (*cpufunc)(struct s_gb*);
+typedef unsigned (*cpufunc)(struct s_gb *);
 
 struct s_cpu_z80 {
 	unsigned char opcode;

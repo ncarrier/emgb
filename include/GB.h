@@ -37,20 +37,11 @@ struct s_gb {
 void gb(const char *fileName);
 void initRegister(struct s_gb *gb);
 void debug(struct s_gb *tmprom);
-void check_neg(unsigned char value, struct s_gb *gb);
-void check_zero(unsigned char value, struct s_gb *gb);
 void RDBG(struct s_gb *gb);
 void displayStack(struct s_gb *gb);
 
 void seeu(struct s_gb *gb); /* leaving */
 struct s_gb *initGb(const char *fileName); /* init */
 void initRegister(struct s_gb *gb);
-
-enum FLAG {
-	ZERO,
-	NEG,
-	HALF,
-	CARRY
-};
 
 #endif

@@ -23,22 +23,6 @@ void displayStack(struct s_gb *s_gb)
 	}
 }
 
-void check_neg(unsigned char value, struct s_gb *s_gb)
-{
-	if (value == 0)
-		SET_NEG();
-	else
-		CLEAR_NEG();
-}
-
-void check_zero(unsigned char value, struct s_gb *s_gb)
-{
-	if (value == 0)
-		SET_ZERO();
-	else
-		CLEAR_ZERO();
-}
-
 void RDBG(struct s_gb *s_gb)
 {
 	/*

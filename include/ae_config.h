@@ -1,7 +1,7 @@
 #ifndef AE_CONFIG_H_
 #define AE_CONFIG_H_
 
-#define AE_CONFIG_INITIALIZER (struct ae_config) { .argz = NULL, .len = 0, }
+#define AE_CONFIG_INITIALIZER ((struct ae_config) { .argz = NULL, .len = 0, })
 
 struct ae_config {
 	char *argz;
