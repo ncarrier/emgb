@@ -33,7 +33,7 @@ static void initCpu(struct s_gb * gb_s)
 	}
 }
 
-struct s_gb *initGb(char *fileName)
+struct s_gb *initGb(const char *fileName)
 {
 	struct s_gb *s_gb = NULL;
 

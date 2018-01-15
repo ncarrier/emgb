@@ -12,7 +12,7 @@
 
 /* int imgui(void *p_s_gb); */
 
-void gb(char *fileName)
+void gb(const char *fileName)
 {
 	struct s_gb *gb;
 	uint8_t fopcode;

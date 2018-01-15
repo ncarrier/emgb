@@ -39,7 +39,7 @@ struct						s_gb
 	unsigned char			stopdbg;
 };
 
-void	 gb(char *fileName);
+void	 gb(const char *fileName);
 void	initRegister(struct s_gb *s_gb);
 void	debug(struct s_gb *tmprom);
 void	check_neg(unsigned char value, struct s_gb *s_gb);
@@ -49,7 +49,7 @@ void	displayStack(struct s_gb *s_gb);
 
 
 void	seeu(struct s_gb *s_gb); //leaving
-struct	s_gb	*initGb(char *fileName); //init
+struct	s_gb	*initGb(const char *fileName); //init
 void	initRegister(struct s_gb *s_gb);
 
 enum FLAG { ZERO, NEG, HALF, CARRY };
