@@ -9,7 +9,7 @@
 #include <SDL.h>
 #include "cpu.h"
 #include "rom.h"
-#include "interupt.h"
+#include "interrupt.h"
 #include "gpu.h"
 #include "io.h"
 #include "joypad.h"

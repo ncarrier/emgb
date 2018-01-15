@@ -1,5 +1,5 @@
-#ifndef INTERUPT
-#define INTERUPT
+#ifndef INTERRUPT
+#define INTERRUPT
 
 
 struct s_gb;

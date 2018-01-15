@@ -1,4 +1,5 @@
-#include "interupt.h"
+#include "interrupt.h"
+
 #include "GB.h"
 
 void vblanck(struct s_gb * gb_s)
@@ -68,7 +69,7 @@ void doInterupt(struct s_gb * gb_s)
 //		gb_s->gb_cpu.halted = false;
 		if (inter != 0) {
 			gb_s->gb_cpu.halted = false;
-			puts("de-halted");
+//			puts("de-halted");
 		}
 		if (inter & INT_VBLANK) {
 			gb_s->gb_interrupts.interFlag &= ~(INT_VBLANK);
@@ -80,7 +81,7 @@ void doInterupt(struct s_gb * gb_s)
 			lcd(gb_s);
 		}
 		if (inter & INT_TIMER) {
-			printf("TIMER interrupt\n");
+//			printf("TIMER interrupt\n");
 			timer(gb_s);
 			gb_s->gb_interrupts.interFlag &= ~(INT_TIMER);
 		}
