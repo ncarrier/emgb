@@ -17,6 +17,7 @@
 #include "memory.h"
 #include "log.h"
 #include "joystick_config.h"
+#include "utils.h"
 
 struct s_gb {
 	unsigned char running;

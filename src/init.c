@@ -1,3 +1,8 @@
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <errno.h>
+
 #include "GB.h"
 #include "special_registers.h"
 
@@ -35,6 +40,7 @@ static void initCpu(struct s_gb * gb_s)
 
 struct s_gb *initGb(const char *fileName)
 {
+	int ret;
 	struct s_gb *s_gb = NULL;
 
 	s_gb = malloc(sizeof(*s_gb));
@@ -48,7 +54,11 @@ struct s_gb *initGb(const char *fileName)
 	initTimer(s_gb);
 	initCpu(s_gb);
 	reset_joystick_config(&s_gb->joystick_config);
-	snprintf(s_gb->config_dir_path, PATH_MAX, "%s/.emgb/", getenv("HOME"));
+	snprintf(s_gb->config_dir_path, PATH_MAX, "%s/" CONFIG_DIR,
+			getenv("HOME"));
+	ret = mkdir(s_gb->config_dir_path, 0755);
+	if (ret < 0 && errno != EEXIST)
+		perror("mkdir");
 
 	return s_gb;
 }

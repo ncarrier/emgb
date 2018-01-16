@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define CONFIG_DIR ".emgb/"
+
 #define BIT0(v) ((v) & 1)
 #define BIT(i, v) BIT0((v) >> (i))
 
