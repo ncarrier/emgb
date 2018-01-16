@@ -1,14 +1,28 @@
 /* Platform specific definitions, for now, only for Windows */
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "platform.h"
 
 #ifdef _WIN32
 void error(int status, int errnum, const char *format, ...)
 {
-	// TODO stub
+	va_list arg;
+
+	fflush(stdout);
+	fprintf(stderr, "TODO_PROGRAM_NAME_HERE: ");
+	va_start(arg, format);
+	vfprintf(stderr, format, arg);
+	va_end(arg);
+	if (errnum != 0)
+		fprintf(stderr, ": %s", strerror(errnum));
+	fputs("\n", stderr);
+
+	if (status != 0)
+		exit(status);
 }
 
 error_t argz_create_sep(const char *str, int sep, char **argz,
