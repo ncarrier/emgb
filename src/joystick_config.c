@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "joystick_config.h"
 #include "utils.h"

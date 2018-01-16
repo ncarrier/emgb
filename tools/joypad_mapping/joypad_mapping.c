@@ -5,10 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#ifdef _WIN32
+#include "platform.h"
+#else
 #include <error.h>
+#endif
 #include <stdbool.h>
 #include <errno.h>
+#include <libgen.h>
 
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
 #include "utils.h"

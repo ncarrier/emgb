@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
 #define MAX_JOYSTICKS 10
