@@ -6,7 +6,7 @@
 #include "GB.h"
 #include "special_registers.h"
 
-static void initCpu(struct s_gb * gb_s)
+static void initCpu(struct s_gb *gb_s)
 {
 	struct s_register *registers;
 
