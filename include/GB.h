@@ -1,12 +1,16 @@
 #ifndef __GB__
 #define __GB__
 
+#ifndef _WIN32
 #include <linux/limits.h>
+#else
+#define SDL_MAIN_HANDLED
+#endif
 
 #include "stdlib.h"
 #include <stdio.h>
 #include <string.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include "cpu.h"
 #include "rom.h"
 #include "interrupt.h"
