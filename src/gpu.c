@@ -193,21 +193,20 @@ void renderingSprite(struct s_gb *gb)
 
 void rendering(struct s_gb *gb)
 {
+	if (gb->gb_io.lcd.BgWindowDisplay == 1)
+		renderingBg(gb);
+	if (gb->gb_io.lcd.SpriteIsOn == 1)
+		renderingSprite(gb);
+}
+
+static void display(struct s_gb *gb)
+{
 	int pitch = 0;
 	void *pixels;
 
 	pitch = 0;
 	SDL_RenderClear(gb->gb_gpu.renderer);
 	SDL_LockTexture(gb->gb_gpu.texture, NULL, &pixels, &pitch);
-	memcpy(gb->gb_gpu.pixels, pixels , GB_SURF * 4);
-
-
-	if (gb->gb_io.lcd.BgWindowDisplay == 1)
-		renderingBg(gb);
-	/*if (s_gb->gb_io.lcd.WindowIsOn == 1)
-		renderingWindow(s_gb);*/
-	if (gb->gb_io.lcd.SpriteIsOn == 1)
-		renderingSprite(gb);
 	memcpy(pixels, gb->gb_gpu.pixels, GB_SURF * 4);
 	SDL_UnlockTexture(gb->gb_gpu.texture);
 
@@ -288,6 +287,8 @@ void updateGpu(struct s_gb *gb)
 			gpu->gpuMode = OAM;
 		}
 		gpu->tick -= 456;
+		if (gb->gb_io.lcd.LcdIsOn == 1 && gpu->scanline == GB_H + 1)
+			display(gb);
 		break;
 	case OAM:
 		if (gpu->tick < 80)
