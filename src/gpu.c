@@ -267,12 +267,12 @@ void updateGpu(struct s_gb *gb)
 		if (gpu->tick < 204)
 			break;
 
+		if (gb->gb_io.lcd.LcdIsOn == 1 && gpu->scanline < GB_H)
+			rendering(gb);
 		gpu->scanline++;
 		if (gpu->scanline >= GB_H) {
 			gb->gb_interrupts.interFlag |= INT_VBLANK;
 			gpu->gpuMode = VBLANK;
-		} else if (gb->gb_io.lcd.LcdIsOn == 1) {
-			rendering(gb);
 		}
 
 		gpu->tick -= 204;
