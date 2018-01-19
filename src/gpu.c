@@ -26,7 +26,7 @@ void initDisplay(struct s_gb *gb)
 	if (gpu->window == NULL)
 		ERR("cannot create SDL windows");
 	gpu->renderer = SDL_CreateRenderer(gpu->window, -1,
-			SDL_RENDERER_TARGETTEXTURE);
+			SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
 	if (gpu->renderer == NULL)
 		ERR("cannot create SDL renderer");
 	SDL_RenderSetLogicalSize(gpu->renderer, GB_W, GB_H);
