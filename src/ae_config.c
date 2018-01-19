@@ -10,6 +10,7 @@
 #endif
 
 #include "ae_config.h"
+#include "utils.h"
 
 static void file_cleanup(FILE **f)
 {
@@ -32,8 +33,8 @@ static void string_cleanup(char **s)
 int ae_config_read(struct ae_config *conf, const char *path)
 {
 	int ret;
-	char __attribute__((cleanup(string_cleanup)))*string = NULL;
-	FILE __attribute__((cleanup(file_cleanup)))*f = NULL;
+	char cleanup(string_cleanup)*string = NULL;
+	FILE cleanup(file_cleanup)*f = NULL;
 	long size;
 	size_t sret;
 
@@ -74,8 +75,51 @@ const char *ae_config_get(const struct ae_config *conf, const char *key)
 	return envz_get(conf->argz, conf->len, key);
 }
 
+const char *ae_config_get_default(const struct ae_config *conf, const char *key,
+		const char *def)
+{
+	const char *ret;
+
+	ret = envz_get(conf->argz, conf->len, key);
+	if (ret == NULL)
+		return def;
+
+	return ret;
+}
+
+int ae_config_add(struct ae_config *conf, const char *key, const char *value)
+{
+	return -envz_add(&conf->argz, &conf->len, key, value);
+}
+
 void ae_config_cleanup(struct ae_config *conf)
 {
 	free(conf->argz);
 	memset(conf, 0, sizeof(*conf));
+}
+
+int ae_config_write(const struct ae_config *conf, const char *path)
+{
+	FILE cleanup(cleanup_file)*f = NULL;
+	const char *entry;
+	size_t sret;
+	size_t len;
+	const char newline = '\n';
+
+	f = fopen(path, "wbe");
+	if (f == NULL)
+		return -errno;
+
+	entry = NULL;
+	while ((entry = argz_next(conf->argz, conf->len, entry)) != NULL) {
+		len = strlen(entry);
+		sret = fwrite(entry, 1, len, f);
+		if (sret != len)
+			return -EIO;
+		sret = fwrite(&newline, 1, 1, f);
+		if (sret != 1)
+			return -EIO;
+	}
+
+	return 0;
 }
