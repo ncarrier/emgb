@@ -229,16 +229,18 @@ void handleEvent(struct s_gb *gb_s)
 {
 	union SDL_Event *event;
 	struct SDL_WindowEvent *we;
+	struct ae_config *conf;
 
 	event = &(gb_s->gb_gpu.event);
 	if (SDL_PollEvent(event) == 0)
 		return;
 
+	conf = &gb_s->config;
 	switch (gb_s->gb_gpu.event.type) {
 	case SDL_QUIT: {
 		printf("see u.\n");
 		gb_s->running = 0;
-		ae_config_write(&gb_s->config, "%s/config",
+		ae_config_write(conf, "%s/config",
 				gb_s->config_dir_path);
 		break;
 	}
@@ -258,8 +260,19 @@ void handleEvent(struct s_gb *gb_s)
 					gb_s->gb_gpu.mouse_visible = true;
 				}
 			}
+			/* TODO min and max */
+			ae_config_add_int(conf, "window_width", we->data1);
+			ae_config_add_int(conf, "window_height", we->data2);
+			ae_config_write(conf, "%s/config",
+					gb_s->config_dir_path);
+
 			break;
 		case SDL_WINDOWEVENT_MOVED:
+			ae_config_add_int(conf, "window_x", we->data1);
+			ae_config_add_int(conf, "window_y", we->data2);
+			ae_config_write(conf, "%s/config",
+					gb_s->config_dir_path);
+
 			break;
 		}
 		break;

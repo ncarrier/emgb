@@ -10,9 +10,23 @@
 #define COLOR_2 0x00a0a0a0
 #define COLOR_3 0x00e8e8e8
 
+static bool is_fullscreen(int width, int height)
+{
+	int ret;
+	SDL_DisplayMode dm;
+	ret = SDL_GetCurrentDisplayMode(0, &dm);
+	if (ret != 0)
+		return false;
+
+	return dm.w <= width && dm.h <= height;
+}
+
 void initDisplay(struct s_gb *gb)
 {
 	struct s_gpu *gpu;
+	bool fullscreen;
+	int width;
+	int height;
 
 	gpu = &gb->gb_gpu;
 #ifdef EMGB_CONSOLE_DEBUGGER
@@ -22,15 +36,19 @@ void initDisplay(struct s_gb *gb)
 
 	if (ae_config_get_int(&gb->config, "linear_scaling", 1) == 1)
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+	width = ae_config_get_int(&gb->config, "window_width", GB_W);
+	height = ae_config_get_int(&gb->config, "window_height", GB_H);
+	fullscreen = is_fullscreen(width, height);
 	gpu->mouse_visible = true;
 	gpu->window = SDL_CreateWindow("GB",
 			ae_config_get_int(&gb->config, "window_x", 300),
 			ae_config_get_int(&gb->config, "window_y", 300),
-			ae_config_get_int(&gb->config, "window_width", GB_W),
-			ae_config_get_int(&gb->config, "window_height", GB_H),
-			SDL_WINDOW_RESIZABLE);
+			width, height, SDL_WINDOW_RESIZABLE);
 	if (gpu->window == NULL)
 		ERR("cannot create SDL windows");
+	if (fullscreen)
+		SDL_SetWindowFullscreen(gpu->window,
+				SDL_WINDOW_FULLSCREEN_DESKTOP);
 	gpu->renderer = SDL_CreateRenderer(gpu->window, -1,
 			SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
 	if (gpu->renderer == NULL)
