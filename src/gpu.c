@@ -64,19 +64,19 @@ void initDisplay(struct s_gb *gb)
 		ERR("cannot alloc pixels");
 }
 
-int color_index_to_value(int color)
+int color_index_to_value(const struct s_gpu *gpu, int color)
 {
 	switch (color) {
 	case 3:
-		return COLOR_0;
+		return gpu->color_0;
 	case 1:
-		return COLOR_1;
+		return gpu->color_1;
 	case 2:
-		return COLOR_2;
+		return gpu->color_2;
 	case 0:
-		return COLOR_3;
+		return gpu->color_3;
 	default:
-		return COLOR_3;
+		return gpu->color_3;
 	}
 }
 
@@ -199,7 +199,8 @@ void renderingSprite(struct s_gb *gb)
 				color = ((line >> dec) & 0x01);
 				if ((line >> (dec - 8)) & 0x01)
 					color += 2;
-				color = color_index_to_value(color);
+				color = color_index_to_value(&gb->gb_gpu,
+						color);
 				/*
 				 * check mem corruption error -> need to
 				 * refactor this
@@ -258,9 +259,16 @@ static void display(struct s_gb *gb)
 
 void initGpu(struct s_gb *gb)
 {
-	gb->gb_gpu.scanline = 0;
-	gb->gb_gpu.tick = 0;
-	gb->gb_gpu.last_tick = 0;
+	struct s_gpu *gpu;
+
+	gpu = &gb->gb_gpu;
+	gpu->scanline = 0;
+	gpu->tick = 0;
+	gpu->last_tick = 0;
+	gpu->color_0 = ae_config_get_int(&gb->config, "color_0", COLOR_0);
+	gpu->color_1 = ae_config_get_int(&gb->config, "color_1", COLOR_1);
+	gpu->color_2 = ae_config_get_int(&gb->config, "color_2", COLOR_2);
+	gpu->color_3 = ae_config_get_int(&gb->config, "color_3", COLOR_3);
 }
 
 char lcdIsEnable(unsigned char lcdc)

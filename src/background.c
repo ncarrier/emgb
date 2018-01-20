@@ -56,7 +56,7 @@ void renderingBg(struct s_gb *gb)
 			color = (line >> dec) & 0x01;
 			if ((line >> (dec - 8)) & 0x01)
 				color += 2;
-			color = color_index_to_value(color);
+			color = color_index_to_value(gpu, color);
 			pixel_index = 160 * gpu->scanline + posx + x;
 			if (pixel_index < (160 * 144))
 				gpu->pixels[pixel_index] = color;
