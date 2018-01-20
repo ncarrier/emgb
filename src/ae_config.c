@@ -114,6 +114,15 @@ int ae_config_add(struct ae_config *conf, const char *key, const char *value)
 	return -envz_add(&conf->argz, &conf->len, key, value);
 }
 
+int ae_config_add_int(struct ae_config *conf, const char *key, int value)
+{
+	char str_value[100];
+
+	snprintf(str_value, 100, "%d", value);
+
+	return ae_config_add(conf, key, str_value);
+}
+
 void ae_config_cleanup(struct ae_config *conf)
 {
 	free(conf->argz);
