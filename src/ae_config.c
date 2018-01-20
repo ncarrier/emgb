@@ -120,13 +120,25 @@ void ae_config_cleanup(struct ae_config *conf)
 	memset(conf, 0, sizeof(*conf));
 }
 
-int ae_config_write(const struct ae_config *conf, const char *path)
+int ae_config_write(const struct ae_config *conf, const char *fmt, ...)
 {
+	int ret;
+	char cleanup(string_cleanup)*path = NULL;
 	FILE cleanup(cleanup_file)*f = NULL;
 	const char *entry;
 	size_t sret;
 	size_t len;
 	const char newline = '\n';
+
+	va_list args;
+
+	va_start(args, fmt);
+	ret = vasprintf(&path, fmt, args);
+	if (ret == -1) {
+		path = NULL;
+		return -ENOMEM;
+	}
+	va_end(args);
 
 	f = fopen(path, "wbe");
 	if (f == NULL)

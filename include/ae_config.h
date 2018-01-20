@@ -16,6 +16,6 @@ const char *ae_config_get_default(const struct ae_config *conf, const char *key,
 int ae_config_get_int(const struct ae_config *conf, const char *key, int def);
 int ae_config_add(struct ae_config *conf, const char *key, const char *value);
 void ae_config_cleanup(struct ae_config *conf);
-int ae_config_write(const struct ae_config *conf, const char *path);
+int ae_config_write(const struct ae_config *conf, const char *path, ...);
 
 #endif /* AE_CONFIG_H_ */
