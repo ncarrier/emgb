@@ -731,7 +731,8 @@ static int console_debugger_get_terminal_size(struct console_debugger *debugger)
 }
 
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers, struct s_gb *gb)
+		struct s_register *registers, struct s_gb *gb,
+		const struct ae_config *config)
 {
 	struct editline *el = debugger->editline;
 
@@ -740,7 +741,6 @@ int console_debugger_init(struct console_debugger *debugger,
 	debugger->gb = gb;
 	signal(SIGINT, console_debugger_init_signal_handler);
 	signal(SIGWINCH, console_debugger_init_signal_handler);
-	/* TODO how to perform a cleanup ? */
 	debugger->editline = el = el_init("emgb", stdin, stdout, stderr);
 	if (el == NULL)
 		ERR("el_init");
@@ -771,11 +771,7 @@ int console_debugger_init(struct console_debugger *debugger,
 
 	console_debugger_get_terminal_size(debugger);
 	init_registers_map(debugger);
-	/*
-	 * TODO enable debugger by default, this should be decided with a
-	 * command-line switch
-	 */
-	debugger->active = false;
+	debugger->active = ae_config_get_int(config, "debugger_active", 0);
 	printf("program's pid is %jd\n", (intmax_t)getpid());
 
 	return 0;

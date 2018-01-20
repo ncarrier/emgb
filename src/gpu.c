@@ -1,5 +1,6 @@
 #include "io.h"
 #include "GB.h"
+#include "ae_config.h"
 
 #define GB_W 160
 #define GB_H 144
@@ -19,9 +20,14 @@ void initDisplay(struct s_gb *gb)
 #endif /* EMGB_CONSOLE_DEBUGGER */
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+	if (ae_config_get_int(&gb->config, "linear_scaling", 1) == 1)
+		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 	gpu->mouse_visible = true;
-	gpu->window = SDL_CreateWindow("GB", 300, 300, GB_W, GB_H,
+	gpu->window = SDL_CreateWindow("GB",
+			ae_config_get_int(&gb->config, "window_x", 300),
+			ae_config_get_int(&gb->config, "window_y", 300),
+			ae_config_get_int(&gb->config, "window_width", GB_W),
+			ae_config_get_int(&gb->config, "window_height", GB_H),
 			SDL_WINDOW_RESIZABLE);
 	if (gpu->window == NULL)
 		ERR("cannot create SDL windows");
