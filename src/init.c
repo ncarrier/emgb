@@ -14,7 +14,7 @@
 	"window_y=300\n" \
 	"window_width=160\n" \
 	"window_height=144\n" \
-	"debugger_active=1\n" \
+	"debugger_active=0\n" \
 	"color_0=0x00101010\n" \
 	"color_1=0x00585858\n" \
 	"color_2=0x00a0a0a0\n" \
