@@ -1,7 +1,9 @@
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdarg.h>
 #ifdef _WIN32
 #include "platform.h"
 #else
@@ -30,14 +32,23 @@ static void string_cleanup(char **s)
 	*s = NULL;
 }
 
-int ae_config_read(struct ae_config *conf, const char *path)
+int ae_config_read(struct ae_config *conf, const char *fmt, ...)
 {
 	int ret;
 	char cleanup(string_cleanup)*string = NULL;
+	char cleanup(string_cleanup)*path = NULL;
 	FILE cleanup(file_cleanup)*f = NULL;
 	long size;
 	size_t sret;
+	va_list args;
 
+	va_start(args, fmt);
+	ret = vasprintf(&path, fmt, args);
+	if (ret == -1) {
+		path = NULL;
+		return -ENOMEM;
+	}
+	va_end(args);
 	f = fopen(path, "rbe");
 	if (f == NULL)
 		return -errno;

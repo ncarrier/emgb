@@ -8,7 +8,7 @@ struct ae_config {
 	size_t len;
 };
 
-int ae_config_read(struct ae_config *conf, const char *path);
+int ae_config_read(struct ae_config *conf, const char *fmt, ...);
 int ae_config_read_from_string(struct ae_config *conf, const char *string);
 const char *ae_config_get(const struct ae_config *conf, const char *key);
 const char *ae_config_get_default(const struct ae_config *conf, const char *key,
