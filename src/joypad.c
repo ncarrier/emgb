@@ -238,6 +238,8 @@ void handleEvent(struct s_gb *gb_s)
 	case SDL_QUIT: {
 		printf("see u.\n");
 		gb_s->running = 0;
+		ae_config_write(&gb_s->config, "%s/config",
+				gb_s->config_dir_path);
 		break;
 	}
 

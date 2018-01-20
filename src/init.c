@@ -2,9 +2,19 @@
 #include <sys/types.h>
 
 #include <errno.h>
+#ifdef _WIN32
+#include <direct.h>
+#endif
 
 #include "GB.h"
 #include "special_registers.h"
+
+#define DEFAULT_CONFIG "linear_scaling=1\n" \
+	"window_x=300\n" \
+	"window_y=300\n" \
+	"window_width=160\n" \
+	"window_height=144\n" \
+	"debugger_active=1\n"
 
 static void initCpu(struct s_gb *gb_s)
 {
@@ -38,14 +48,40 @@ static void initCpu(struct s_gb *gb_s)
 	}
 }
 
-struct s_gb *initGb(const char *fileName)
+static void init_config(struct s_gb *gb)
 {
 	int ret;
+
+	snprintf(gb->config_dir_path, PATH_MAX, "%s/" CONFIG_DIR,
+			getenv("HOME"));
+	ret = mkdir(gb->config_dir_path
+#ifndef _WIN32
+			, 0755
+#endif
+			);
+	if (ret < 0 && errno != EEXIST)
+		ERR("mkdir: %m");
+
+	ret = ae_config_read(&gb->config, "%s/config", gb->config_dir_path);
+	if (ret == 0)
+		return;
+	if (ret != -ENOENT)
+		ERR("ae_config_read: %s", strerror(-ret));
+
+	ret = ae_config_read_from_string(&gb->config, DEFAULT_CONFIG);
+	if (ret != 0)
+		ERR("ae_config_read: %s", strerror(-ret));
+}
+
+struct s_gb *initGb(const char *fileName)
+{
 	struct s_gb *s_gb = NULL;
 
 	s_gb = malloc(sizeof(*s_gb));
 	if (s_gb == NULL)
 		ERR("Cannot allocate s_gb");
+	init_config(s_gb);
+	ae_config_write(&s_gb->config, "/dev/stdout");
 	initRom(&s_gb->gb_rom, fileName);
 	displayHeader(&s_gb->gb_rom.romheader);
 	initRegister(s_gb);
@@ -54,11 +90,6 @@ struct s_gb *initGb(const char *fileName)
 	initTimer(s_gb);
 	initCpu(s_gb);
 	reset_joystick_config(&s_gb->joystick_config);
-	snprintf(s_gb->config_dir_path, PATH_MAX, "%s/" CONFIG_DIR,
-			getenv("HOME"));
-	ret = mkdir(s_gb->config_dir_path, 0755);
-	if (ret < 0 && errno != EEXIST)
-		perror("mkdir");
 
 	return s_gb;
 }

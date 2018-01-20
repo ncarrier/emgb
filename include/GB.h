@@ -21,6 +21,7 @@
 #include "memory.h"
 #include "log.h"
 #include "joystick_config.h"
+#include "ae_config.h"
 #include "utils.h"
 
 struct s_gb {
@@ -37,6 +38,7 @@ struct s_gb {
 	struct joystick_config joystick_config;
 	char config_dir_path[PATH_MAX];
 	unsigned char stopdbg;
+	struct ae_config config;
 };
 
 void gb(const char *fileName);
