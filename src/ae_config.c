@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <limits.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -101,12 +102,26 @@ const char *ae_config_get_default(const struct ae_config *conf, const char *key,
 int ae_config_get_int(const struct ae_config *conf, const char *key, int def)
 {
 	const char *ret;
+	long value;
+	char *endptr;
 
 	ret = envz_get(conf->argz, conf->len, key);
-	if (ret == NULL)
+	if (ret == NULL || *ret == '\0')
 		return def;
 
-	return atoi(ret);
+	value = strtol(ret, &endptr, 0);
+	if (*endptr != '\0') {
+		fprintf(stderr, "Invalid integer value '%s' for key %s\n", ret,
+				key);
+		return def;
+	}
+	if (value > INT_MAX || value < INT_MIN) {
+		fprintf(stderr, "Out of range integer value '%s' for key %s\n",
+				ret, key);
+		return def;
+	}
+
+	return value;
 }
 
 int ae_config_add(struct ae_config *conf, const char *key, const char *value)
