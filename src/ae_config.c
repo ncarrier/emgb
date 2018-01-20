@@ -98,6 +98,17 @@ const char *ae_config_get_default(const struct ae_config *conf, const char *key,
 	return ret;
 }
 
+int ae_config_get_int(const struct ae_config *conf, const char *key, int def)
+{
+	const char *ret;
+
+	ret = envz_get(conf->argz, conf->len, key);
+	if (ret == NULL)
+		return def;
+
+	return atoi(ret);
+}
+
 int ae_config_add(struct ae_config *conf, const char *key, const char *value)
 {
 	return -envz_add(&conf->argz, &conf->len, key, value);
