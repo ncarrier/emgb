@@ -9,25 +9,6 @@
 #include "GB.h"
 #include "special_registers.h"
 
-#define DEFAULT_CONFIG "linear_scaling=0\n" \
-	"window_x=300\n" \
-	"window_y=300\n" \
-	"window_width=160\n" \
-	"window_height=144\n" \
-	"joypad_0_right=Right\n" \
-	"joypad_0_left=Left\n" \
-	"joypad_0_up=Up\n" \
-	"joypad_0_down=Down\n" \
-	"joypad_0_a=W\n" \
-	"joypad_0_b=X\n" \
-	"joypad_0_select=C\n" \
-	"joypad_0_start=V\n" \
-	"debugger_active=0\n" \
-	"color_0=0x00000000\n" \
-	"color_1=0x00444444\n" \
-	"color_2=0x00aaaaaa\n" \
-	"color_3=0x00ffffff\n"
-
 static void initCpu(struct s_gb *gb_s)
 {
 	struct s_register *registers;
@@ -80,7 +61,7 @@ static void init_config(struct s_gb *gb)
 	if (ret != -ENOENT)
 		ERR("ae_config_read: %s", strerror(-ret));
 
-	ret = ae_config_read_from_string(&gb->config, DEFAULT_CONFIG);
+	ret = ae_config_read_from_string(&gb->config, "");
 	if (ret != 0)
 		ERR("ae_config_read: %s", strerror(-ret));
 }
@@ -93,7 +74,6 @@ struct s_gb *initGb(const char *fileName)
 	if (s_gb == NULL)
 		ERR("Cannot allocate s_gb");
 	init_config(s_gb);
-	ae_config_write(&s_gb->config, "/dev/stdout");
 	init_joypad(&s_gb->gb_pad, &s_gb->config);
 	initRom(&s_gb->gb_rom, fileName);
 	displayHeader(&s_gb->gb_rom.romheader);
@@ -103,6 +83,7 @@ struct s_gb *initGb(const char *fileName)
 	initTimer(s_gb);
 	initCpu(s_gb);
 	reset_joystick_config(&s_gb->joystick_config);
+	ae_config_write(&s_gb->config, "%s/config", s_gb->config_dir_path);
 
 	return s_gb;
 }
