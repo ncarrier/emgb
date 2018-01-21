@@ -21,7 +21,7 @@
 #include "memory.h"
 #include "log.h"
 #include "joystick_config.h"
-#include "ae_config.h"
+#include "config.h"
 #include "utils.h"
 
 #define GB_W 160
@@ -40,9 +40,7 @@ struct s_gb {
 	struct s_cpu gb_cpu;
 	struct joystick_config joystick_config;
 	unsigned char stopdbg;
-	char config_dir_path[PATH_MAX];
-	char *config_file;
-	struct ae_config config;
+	struct config config;
 };
 
 void gb(const char *fileName);

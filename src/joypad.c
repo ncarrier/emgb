@@ -4,6 +4,7 @@
 #include "GB.h"
 #include "utils.h"
 #include "ae_config.h"
+#include "config.h"
 
 #define MAPPINGS_DIR "~/.emgb/"
 
@@ -129,7 +130,7 @@ static void joy_device_added(struct s_gb *gb, uint32_t index)
 				joystick_config->joystick.name);
 		return;
 	}
-	ret = init_joystick_config(joystick_config, index, gb->config_dir_path);
+	ret = init_joystick_config(joystick_config, index, gb->config.dir);
 	if (ret < 0) {
 		printf("No mapping for %s, create one with joypad_mapping\n",
 				joystick_name);
@@ -257,12 +258,12 @@ void handleEvent(struct s_gb *gb_s)
 	if (SDL_PollEvent(event) == 0)
 		return;
 
-	conf = &gb_s->config;
+	conf = &gb_s->config.config;
 	switch (gb_s->gb_gpu.event.type) {
 	case SDL_QUIT: {
 		printf("see u.\n");
 		gb_s->running = 0;
-		ae_config_write(conf, gb_s->config_file);
+		config_write(&gb_s->config);
 		break;
 	}
 
@@ -290,13 +291,13 @@ void handleEvent(struct s_gb *gb_s)
 				width = GB_W;
 			ae_config_add_int(conf, "window_width", width);
 			ae_config_add_int(conf, "window_height", height);
-			ae_config_write(conf, gb_s->config_file);
+			config_write(&gb_s->config);
 
 			break;
 		case SDL_WINDOWEVENT_MOVED:
 			ae_config_add_int(conf, "window_x", we->data1);
 			ae_config_add_int(conf, "window_y", we->data2);
-			ae_config_write(conf, gb_s->config_file);
+			config_write(&gb_s->config);
 
 			break;
 		}

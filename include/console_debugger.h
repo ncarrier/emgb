@@ -7,6 +7,7 @@
 #include "cpu.h"
 #include "utils.h"
 #include "ae_config.h"
+#include "config.h"
 
 #define EMGB_CONSOLE_DEBUGGER_PROMPT "egd > "
 #define EMGB_CONSOLE_DEBUGGER_PROMPT2 "... > "

@@ -32,15 +32,15 @@ void initDisplay(struct s_gb *gb)
 #endif /* EMGB_CONSOLE_DEBUGGER */
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
-	if (ae_config_get_int(&gb->config, "linear_scaling", 0) == 1)
+	if (ae_config_get_int(&gb->config.config, "linear_scaling", 0) == 1)
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-	width = ae_config_get_int(&gb->config, "window_width", GB_W);
-	height = ae_config_get_int(&gb->config, "window_height", GB_H);
+	width = ae_config_get_int(&gb->config.config, "window_width", GB_W);
+	height = ae_config_get_int(&gb->config.config, "window_height", GB_H);
 	fullscreen = is_fullscreen(width, height);
 	gpu->mouse_visible = true;
 	gpu->window = SDL_CreateWindow("GB",
-			ae_config_get_int(&gb->config, "window_x", 300),
-			ae_config_get_int(&gb->config, "window_y", 300),
+			ae_config_get_int(&gb->config.config, "window_x", 300),
+			ae_config_get_int(&gb->config.config, "window_y", 300),
 			width, height, SDL_WINDOW_RESIZABLE);
 	if (gpu->window == NULL)
 		ERR("cannot create SDL windows");
@@ -263,10 +263,10 @@ void initGpu(struct s_gb *gb)
 	gpu->scanline = 0;
 	gpu->tick = 0;
 	gpu->last_tick = 0;
-	gpu->color_0 = ae_config_get_int(&gb->config, "color_0", COLOR_0);
-	gpu->color_1 = ae_config_get_int(&gb->config, "color_1", COLOR_1);
-	gpu->color_2 = ae_config_get_int(&gb->config, "color_2", COLOR_2);
-	gpu->color_3 = ae_config_get_int(&gb->config, "color_3", COLOR_3);
+	gpu->color_0 = ae_config_get_int(&gb->config.config, "color_0", COLOR_0);
+	gpu->color_1 = ae_config_get_int(&gb->config.config, "color_1", COLOR_1);
+	gpu->color_2 = ae_config_get_int(&gb->config.config, "color_2", COLOR_2);
+	gpu->color_3 = ae_config_get_int(&gb->config.config, "color_3", COLOR_3);
 }
 
 char lcdIsEnable(unsigned char lcdc)
