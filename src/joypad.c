@@ -23,17 +23,36 @@
 #define BUTTON_TO_KEY(b) (1 << ((b) & ~BUTTON_KEY_OR_DIR_MASK))
 #define BUTTON_TO_DIR(b) (1 << (b))
 
+void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
+		const char *key, const char *default_keyname,
+		SDL_Keycode default_sym)
+{
+	const char *key_name;
+
+	key_name = ae_config_get_default(config, key, default_keyname);
+	*sym = SDL_GetKeyFromName(key_name);
+	if (*sym == SDLK_UNKNOWN)
+		*sym = default_sym;
+}
+
 void init_joypad(struct s_joypad *pad, struct ae_config *config)
 {
-	pad->sym_right = ae_config_get_int(config, "joypad_0_right",
-			1073741903);
-	pad->sym_left = ae_config_get_int(config, "joypad_0_left", 1073741904);
-	pad->sym_up = ae_config_get_int(config, "joypad_0_up", 1073741906);
-	pad->sym_down = ae_config_get_int(config, "joypad_0_down", 1073741905);
-	pad->sym_a = ae_config_get_int(config, "joypad_0_a", 119);
-	pad->sym_b = ae_config_get_int(config, "joypad_0_b", 120);
-	pad->sym_select = ae_config_get_int(config, "joypad_0_select", 99);
-	pad->sym_start = ae_config_get_int(config, "joypad_0_start", 118);
+	get_pad_key_from_config(&pad->sym_right, config, "joypad_0_right",
+			"Right", SDLK_RIGHT);
+	get_pad_key_from_config(&pad->sym_left, config, "joypad_0_left",
+			"Left", SDLK_LEFT);
+	get_pad_key_from_config(&pad->sym_up, config, "joypad_0_up",
+			"Up", SDLK_UP);
+	get_pad_key_from_config(&pad->sym_down, config, "joypad_0_down",
+			"Down", SDLK_DOWN);
+	get_pad_key_from_config(&pad->sym_a, config, "joypad_0_a",
+			"W", SDLK_w);
+	get_pad_key_from_config(&pad->sym_b, config, "joypad_0_b",
+			"X", SDLK_x);
+	get_pad_key_from_config(&pad->sym_select, config, "joypad_0_select",
+			"C", SDLK_c);
+	get_pad_key_from_config(&pad->sym_start, config, "joypad_0_start",
+			"V", SDLK_v);
 }
 
 void keyDown(struct s_gb *gb_s)
