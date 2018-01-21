@@ -9,7 +9,7 @@
 #include "GB.h"
 #include "special_registers.h"
 
-#define DEFAULT_CONFIG "linear_scaling=1\n" \
+#define DEFAULT_CONFIG "linear_scaling=0\n" \
 	"window_x=300\n" \
 	"window_y=300\n" \
 	"window_width=160\n" \
