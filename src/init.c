@@ -14,6 +14,14 @@
 	"window_y=300\n" \
 	"window_width=160\n" \
 	"window_height=144\n" \
+	"joypad_0_right=1073741903\n" \
+	"joypad_0_left=1073741904\n" \
+	"joypad_0_up=1073741906\n" \
+	"joypad_0_down=1073741905\n" \
+	"joypad_0_a=119\n" \
+	"joypad_0_b=120\n" \
+	"joypad_0_select=99\n" \
+	"joypad_0_start=118\n" \
 	"debugger_active=0\n" \
 	"color_0=0x00000000\n" \
 	"color_1=0x00444444\n" \
@@ -86,6 +94,7 @@ struct s_gb *initGb(const char *fileName)
 		ERR("Cannot allocate s_gb");
 	init_config(s_gb);
 	ae_config_write(&s_gb->config, "/dev/stdout");
+	init_joypad(&s_gb->gb_pad, &s_gb->config);
 	initRom(&s_gb->gb_rom, fileName);
 	displayHeader(&s_gb->gb_rom.romheader);
 	initRegister(s_gb);

@@ -3,6 +3,7 @@
 #include "joypad.h"
 #include "GB.h"
 #include "utils.h"
+#include "ae_config.h"
 
 #define MAPPINGS_DIR "~/.emgb/"
 
@@ -22,75 +23,78 @@
 #define BUTTON_TO_KEY(b) (1 << ((b) & ~BUTTON_KEY_OR_DIR_MASK))
 #define BUTTON_TO_DIR(b) (1 << (b))
 
+void init_joypad(struct s_joypad *pad, struct ae_config *config)
+{
+	pad->sym_right = ae_config_get_int(config, "joypad_0_right",
+			1073741903);
+	pad->sym_left = ae_config_get_int(config, "joypad_0_left", 1073741904);
+	pad->sym_up = ae_config_get_int(config, "joypad_0_up", 1073741906);
+	pad->sym_down = ae_config_get_int(config, "joypad_0_down", 1073741905);
+	pad->sym_a = ae_config_get_int(config, "joypad_0_a", 119);
+	pad->sym_b = ae_config_get_int(config, "joypad_0_b", 120);
+	pad->sym_select = ae_config_get_int(config, "joypad_0_select", 99);
+	pad->sym_start = ae_config_get_int(config, "joypad_0_start", 118);
+}
+
 void keyDown(struct s_gb *gb_s)
 {
-	switch (gb_s->gb_gpu.event.key.keysym.sym) {
-	case SDLK_ESCAPE:
+	struct s_joypad *pad;
+	SDL_Keycode sym;
+
+	pad = &gb_s->gb_pad;
+	sym = gb_s->gb_gpu.event.key.keysym.sym;
+	if (sym == SDLK_ESCAPE) {
 		gb_s->running = 0;
-		break;
-	case SDLK_w:
+	} else if (sym == pad->sym_a) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_key &= ~BUTTON_DOWN_FLAG;
-		break;
-	case SDLK_x:
+	} else if (sym == pad->sym_b) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_key &= ~BUTTON_UP_FLAG;
-		break;
-	case SDLK_c:
+	} else if (sym == pad->sym_select) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_key &= ~BUTTON_LEFT_FLAG;
-		break;
-	case SDLK_v:
+	} else if (sym == pad->sym_start) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_key &= ~BUTTON_RIGHT_FLAG;
-		break;
-	case SDLK_DOWN:
+	} else if (sym == pad->sym_down) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_dir &= ~BUTTON_START_FLAG;
-		break;
-	case SDLK_UP:
+	} else if (sym == pad->sym_up) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_dir &= ~BUTTON_SELECT_FLAG;
-		break;
-	case SDLK_LEFT:
+	} else if (sym == pad->sym_left) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_dir &= ~BUTTON_B_FLAG;
-		break;
-	case SDLK_RIGHT:
+	} else if (sym == pad->sym_right) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_dir &= ~BUTTON_A_FLAG;
-		break;
 	}
-	return;
 }
 
 void keyUp(struct s_gb *gb_s)
 {
-	switch (gb_s->gb_gpu.event.key.keysym.sym) {
-	case SDLK_w:
+	struct s_joypad *pad;
+	SDL_Keycode sym;
+
+	pad = &gb_s->gb_pad;
+	sym = gb_s->gb_gpu.event.key.keysym.sym;
+	if (sym == pad->sym_a) {
 		gb_s->gb_pad.button_key |= BUTTON_DOWN_FLAG;
-		break;
-	case SDLK_x:
+	} else if (sym == pad->sym_b) {
 		gb_s->gb_pad.button_key |= BUTTON_UP_FLAG;
-		break;
-	case SDLK_c:
+	} else if (sym == pad->sym_select) {
 		gb_s->gb_pad.button_key |= BUTTON_LEFT_FLAG;
-		break;
-	case SDLK_v:
+	} else if (sym == pad->sym_start) {
 		gb_s->gb_pad.button_key |= BUTTON_RIGHT_FLAG;
-		break;
-	case SDLK_DOWN:
+	} else if (sym == pad->sym_down) {
 		gb_s->gb_pad.button_dir |= BUTTON_START_FLAG;
-		break;
-	case SDLK_UP:
+	} else if (sym == pad->sym_up) {
 		gb_s->gb_pad.button_dir |= BUTTON_SELECT_FLAG;
-		break;
-	case SDLK_LEFT:
+	} else if (sym == pad->sym_left) {
 		gb_s->gb_pad.button_dir |= BUTTON_B_FLAG;
-		break;
-	case SDLK_RIGHT:
+	} else if (sym == pad->sym_right) {
 		gb_s->gb_pad.button_dir |= BUTTON_A_FLAG;
-		break;
 	}
 }
 
