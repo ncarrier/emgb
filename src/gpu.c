@@ -34,7 +34,7 @@ void initDisplay(struct s_gb *gb)
 #endif /* EMGB_CONSOLE_DEBUGGER */
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
-	if (ae_config_get_int(&gb->config, "linear_scaling", 1) == 1)
+	if (ae_config_get_int(&gb->config, "linear_scaling", 0) == 1)
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 	width = ae_config_get_int(&gb->config, "window_width", GB_W);
 	height = ae_config_get_int(&gb->config, "window_height", GB_H);
