@@ -15,10 +15,10 @@
 	"window_width=160\n" \
 	"window_height=144\n" \
 	"debugger_active=0\n" \
-	"color_0=0x00101010\n" \
-	"color_1=0x00585858\n" \
-	"color_2=0x00a0a0a0\n" \
-	"color_3=0x00e8e8e8\n"
+	"color_0=0x00000000\n" \
+	"color_1=0x00444444\n" \
+	"color_2=0x00aaaaaa\n" \
+	"color_3=0x00ffffff\n"
 
 static void initCpu(struct s_gb *gb_s)
 {

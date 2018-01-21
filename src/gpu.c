@@ -5,10 +5,10 @@
 #define GB_W 160
 #define GB_H 144
 #define GB_SURF (GB_W * GB_H)
-#define COLOR_0 0x00101010
-#define COLOR_1 0x00585858
-#define COLOR_2 0x00a0a0a0
-#define COLOR_3 0x00e8e8e8
+#define COLOR_0 0x00000000
+#define COLOR_1 0x00444444
+#define COLOR_2 0x00aaaaaa
+#define COLOR_3 0x00ffffff
 
 static bool is_fullscreen(int width, int height)
 {
