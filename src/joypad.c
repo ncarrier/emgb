@@ -64,28 +64,28 @@ void keyDown(struct s_gb *gb_s)
 		gb_s->running = 0;
 	} else if (sym == pad->sym_a) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_DOWN_FLAG;
+		gb_s->gb_pad.button_key &= ~BUTTON_START_FLAG;
 	} else if (sym == pad->sym_b) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_UP_FLAG;
+		gb_s->gb_pad.button_key &= ~BUTTON_SELECT_FLAG;
 	} else if (sym == pad->sym_select) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_LEFT_FLAG;
+		gb_s->gb_pad.button_key &= ~BUTTON_B_FLAG;
 	} else if (sym == pad->sym_start) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_RIGHT_FLAG;
+		gb_s->gb_pad.button_key &= ~BUTTON_A_FLAG;
 	} else if (sym == pad->sym_down) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_START_FLAG;
+		gb_s->gb_pad.button_dir &= ~BUTTON_DOWN_FLAG;
 	} else if (sym == pad->sym_up) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_SELECT_FLAG;
+		gb_s->gb_pad.button_dir &= ~BUTTON_UP_FLAG;
 	} else if (sym == pad->sym_left) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_B_FLAG;
+		gb_s->gb_pad.button_dir &= ~BUTTON_LEFT_FLAG;
 	} else if (sym == pad->sym_right) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_A_FLAG;
+		gb_s->gb_pad.button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
 }
 
@@ -97,21 +97,21 @@ void keyUp(struct s_gb *gb_s)
 	pad = &gb_s->gb_pad;
 	sym = gb_s->gb_gpu.event.key.keysym.sym;
 	if (sym == pad->sym_a) {
-		gb_s->gb_pad.button_key |= BUTTON_DOWN_FLAG;
+		gb_s->gb_pad.button_key |= BUTTON_START_FLAG;
 	} else if (sym == pad->sym_b) {
-		gb_s->gb_pad.button_key |= BUTTON_UP_FLAG;
+		gb_s->gb_pad.button_key |= BUTTON_SELECT_FLAG;
 	} else if (sym == pad->sym_select) {
-		gb_s->gb_pad.button_key |= BUTTON_LEFT_FLAG;
+		gb_s->gb_pad.button_key |= BUTTON_B_FLAG;
 	} else if (sym == pad->sym_start) {
-		gb_s->gb_pad.button_key |= BUTTON_RIGHT_FLAG;
+		gb_s->gb_pad.button_key |= BUTTON_A_FLAG;
 	} else if (sym == pad->sym_down) {
-		gb_s->gb_pad.button_dir |= BUTTON_START_FLAG;
+		gb_s->gb_pad.button_dir |= BUTTON_DOWN_FLAG;
 	} else if (sym == pad->sym_up) {
-		gb_s->gb_pad.button_dir |= BUTTON_SELECT_FLAG;
+		gb_s->gb_pad.button_dir |= BUTTON_UP_FLAG;
 	} else if (sym == pad->sym_left) {
-		gb_s->gb_pad.button_dir |= BUTTON_B_FLAG;
+		gb_s->gb_pad.button_dir |= BUTTON_LEFT_FLAG;
 	} else if (sym == pad->sym_right) {
-		gb_s->gb_pad.button_dir |= BUTTON_A_FLAG;
+		gb_s->gb_pad.button_dir |= BUTTON_RIGHT_FLAG;
 	}
 }
 
