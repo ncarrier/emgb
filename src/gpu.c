@@ -2,8 +2,6 @@
 #include "GB.h"
 #include "ae_config.h"
 
-#define GB_W 160
-#define GB_H 144
 #define GB_SURF (GB_W * GB_H)
 #define COLOR_0 0x00000000
 #define COLOR_1 0x00444444

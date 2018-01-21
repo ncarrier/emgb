@@ -12,7 +12,6 @@
 #define BUTTON_UP_FLAG (1 << 2)
 #define BUTTON_DOWN_FLAG (1 << 3)
 
-/* TODO check A and B aren't swapped with a real game boy */
 #define BUTTON_A_FLAG (1 << 0)
 #define BUTTON_B_FLAG (1 << 1)
 #define BUTTON_SELECT_FLAG (1 << 2)
@@ -251,6 +250,8 @@ void handleEvent(struct s_gb *gb_s)
 	union SDL_Event *event;
 	struct SDL_WindowEvent *we;
 	struct ae_config *conf;
+	uint32_t width;
+	uint32_t height;
 
 	event = &(gb_s->gb_gpu.event);
 	if (SDL_PollEvent(event) == 0)
@@ -282,8 +283,14 @@ void handleEvent(struct s_gb *gb_s)
 				}
 			}
 			/* TODO min and max */
-			ae_config_add_int(conf, "window_width", we->data1);
-			ae_config_add_int(conf, "window_height", we->data2);
+			height = we->data2;
+			if (height < GB_H)
+				height = GB_H;
+			width = we->data1;
+			if (width < GB_W)
+				width = GB_W;
+			ae_config_add_int(conf, "window_width", width);
+			ae_config_add_int(conf, "window_height", height);
 			ae_config_write(conf, "%s/config",
 					gb_s->config_dir_path);
 

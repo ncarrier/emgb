@@ -24,6 +24,9 @@
 #include "ae_config.h"
 #include "utils.h"
 
+#define GB_W 160
+#define GB_H 144
+
 struct s_gb {
 	unsigned char running;
 	struct s_timer gb_time;
