@@ -87,41 +87,48 @@ const char *ae_config_get(const struct ae_config *conf, const char *key)
 	return envz_get(conf->argz, conf->len, key);
 }
 
-const char *ae_config_get_default(const struct ae_config *conf, const char *key,
+const char *ae_config_get_default(struct ae_config *conf, const char *key,
 		const char *def)
 {
 	const char *ret;
 
 	ret = envz_get(conf->argz, conf->len, key);
-	if (ret == NULL)
+	if (ret == NULL) {
+		ae_config_add(conf, key, def);
 		return def;
+	}
 
 	return ret;
 }
 
-int ae_config_get_int(const struct ae_config *conf, const char *key, int def)
+int ae_config_get_int(struct ae_config *conf, const char *key, int def)
 {
 	const char *ret;
 	long value;
 	char *endptr;
+	char def_str[50];
 
 	ret = envz_get(conf->argz, conf->len, key);
 	if (ret == NULL || *ret == '\0')
-		return def;
+		goto err;
 
 	value = strtol(ret, &endptr, 0);
 	if (*endptr != '\0') {
 		fprintf(stderr, "Invalid integer value '%s' for key %s\n", ret,
 				key);
-		return def;
+		goto err;
 	}
 	if (value > INT_MAX || value < INT_MIN) {
 		fprintf(stderr, "Out of range integer value '%s' for key %s\n",
 				ret, key);
-		return def;
+		goto err;
 	}
 
 	return value;
+err:
+	snprintf(def_str, 50, "%d", def);
+	ae_config_add(conf, key, def_str);
+	return def;
 }
 
 int ae_config_add(struct ae_config *conf, const char *key, const char *value)

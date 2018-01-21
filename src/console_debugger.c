@@ -732,7 +732,7 @@ static int console_debugger_get_terminal_size(struct console_debugger *debugger)
 
 int console_debugger_init(struct console_debugger *debugger,
 		struct s_register *registers, struct s_gb *gb,
-		const struct ae_config *config)
+		struct ae_config *config)
 {
 	struct editline *el = debugger->editline;
 
