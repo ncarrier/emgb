@@ -262,8 +262,7 @@ void handleEvent(struct s_gb *gb_s)
 	case SDL_QUIT: {
 		printf("see u.\n");
 		gb_s->running = 0;
-		ae_config_write(conf, "%s/config",
-				gb_s->config_dir_path);
+		ae_config_write(conf, gb_s->config_file);
 		break;
 	}
 
@@ -291,15 +290,13 @@ void handleEvent(struct s_gb *gb_s)
 				width = GB_W;
 			ae_config_add_int(conf, "window_width", width);
 			ae_config_add_int(conf, "window_height", height);
-			ae_config_write(conf, "%s/config",
-					gb_s->config_dir_path);
+			ae_config_write(conf, gb_s->config_file);
 
 			break;
 		case SDL_WINDOWEVENT_MOVED:
 			ae_config_add_int(conf, "window_x", we->data1);
 			ae_config_add_int(conf, "window_y", we->data2);
-			ae_config_write(conf, "%s/config",
-					gb_s->config_dir_path);
+			ae_config_write(conf, gb_s->config_file);
 
 			break;
 		}

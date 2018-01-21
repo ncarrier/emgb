@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -54,8 +55,11 @@ static void init_config(struct s_gb *gb)
 			);
 	if (ret < 0 && errno != EEXIST)
 		ERR("mkdir: %m");
+	ret = asprintf(&gb->config_file, "%s/config", gb->config_dir_path);
+	if (ret == -1)
+		ERR("asprintf: %s", strerror(ENOMEM));
 
-	ret = ae_config_read(&gb->config, "%s/config", gb->config_dir_path);
+	ret = ae_config_read(&gb->config, gb->config_file);
 	if (ret == 0)
 		return;
 	if (ret != -ENOENT)
@@ -83,7 +87,7 @@ struct s_gb *initGb(const char *fileName)
 	initTimer(s_gb);
 	initCpu(s_gb);
 	reset_joystick_config(&s_gb->joystick_config);
-	ae_config_write(&s_gb->config, "%s/config", s_gb->config_dir_path);
+	ae_config_write(&s_gb->config, s_gb->config_file);
 
 	return s_gb;
 }

@@ -39,8 +39,9 @@ struct s_gb {
 	struct s_joypad gb_pad;
 	struct s_cpu gb_cpu;
 	struct joystick_config joystick_config;
-	char config_dir_path[PATH_MAX];
 	unsigned char stopdbg;
+	char config_dir_path[PATH_MAX];
+	char *config_file;
 	struct ae_config config;
 };
 

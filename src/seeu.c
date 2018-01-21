@@ -2,6 +2,9 @@
 
 void seeu(struct s_gb *s_gb)
 {
+	ae_config_cleanup(&s_gb->config);
+	if (s_gb->config_file != NULL)
+		free(s_gb->config_file);
 	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
 	SDL_DestroyWindow(s_gb->gb_gpu.window);
 	free(s_gb->gb_rom.rom);
