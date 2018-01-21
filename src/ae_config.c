@@ -33,23 +33,14 @@ static void string_cleanup(char **s)
 	*s = NULL;
 }
 
-int ae_config_read(struct ae_config *conf, const char *fmt, ...)
+int ae_config_read(struct ae_config *conf, const char *path)
 {
 	int ret;
 	char cleanup(string_cleanup)*string = NULL;
-	char cleanup(string_cleanup)*path = NULL;
 	FILE cleanup(file_cleanup)*f = NULL;
 	long size;
 	size_t sret;
-	va_list args;
 
-	va_start(args, fmt);
-	ret = vasprintf(&path, fmt, args);
-	if (ret == -1) {
-		path = NULL;
-		return -ENOMEM;
-	}
-	va_end(args);
 	f = fopen(path, "rbe");
 	if (f == NULL)
 		return -errno;
@@ -151,25 +142,13 @@ void ae_config_cleanup(struct ae_config *conf)
 	memset(conf, 0, sizeof(*conf));
 }
 
-int ae_config_write(const struct ae_config *conf, const char *fmt, ...)
+int ae_config_write(const struct ae_config *conf, const char *path)
 {
-	int ret;
-	char cleanup(string_cleanup)*path = NULL;
 	FILE cleanup(cleanup_file)*f = NULL;
 	const char *entry;
 	size_t sret;
 	size_t len;
 	const char newline = '\n';
-
-	va_list args;
-
-	va_start(args, fmt);
-	ret = vasprintf(&path, fmt, args);
-	if (ret == -1) {
-		path = NULL;
-		return -ENOMEM;
-	}
-	va_end(args);
 
 	f = fopen(path, "wbe");
 	if (f == NULL)
