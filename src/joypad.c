@@ -6,8 +6,6 @@
 #include "ae_config.h"
 #include "config.h"
 
-#define MAPPINGS_DIR "~/.emgb/"
-
 #define BUTTON_RIGHT_FLAG (1 << 0)
 #define BUTTON_LEFT_FLAG (1 << 1)
 #define BUTTON_UP_FLAG (1 << 2)
@@ -24,11 +22,12 @@
 #define BUTTON_TO_DIR(b) (1 << (b))
 
 void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
-		const char *key, const char *default_keyname,
-		SDL_Keycode default_sym)
+		const char *key, SDL_Keycode default_sym)
 {
 	const char *key_name;
+	const char *default_keyname;
 
+	default_keyname = SDL_GetKeyName(default_sym);
 	key_name = ae_config_get_default(config, key, default_keyname);
 	*sym = SDL_GetKeyFromName(key_name);
 	if (*sym == SDLK_UNKNOWN)
@@ -37,20 +36,22 @@ void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
 
 void init_joypad(struct s_joypad *pad, struct ae_config *config)
 {
-	get_pad_key_from_config(&pad->sym_right, config, "joypad_0_right",
-			"Right", SDLK_RIGHT);
-	get_pad_key_from_config(&pad->sym_left, config, "joypad_0_left", "Left",
-			SDLK_LEFT);
-	get_pad_key_from_config(&pad->sym_up, config, "joypad_0_up", "Up",
-			SDLK_UP);
-	get_pad_key_from_config(&pad->sym_down, config, "joypad_0_down", "Down",
-			SDLK_DOWN);
-	get_pad_key_from_config(&pad->sym_a, config, "joypad_0_a", "W", SDLK_w);
-	get_pad_key_from_config(&pad->sym_b, config, "joypad_0_b", "X", SDLK_x);
-	get_pad_key_from_config(&pad->sym_select, config, "joypad_0_select",
-			"C", SDLK_c);
-	get_pad_key_from_config(&pad->sym_start, config, "joypad_0_start", "V",
-			SDLK_v);
+	get_pad_key_from_config(&pad->sym_right, config, CONFIG_JOYPAD_0_RIGHT,
+			CONFIG_JOYPAD_0_RIGHT_DEFAULT);
+	get_pad_key_from_config(&pad->sym_left, config, CONFIG_JOYPAD_0_LEFT,
+			CONFIG_JOYPAD_0_LEFT_DEFAULT);
+	get_pad_key_from_config(&pad->sym_up, config, CONFIG_JOYPAD_0_UP,
+			CONFIG_JOYPAD_0_UP_DEFAULT);
+	get_pad_key_from_config(&pad->sym_down, config, CONFIG_JOYPAD_0_DOWN,
+			CONFIG_JOYPAD_0_DOWN_DEFAULT);
+	get_pad_key_from_config(&pad->sym_a, config, CONFIG_JOYPAD_0_A,
+			CONFIG_JOYPAD_0_A_DEFAULT);
+	get_pad_key_from_config(&pad->sym_b, config, CONFIG_JOYPAD_0_B,
+			CONFIG_JOYPAD_0_B_DEFAULT);
+	get_pad_key_from_config(&pad->sym_select, config,
+			CONFIG_JOYPAD_0_SELECT, CONFIG_JOYPAD_0_SELECT_DEFAULT);
+	get_pad_key_from_config(&pad->sym_start, config, CONFIG_JOYPAD_0_START,
+			CONFIG_JOYPAD_0_START_DEFAULT);
 }
 
 void keyDown(struct s_gb *gb_s)

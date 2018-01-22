@@ -771,7 +771,8 @@ int console_debugger_init(struct console_debugger *debugger,
 
 	console_debugger_get_terminal_size(debugger);
 	init_registers_map(debugger);
-	debugger->active = ae_config_get_int(config, "debugger_active", 0);
+	debugger->active = ae_config_get_int(config, CONFIG_DEBUGGER_ACTIVE,
+			CONFIG_DEBUGGER_ACTIVE_DEFAULT);
 	printf("program's pid is %jd\n", (intmax_t)getpid());
 
 	return 0;

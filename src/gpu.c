@@ -25,28 +25,37 @@ void initDisplay(struct s_gb *gb)
 	bool fullscreen;
 	int width;
 	int height;
+	int x;
+	int y;
+	struct ae_config *conf;
 
+	conf = &gb->config.config;
 	gpu = &gb->gb_gpu;
 #ifdef EMGB_CONSOLE_DEBUGGER
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif /* EMGB_CONSOLE_DEBUGGER */
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
-	if (ae_config_get_int(&gb->config.config, "linear_scaling", 0) == 1)
+	if (ae_config_get_int(conf, CONFIG_LINEAR_SCALING,
+			CONFIG_LINEAR_SCALING_DEFAULT) == 1)
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-	width = ae_config_get_int(&gb->config.config, "window_width", GB_W);
-	height = ae_config_get_int(&gb->config.config, "window_height", GB_H);
+	width = ae_config_get_int(conf, CONFIG_WINDOW_WIDTH,
+			CONFIG_WINDOW_WIDTH_DEFAULT);
+	height = ae_config_get_int(conf, CONFIG_WINDOW_HEIGHT,
+			CONFIG_WINDOW_HEIGHT_DEFAULT);
 	fullscreen = is_fullscreen(width, height);
-	gpu->mouse_visible = true;
-	gpu->window = SDL_CreateWindow("GB",
-			ae_config_get_int(&gb->config.config, "window_x", 300),
-			ae_config_get_int(&gb->config.config, "window_y", 300),
-			width, height, SDL_WINDOW_RESIZABLE);
+	gpu->mouse_visible = !fullscreen;
+	x = ae_config_get_int(conf, CONFIG_WINDOW_X, CONFIG_WINDOW_X_DEFAULT);
+	y = ae_config_get_int(conf, CONFIG_WINDOW_Y, CONFIG_WINDOW_Y_DEFAULT);
+	gpu->window = SDL_CreateWindow("GB", x, y, width, height,
+			SDL_WINDOW_RESIZABLE);
 	if (gpu->window == NULL)
 		ERR("cannot create SDL windows");
-	if (fullscreen)
+	if (fullscreen) {
 		SDL_SetWindowFullscreen(gpu->window,
 				SDL_WINDOW_FULLSCREEN_DESKTOP);
+		SDL_ShowCursor(SDL_DISABLE);
+	}
 	gpu->renderer = SDL_CreateRenderer(gpu->window, -1,
 			SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
 	if (gpu->renderer == NULL)
@@ -258,15 +267,21 @@ static void display(struct s_gb *gb)
 void initGpu(struct s_gb *gb)
 {
 	struct s_gpu *gpu;
+	struct ae_config *conf;
 
 	gpu = &gb->gb_gpu;
+	conf = &gb->config.config;
 	gpu->scanline = 0;
 	gpu->tick = 0;
 	gpu->last_tick = 0;
-	gpu->color_0 = ae_config_get_int(&gb->config.config, "color_0", COLOR_0);
-	gpu->color_1 = ae_config_get_int(&gb->config.config, "color_1", COLOR_1);
-	gpu->color_2 = ae_config_get_int(&gb->config.config, "color_2", COLOR_2);
-	gpu->color_3 = ae_config_get_int(&gb->config.config, "color_3", COLOR_3);
+	gpu->color_0 = ae_config_get_int(conf, CONFIG_COLOR_0,
+			CONFIG_COLOR_0_DEFAULT);
+	gpu->color_1 = ae_config_get_int(conf, CONFIG_COLOR_1,
+			CONFIG_COLOR_1_DEFAULT);
+	gpu->color_2 = ae_config_get_int(conf, CONFIG_COLOR_2,
+			CONFIG_COLOR_2_DEFAULT);
+	gpu->color_3 = ae_config_get_int(conf, CONFIG_COLOR_3,
+			CONFIG_COLOR_3_DEFAULT);
 }
 
 char lcdIsEnable(unsigned char lcdc)
