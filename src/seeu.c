@@ -54,16 +54,3 @@ void RDBG(struct gb *s_gb)
 	/* printf("DEBUG\n"); */
 	/* getchar(); */
 }
-
-void debug(struct gb *s_gb)
-{
-	static int i;
-
-	if (s_gb->registers.pc >= 0x1400)
-		i++;
-		/* getchar(); */
-	/*
-	 * if (i > 0)
-	 *	RDBG(s_gb);
-	 */
-}

@@ -38,7 +38,6 @@ void serial(struct gb *gb_s)
 
 void timer(struct gb *gb_s)
 {
-	debug(gb_s);
 	gb_s->interrupts.interMaster = 0;
 	gb_s->registers.sp -= 2;
 	write16bitToAddr(gb_s->registers.sp, gb_s->registers.pc, gb_s);

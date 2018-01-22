@@ -48,7 +48,6 @@ struct gb {
 
 void gb(const char *fileName);
 void initRegister(struct gb *gb);
-void debug(struct gb *tmprom);
 void RDBG(struct gb *gb);
 void displayStack(struct gb *gb);
 
