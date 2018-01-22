@@ -48,8 +48,6 @@ struct gb {
 
 void gb(const char *fileName);
 void initRegister(struct gb *gb);
-void RDBG(struct gb *gb);
-void displayStack(struct gb *gb);
 
 void seeu(struct gb *gb); /* leaving */
 struct gb *initGb(const char *fileName); /* init */
