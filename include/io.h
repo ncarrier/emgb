@@ -19,7 +19,7 @@ struct lcd {
 	unsigned char BgWindowDisplay;
 };
 
-struct s_io {
+struct io {
 	unsigned char scrollX;
 	unsigned char scrollY;
 	unsigned char winX;

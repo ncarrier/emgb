@@ -28,7 +28,7 @@ enum gpuMode {
 	VRAM = 3,
 };
 
-struct s_gpu {
+struct gpu {
 	unsigned char scanline;
 	unsigned last_tick;
 	unsigned int tick;
@@ -53,6 +53,6 @@ struct s_gpu {
 	int color_3;
 };
 
-int color_index_to_value(const struct s_gpu *gpu, int color);
+int color_index_to_value(const struct gpu *gpu, int color);
 
 #endif

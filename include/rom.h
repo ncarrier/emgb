@@ -24,7 +24,7 @@ struct s_romHeader {
 	unsigned short glbCheckSum;
 } __attribute__((__packed__));
 
-struct s_rom {
+struct rom {
 	unsigned int size;
 	unsigned char *rom;
 	struct s_romHeader romheader;
@@ -32,7 +32,7 @@ struct s_rom {
 
 #pragma pack(pop)
 
-int initRom(struct s_rom *rom, const char *filename);
+int initRom(struct rom *rom, const char *filename);
 void displayHeader(struct s_romHeader *romheader);
 
 #endif

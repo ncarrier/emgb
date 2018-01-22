@@ -27,7 +27,7 @@ static long get_file_size(FILE *f)
 	return size;
 }
 
-static int loadRom(struct s_rom *rom, const char *romfile)
+static int loadRom(struct rom *rom, const char *romfile)
 {
 	unsigned int nb_read;
 	FILE *f;
@@ -45,7 +45,7 @@ static int loadRom(struct s_rom *rom, const char *romfile)
 	return -1;
 }
 
-static void loadHeader(struct s_rom *rom)
+static void loadHeader(struct rom *rom)
 {
 	size_t size;
 
@@ -61,7 +61,7 @@ void displayHeader(struct s_romHeader *romheader)
 	printf("ram size: %d\n", romheader->ramSize << 2);
 }
 
-int initRom(struct s_rom *rom, const char *filename)
+int initRom(struct rom *rom, const char *filename)
 {
 	assert(sizeof(struct s_romHeader) == 80 ||
 			"sizeof(s_romHeader) != 80" == NULL);

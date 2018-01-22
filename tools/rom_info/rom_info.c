@@ -32,7 +32,7 @@ static void usage(int status)
 int main(int argc, char *argv[])
 {
 	int ret;
-	struct s_rom rom;
+	struct rom rom;
 	const char *filename;
 	struct s_romHeader *header = &rom.romheader;
 	size_t size = sizeof(*header);

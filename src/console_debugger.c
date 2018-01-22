@@ -461,7 +461,7 @@ static void console_debugger_next(struct console_debugger *debugger)
 	debugger->next = true;
 }
 
-void console_debugger_print_registers(const struct s_register *registers)
+void console_debugger_print_registers(const struct registers *registers)
 {
 	printf("af = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->a, registers->f);
 	printf("bc = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->b, registers->c);
@@ -479,7 +479,7 @@ void console_debugger_print_registers(const struct s_register *registers)
 static void console_debugger_print(struct console_debugger *debugger)
 {
 	const char *expression;
-	struct s_register *registers;
+	struct registers *registers;
 	uint16_t f;
 	uint16_t address;
 	enum special_register reg;
@@ -642,7 +642,7 @@ static char *console_debugger_prompt(struct editline *el)
 static void init_registers_map(struct console_debugger *debugger)
 {
 	unsigned index;
-	struct s_register *registers;
+	struct registers *registers;
 
 	registers = debugger->registers;
 	index = 0;
@@ -731,7 +731,7 @@ static int console_debugger_get_terminal_size(struct console_debugger *debugger)
 }
 
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers, struct gb *gb,
+		struct registers *registers, struct gb *gb,
 		struct ae_config *config)
 {
 	struct editline *el = debugger->editline;
@@ -1019,7 +1019,7 @@ int printf_inverted(bool inverted, const char *fmt, ...)
 
 static void display_registers(struct console_debugger *debugger)
 {
-	struct s_register *registers;
+	struct registers *registers;
 	int x;
 	int y;
 

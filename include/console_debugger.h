@@ -48,8 +48,8 @@ struct console_debugger {
 	struct command command;
 	struct breakpoint breakpoints[EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS];
 	struct gb *gb;
-	struct s_register *registers;
-	struct s_register previous_registers;
+	struct registers *registers;
+	struct registers previous_registers;
 	struct {
 		const char *name;
 		union {
@@ -64,9 +64,9 @@ struct console_debugger {
 	} terminal;
 };
 
-void console_debugger_print_registers(const struct s_register *registers);
+void console_debugger_print_registers(const struct registers *registers);
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers, struct gb *gb,
+		struct registers *registers, struct gb *gb,
 		struct ae_config *config);
 int console_debugger_update(struct console_debugger *debugger);
 

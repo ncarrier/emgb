@@ -29,15 +29,15 @@
 
 struct gb {
 	unsigned char running;
-	struct s_timer gb_time;
-	struct s_register gb_register;
-	struct s_io gb_io;
-	struct s_rom gb_rom;
-	struct s_gpu gb_gpu;
-	struct s_interupt gb_interrupts;
-	struct s_memory gb_mem;
-	struct s_joypad gb_pad;
-	struct s_cpu gb_cpu;
+	struct timer gb_time;
+	struct registers gb_register;
+	struct io gb_io;
+	struct rom gb_rom;
+	struct gpu gb_gpu;
+	struct interupts gb_interrupts;
+	struct memory gb_mem;
+	struct joypad gb_pad;
+	struct cpu gb_cpu;
 	struct joystick_config joystick_config;
 	unsigned char stopdbg;
 	struct config config;

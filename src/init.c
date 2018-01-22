@@ -12,7 +12,7 @@
 
 static void initCpu(struct gb *gb_s)
 {
-	struct s_register *registers;
+	struct registers *registers;
 
 	registers = &gb_s->gb_register;
 	/* test bit fields order */
@@ -66,9 +66,9 @@ struct gb *initGb(const char *fileName)
 
 void	initRegister(struct gb *s_gb)
 {
-	struct s_register *registers;
-	struct s_cpu *cpu;
-	struct s_joypad *pad;
+	struct registers *registers;
+	struct cpu *cpu;
+	struct joypad *pad;
 
 	registers = &s_gb->gb_register;
 	registers->af = 0x01B0;

@@ -17,8 +17,8 @@ void gb(const char *fileName)
 	struct gb *gb;
 	uint8_t fopcode;
 	const struct s_cpu_z80 *instruction;
-	struct s_cpu *cpu;
-	struct s_register *registers;
+	struct cpu *cpu;
+	struct registers *registers;
 #ifdef IMDBG
 	SDL_Thread *thr;
 #endif

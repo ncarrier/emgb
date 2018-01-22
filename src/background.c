@@ -7,7 +7,7 @@ int getRealPosition(struct gb *s_gb)
 	int yDataLine;
 	int lineOffset;
 	int dataOffset;
-	struct s_io *io;
+	struct io *io;
 
 	io = &s_gb->gb_io;
 	yPos = io->scrollY + s_gb->gb_gpu.scanline;
@@ -33,8 +33,8 @@ void renderingBg(struct gb *gb)
 	int dataOffset;
 	int index;
 	int tileAddr;
-	struct s_io *io;
-	struct s_gpu *gpu;
+	struct io *io;
+	struct gpu *gpu;
 	int pixel_index;
 
 	gpu = &gb->gb_gpu;

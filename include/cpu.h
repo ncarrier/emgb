@@ -10,7 +10,7 @@ bool is_opcode_undefined(uint8_t opcode);
 
 #pragma pack(push, 1)
 
-struct s_register {
+struct registers {
 	struct {
 		union {
 			struct {
@@ -62,7 +62,7 @@ struct s_register {
 
 extern const struct s_cpu_z80 instructions[256];
 
-struct s_cpu {
+struct cpu {
 	unsigned int totalTick;
 	int last_tick;
 	bool stopped;

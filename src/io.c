@@ -44,7 +44,7 @@ void updateLcdc(struct gb *s_gb)
 {
 	struct lcd *lcd;
 	uint8_t lcdc;
-	struct s_io *io;
+	struct io *io;
 
 	io = &s_gb->gb_io;
 	lcd = &io->lcd;
@@ -97,7 +97,7 @@ void updateLcdc(struct gb *s_gb)
 
 unsigned char padState(struct gb *s_gb)
 {
-	const struct s_joypad *pad;
+	const struct joypad *pad;
 
 	pad = &s_gb->gb_pad;
 	if ((pad->key & 0x20) == 0)
@@ -120,7 +120,7 @@ void oamTransfert(unsigned char src, struct gb *gb)
 
 void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb)
 {
-	struct s_io *io;
+	struct io *io;
 
 	io = &s_gb->gb_io;
 	switch (addr) {

@@ -34,7 +34,7 @@ void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
 		*sym = default_sym;
 }
 
-void init_joypad(struct s_joypad *pad, struct ae_config *config)
+void init_joypad(struct joypad *pad, struct ae_config *config)
 {
 	get_pad_key_from_config(&pad->sym_right, config, CONFIG_JOYPAD_0_RIGHT,
 			CONFIG_JOYPAD_0_RIGHT_DEFAULT);
@@ -56,7 +56,7 @@ void init_joypad(struct s_joypad *pad, struct ae_config *config)
 
 void keyDown(struct gb *gb_s)
 {
-	struct s_joypad *pad;
+	struct joypad *pad;
 	SDL_Keycode sym;
 
 	pad = &gb_s->gb_pad;
@@ -92,7 +92,7 @@ void keyDown(struct gb *gb_s)
 
 void keyUp(struct gb *gb_s)
 {
-	struct s_joypad *pad;
+	struct joypad *pad;
 	SDL_Keycode sym;
 
 	pad = &gb_s->gb_pad;

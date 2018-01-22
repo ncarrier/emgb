@@ -21,7 +21,7 @@ static bool is_fullscreen(int width, int height)
 
 void initDisplay(struct gb *gb)
 {
-	struct s_gpu *gpu;
+	struct gpu *gpu;
 	bool fullscreen;
 	int width;
 	int height;
@@ -71,7 +71,7 @@ void initDisplay(struct gb *gb)
 		ERR("cannot alloc pixels");
 }
 
-int color_index_to_value(const struct s_gpu *gpu, int color)
+int color_index_to_value(const struct gpu *gpu, int color)
 {
 	switch (color) {
 	case 3:
@@ -140,7 +140,7 @@ void renderingWindow(struct gb *gb)
 	int i;
 	unsigned char tileindex;
 	int tmpaddr;
-	struct s_io *io;
+	struct io *io;
 	struct lcd *lcd;
 
 	io = &gb->gb_io;
@@ -266,7 +266,7 @@ static void display(struct gb *gb)
 
 void initGpu(struct gb *gb)
 {
-	struct s_gpu *gpu;
+	struct gpu *gpu;
 	struct ae_config *conf;
 
 	gpu = &gb->gb_gpu;
@@ -301,7 +301,7 @@ void setLcdStatus(struct gb *gb)
 
 void updateGpu(struct gb *gb)
 {
-	struct s_gpu *gpu;
+	struct gpu *gpu;
 
 	gpu = &gb->gb_gpu;
 	gpu->tick += gb->gb_cpu.totalTick - gpu->last_tick;

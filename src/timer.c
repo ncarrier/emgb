@@ -24,7 +24,7 @@ void initTimer(struct gb *s_gb)
 
 void updateTimer(struct gb *s_gb)
 {
-	struct s_cpu *cpu;
+	struct cpu *cpu;
 	uint8_t tac;
 	uint8_t tima;
 	uint8_t tma;

@@ -10,7 +10,7 @@ void handleEvent(struct gb *gb_s);
 void keyUp(struct gb *gb_s);
 void keyDown(struct gb *gb_s);
 
-struct s_joypad {
+struct joypad {
 	unsigned char key; /* = 0xff */
 	unsigned char button_key; /* = 0x0f */
 	unsigned char button_dir; /* = 0x0f */
@@ -24,6 +24,6 @@ struct s_joypad {
 	SDL_Keycode sym_start;
 };
 
-void init_joypad(struct s_joypad *pad, struct ae_config *config);
+void init_joypad(struct joypad *pad, struct ae_config *config);
 
 #endif

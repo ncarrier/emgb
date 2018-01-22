@@ -10,7 +10,7 @@ struct gb;
 void initTimer(struct gb *s_gb);
 void updateTimer(struct gb *s_gb);
 
-struct s_timer {
+struct timer {
 	unsigned int freq;
 	unsigned char ctrl;
 	unsigned char modulator;
