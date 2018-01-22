@@ -124,7 +124,7 @@ static void console_debugger_assembler(struct console_debugger *debugger)
 	uint16_t i;
 	uint16_t pc;
 	uint8_t opcode;
-	const struct s_cpu_z80 *instruction;
+	const struct cpu_op *instruction;
 	unsigned cur;
 
 	start_str = debugger->command.argv[1];
@@ -234,7 +234,7 @@ static void console_debugger_disable_enable(struct console_debugger *debugger,
 			enable ? "En" : "Dis", id, breakpoint->pc);
 }
 
-static void doc_instruction(const struct s_cpu_z80 *instruction, bool cb)
+static void doc_instruction(const struct cpu_op *instruction, bool cb)
 {
 	printf("[0x%s%"PRIx8"] %s : %s\n", cb ? "cb" : "", instruction->opcode,
 			instruction->value, instruction->doc);
@@ -250,7 +250,7 @@ static void console_debugger_doc(struct console_debugger *debugger)
 	const char *op_str;
 	uint8_t upper_byte;
 	int i;
-	const struct s_cpu_z80 *instr;
+	const struct cpu_op *instr;
 	bool cb;
 
 	command = &debugger->command;
@@ -929,7 +929,7 @@ static void display_disassembly(struct console_debugger *debugger)
 	unsigned cur;
 	unsigned j;
 	uint8_t opcode;
-	const struct s_cpu_z80 *instruction;
+	const struct cpu_op *instruction;
 	uint16_t pc;
 	const char *value;
 	struct gb *gb;
@@ -1086,7 +1086,7 @@ static void display_pre_prompt(struct console_debugger *debugger)
 {
 	uint16_t pc;
 	uint8_t opcode;
-	const struct s_cpu_z80 *instruction;
+	const struct cpu_op *instruction;
 	uint16_t cur;
 
 	pc = debugger->registers->pc;

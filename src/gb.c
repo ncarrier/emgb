@@ -16,7 +16,7 @@ void gb(const char *fileName)
 {
 	struct gb *gb;
 	uint8_t fopcode;
-	const struct s_cpu_z80 *instruction;
+	const struct cpu_op *instruction;
 	struct cpu *cpu;
 	struct registers *registers;
 #ifdef IMDBG

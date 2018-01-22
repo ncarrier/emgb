@@ -5,7 +5,7 @@
 struct gb;
 typedef unsigned (*cpufunc)(struct gb *);
 
-struct s_cpu_z80 {
+struct cpu_op {
 	unsigned char opcode;
 	char *value;
 	cpufunc func;

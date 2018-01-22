@@ -60,7 +60,7 @@ struct registers {
 	uint16_t sp;
 } __attribute__((__packed__));
 
-extern const struct s_cpu_z80 instructions[256];
+extern const struct cpu_op instructions[256];
 
 struct cpu {
 	unsigned int totalTick;

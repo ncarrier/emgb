@@ -233,7 +233,7 @@ function struct_header_gen() {
 	if [ -z "${title}" ]; then
 		title=base
 	fi
-	echo "const struct s_cpu_z80 instructions_${title,,}[] = {"
+	echo "const struct cpu_op instructions_${title,,}[] = {"
 }
 
 function struct_body_gen() {

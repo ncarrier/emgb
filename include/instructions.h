@@ -3,7 +3,7 @@
 
 #include "cpu_op.h"
 
-extern const struct s_cpu_z80 instructions_cb[];
-extern const struct s_cpu_z80 instructions_base[];
+extern const struct cpu_op instructions_cb[];
+extern const struct cpu_op instructions_base[];
 
 #endif /* INCLUDE_INSTRUCTIONS_H_ */
