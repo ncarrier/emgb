@@ -15,6 +15,7 @@
 #include <SDL2/SDL.h>
 
 #include "timer.h"
+#include "registers.h"
 #include "io.h"
 #include "rom.h"
 #include "gpu.h"

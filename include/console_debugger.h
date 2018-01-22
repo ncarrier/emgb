@@ -5,6 +5,7 @@
 #include <histedit.h>
 
 #include "cpu.h"
+#include "registers.h"
 #include "utils.h"
 #include "ae_config.h"
 #include "config.h"
