@@ -49,6 +49,5 @@ struct gb {
 void gb(const char *file_name);
 void gb_cleanup(struct gb *gb);
 struct gb *gb_init(const char *file_name);
-void initRegister(struct gb *gb);
 
 #endif
