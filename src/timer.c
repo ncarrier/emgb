@@ -10,7 +10,7 @@ static const unsigned frequencies_table[] = {
 		[3] = 16384u,
 };
 
-void initTimer(struct gb *s_gb)
+void timer_init(struct gb *s_gb)
 {
 	uint8_t tac;
 	uint8_t input_clock_select;

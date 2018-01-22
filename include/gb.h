@@ -14,36 +14,36 @@
 
 #include <SDL2/SDL.h>
 
-#include "cpu.h"
-#include "rom.h"
-#include "interrupt.h"
-#include "gpu.h"
-#include "io.h"
-#include "joypad.h"
 #include "timer.h"
+#include "io.h"
+#include "rom.h"
+#include "gpu.h"
+#include "interrupt.h"
 #include "memory.h"
-#include "log.h"
+#include "joypad.h"
+#include "cpu.h"
 #include "joystick_config.h"
 #include "config.h"
 #include "utils.h"
+#include "log.h"
 
 #define GB_W 160
 #define GB_H 144
 
 struct gb {
-	bool running;
 	struct timer time;
 	struct registers registers;
 	struct io io;
 	struct rom rom;
 	struct gpu gpu;
 	struct interupts interrupts;
-	struct memory gb_mem;
-	struct joypad gb_pad;
+	struct memory memory;
+	struct joypad joypad;
 	struct cpu cpu;
 	struct joystick_config joystick_config;
-	bool stopdbg;
 	struct config config;
+	bool stopdbg;
+	bool running;
 };
 
 struct gb *gb_init(const char *file_name);

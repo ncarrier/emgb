@@ -24,6 +24,6 @@ struct joypad {
 	SDL_Keycode sym_start;
 };
 
-void init_joypad(struct joypad *pad, struct ae_config *config);
+void joypad_init(struct joypad *pad, struct ae_config *config);
 
 #endif

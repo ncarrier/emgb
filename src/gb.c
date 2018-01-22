@@ -4,45 +4,19 @@
 #include "log.h"
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-static void initCpu(struct gb *gb_s)
+static void cpu_init(struct gb *gb)
 {
-	struct registers *registers;
+	struct cpu *cpu;
 
-	registers = &gb_s->registers;
-	/* test bit fields order */
-	registers->f = 0;
-	gb_s->registers.zf = true;
-	if (registers->f != 0x80) {
-		fprintf(stderr, "Unsupported bitfield order\n");
-		exit(1);
-	}
-	registers->f = 0;
-	gb_s->registers.nf = true;
-	if (registers->f != 0x40) {
-		fprintf(stderr, "Unsupported bitfield order\n");
-		exit(1);
-	}
-	registers->f = 0;
-	gb_s->registers.hf = true;
-	if (registers->f != 0x20) {
-		fprintf(stderr, "Unsupported bitfield order\n");
-		exit(1);
-	}
-	registers->f = 0;
-	gb_s->registers.cf = true;
-	if (registers->f != 0x10) {
-		fprintf(stderr, "Unsupported bitfield order\n");
-		exit(1);
-	}
+	cpu = &gb->cpu;
+	cpu->stopped = false;
+	cpu->halted = false;
+	cpu->totalTick = 0;
+	cpu->last_tick = 0;
 }
 
-static void initRegister(struct gb *s_gb)
+static void registers_init(struct registers *registers)
 {
-	struct registers *registers;
-	struct cpu *cpu;
-	struct joypad *pad;
-
-	registers = &s_gb->registers;
 	registers->af = 0x01B0;
 	registers->bc = 0x0013;
 	registers->de = 0x00D8;
@@ -50,54 +24,68 @@ static void initRegister(struct gb *s_gb)
 	registers->pc = 0x0100;
 	registers->sp = 0xFFFA;
 
-	cpu = &s_gb->cpu;
-	cpu->stopped = false;
-	cpu->halted = false;
-	cpu->totalTick = 0;
-	cpu->last_tick = 0;
-
-	s_gb->gpu.gpuMode = HBLANK;
-
-	memoryInit(s_gb);
-
-	pad = &s_gb->gb_pad;
-	pad->button_key = 0x0f;
-	pad->button_dir = 0x0f;
-
-	s_gb->running = true;
+	/* test bit fields order */
+	registers->f = 0;
+	registers->zf = true;
+	if (registers->f != 0x80) {
+		fprintf(stderr, "Unsupported bitfield order\n");
+		exit(1);
+	}
+	registers->f = 0;
+	registers->nf = true;
+	if (registers->f != 0x40) {
+		fprintf(stderr, "Unsupported bitfield order\n");
+		exit(1);
+	}
+	registers->f = 0;
+	registers->hf = true;
+	if (registers->f != 0x20) {
+		fprintf(stderr, "Unsupported bitfield order\n");
+		exit(1);
+	}
+	registers->f = 0;
+	registers->cf = true;
+	if (registers->f != 0x10) {
+		fprintf(stderr, "Unsupported bitfield order\n");
+		exit(1);
+	}
 }
 
 struct gb *gb_init(const char *fileName)
 {
-	struct gb *s_gb = NULL;
+	struct gb *gb = NULL;
 
-	s_gb = malloc(sizeof(*s_gb));
-	if (s_gb == NULL)
-		ERR("Cannot allocate s_gb");
-	config_init(&s_gb->config);
-	init_joypad(&s_gb->gb_pad, &s_gb->config.config);
-	initRom(&s_gb->rom, fileName);
-	displayHeader(&s_gb->rom.romheader);
-	initRegister(s_gb);
-	initDisplay(s_gb);
-	initGpu(s_gb);
-	initTimer(s_gb);
-	initCpu(s_gb);
-	reset_joystick_config(&s_gb->joystick_config);
-	config_write(&s_gb->config);
+	gb = malloc(sizeof(*gb));
+	if (gb == NULL)
+		ERR("Cannot allocate gb");
+	gb->running = true;
 
-	return s_gb;
+	config_init(&gb->config);
+	memory_init(gb);
+	joypad_init(&gb->joypad, &gb->config.config);
+	rom_init(&gb->rom, fileName);
+	displayHeader(&gb->rom.romheader);
+	registers_init(&gb->registers);
+	display_init(gb);
+	gpu_init(gb);
+	timer_init(gb);
+	cpu_init(gb);
+
+	reset_joystick_config(&gb->joystick_config);
+	config_write(&gb->config);
+
+	return gb;
 }
 
-void gb_cleanup(struct gb *s_gb)
+void gb_cleanup(struct gb *gb)
 {
-	config_cleanup(&s_gb->config);
+	config_cleanup(&gb->config);
 	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
-	SDL_DestroyWindow(s_gb->gpu.window);
-	free(s_gb->rom.rom);
+	SDL_DestroyWindow(gb->gpu.window);
+	free(gb->rom.rom);
 	/* free(s_gb->gb_gpu.pixels_d); */
-	free(s_gb->gpu.pixels);
-	free(s_gb);
+	free(gb->gpu.pixels);
+	free(gb);
 
 	SDL_Quit();
 }

@@ -35,18 +35,18 @@ unsigned char read8bit(unsigned short addr, struct gb *s_gb)
 		return s_gb->rom.rom[(addr - 0x4000)
 				+ (MCB_romBanking * 0x4000)];
 	} else if (addr >= 0x8000 && addr < 0xA000) {
-		return s_gb->gb_mem.vram[addr - 0x8000];
+		return s_gb->memory.vram[addr - 0x8000];
 	} else if (addr >= 0xA000 && addr < 0xC000) {
-		return  s_gb->gb_mem.sram[addr - 0xA000];
+		return  s_gb->memory.sram[addr - 0xA000];
 	} else if (addr >= 0xC000 && addr < 0xE000) {
 		if (addr == 0xc0b7)
 			printf("read from ram 0xc0b7 %x\n",
-					s_gb->gb_mem.ram[addr - 0xC000]);
-		return  s_gb->gb_mem.ram[addr - 0xC000];
+					s_gb->memory.ram[addr - 0xC000]);
+		return  s_gb->memory.ram[addr - 0xC000];
 	} else if (addr >= 0xE000 && addr < 0xFE00) {
-		return  s_gb->gb_mem.ram[addr - 0xE000];
+		return  s_gb->memory.ram[addr - 0xE000];
 	} else if (addr >= 0xFE00 && addr < 0xFF00) {
-		return  s_gb->gb_mem.oam[addr - 0xFE00];
+		return  s_gb->memory.oam[addr - 0xFE00];
 	} else if (addr >= 0xFF00 && addr < 0xFF80) {
 		if (addr == 0xff00)
 			return padState(s_gb);
@@ -56,9 +56,9 @@ unsigned char read8bit(unsigned short addr, struct gb *s_gb)
 			return s_gb->interrupts.interFlag;
 		if (addr == 0xff41)
 			printf("reading lcd stat\n");
-		return  s_gb->gb_mem.io_ports[addr - 0xFF00];
+		return  s_gb->memory.io_ports[addr - 0xFF00];
 	} else if (addr >= 0xFF80 && addr < 0xFFFF) {
-		return  s_gb->gb_mem.hram[addr - 0xFF80];
+		return  s_gb->memory.hram[addr - 0xFF80];
 	} else if (addr == 0xffff) {
 		return s_gb->interrupts.interEnable;
 	}
@@ -108,31 +108,31 @@ int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb)
 		mcbHandleBanking(addr, value, s_gb);
 		return 0;
 	} else if (addr >= 0x8000 && addr < 0xA000) {
-		s_gb->gb_mem.vram[addr - 0x8000] = value;
+		s_gb->memory.vram[addr - 0x8000] = value;
 		return 0;
 	} else if (addr >= 0xA000 && addr < 0xC000) {
-		s_gb->gb_mem.sram[addr - 0xA000] = value;
+		s_gb->memory.sram[addr - 0xA000] = value;
 		return 0;
 	} else if (addr >= 0xC000 && addr < 0xE000) {
-		s_gb->gb_mem.ram[addr - 0xC000] = value;
+		s_gb->memory.ram[addr - 0xC000] = value;
 		return 0;
 	} else if (addr >= 0xE000 && addr < 0xFE00) {
-		s_gb->gb_mem.ram[addr - 0xE000] = value;
+		s_gb->memory.ram[addr - 0xE000] = value;
 		return 0;
 	} else if (addr >= 0xFE00 && addr < SPECIAL_REGISTER_FIRST) {
-		s_gb->gb_mem.oam[addr - 0xFE00] = value;
+		s_gb->memory.oam[addr - 0xFE00] = value;
 		return 0;
 	} else if (addr >= SPECIAL_REGISTER_FIRST
 			&& addr < SPECIAL_REGISTER_HIGH_RAM_START) {
-		s_gb->gb_mem.io_ports[addr - SPECIAL_REGISTER_FIRST] = value;
+		s_gb->memory.io_ports[addr - SPECIAL_REGISTER_FIRST] = value;
 		if (addr == SPECIAL_REGISTER_STAT)
 			printf("writing lcd stat %x\n", value);
-		ctrlIo(addr, (unsigned char *) s_gb->gb_mem.io_ports, s_gb);
+		ctrlIo(addr, (unsigned char *) s_gb->memory.io_ports, s_gb);
 		return 0;
 	} else if (addr >= SPECIAL_REGISTER_HIGH_RAM_START
 			&& addr < SPECIAL_REGISTER_HIGH_RAM_END) {
 		/* TODO replace the above test by an in_hram function */
-		s_gb->gb_mem.hram[addr - SPECIAL_REGISTER_HIGH_RAM_START] =
+		s_gb->memory.hram[addr - SPECIAL_REGISTER_HIGH_RAM_START] =
 				value;
 		return 0;
 	} else if (addr == SPECIAL_REGISTER_IE) {

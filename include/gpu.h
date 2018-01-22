@@ -11,11 +11,11 @@
 #define B 0x000000ff
 
 void rendering(struct gb *gb);
-void initGpu(struct gb *gb);
+void gpu_init(struct gb *gb);
 char lcdIsEnable(unsigned char lcdc);
 void setLcdStatus(struct gb *gb);
 void updateGpu(struct gb *gb);
-void initDisplay(struct gb *gb);
+void display_init(struct gb *gb);
 void renderingBg(struct gb *s_gb);
 void displayAll(struct gb *gb);
 void renderingWindow(struct gb *gb);

@@ -6,7 +6,7 @@ void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb);
 void oamTransfert(unsigned char src, struct gb *s_gb);
 unsigned char padState(struct gb *s_gb);
 void updateLcdc(struct gb *s_gb);
-void memoryInit(struct gb *s_gb);
+void memory_init(struct gb *s_gb);
 
 struct lcd {
 	unsigned char LcdIsOn;

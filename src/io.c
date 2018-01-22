@@ -1,11 +1,11 @@
 #include "gb.h"
 
-void memoryInit(struct gb *s_gb)
+void memory_init(struct gb *s_gb)
 {
-	memset(s_gb->gb_mem.sram, 0, 0x2000);
-	memset(s_gb->gb_mem.vram, 0, 0x2000);
-	memset(s_gb->gb_mem.ram, 0, 0x2000);
-	memset(s_gb->gb_mem.io_ports, 0, 0x0080);
+	memset(s_gb->memory.sram, 0, 0x2000);
+	memset(s_gb->memory.vram, 0, 0x2000);
+	memset(s_gb->memory.ram, 0, 0x2000);
+	memset(s_gb->memory.io_ports, 0, 0x0080);
 
 	write8bit(0xFF05,  0x00, s_gb);
 	write8bit(0xFF06,  0x00, s_gb);
@@ -99,7 +99,7 @@ unsigned char padState(struct gb *s_gb)
 {
 	const struct joypad *pad;
 
-	pad = &s_gb->gb_pad;
+	pad = &s_gb->joypad;
 	if ((pad->key & 0x20) == 0)
 		return 0xc0 | pad->button_key | 0x10;
 	else if ((pad->key & 0x10) == 0)
@@ -115,7 +115,7 @@ void oamTransfert(unsigned char src, struct gb *gb)
 
 	oamsrc = src << 8;
 	for (pos = 0; pos <= 160; pos++)
-		gb->gb_mem.oam[pos] = read8bit(oamsrc + pos, gb);
+		gb->memory.oam[pos] = read8bit(oamsrc + pos, gb);
 }
 
 void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb)
@@ -125,7 +125,7 @@ void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb)
 	io = &s_gb->io;
 	switch (addr) {
 	case 0xff00:
-		s_gb->gb_pad.key = io_ports[0x00];
+		s_gb->joypad.key = io_ports[0x00];
 		break;
 	case 0xff01:
 	case 0xff02:
@@ -140,7 +140,7 @@ void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb)
 		break;
 	case 0xff07:
 		io->timerCtrl = io_ports[0x07];
-		initTimer(s_gb);
+		timer_init(s_gb);
 		printf("timer ctrl %x\n", io->timerCtrl);
 		break;
 	case 0xff24:

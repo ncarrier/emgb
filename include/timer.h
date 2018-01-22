@@ -7,7 +7,7 @@
 #define TAC_TIMER_ENABLED(tac) ((tac) & 0x04)
 
 struct gb;
-void initTimer(struct gb *s_gb);
+void timer_init(struct gb *s_gb);
 void updateTimer(struct gb *s_gb);
 
 struct timer {

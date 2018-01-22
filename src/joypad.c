@@ -35,8 +35,11 @@ void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
 		*sym = default_sym;
 }
 
-void init_joypad(struct joypad *pad, struct ae_config *config)
+void joypad_init(struct joypad *pad, struct ae_config *config)
 {
+	pad->button_key = 0x0f;
+	pad->button_dir = 0x0f;
+
 	get_pad_key_from_config(&pad->sym_right, config, CONFIG_JOYPAD_0_RIGHT,
 			CONFIG_JOYPAD_0_RIGHT_DEFAULT);
 	get_pad_key_from_config(&pad->sym_left, config, CONFIG_JOYPAD_0_LEFT,
@@ -60,34 +63,34 @@ void keyDown(struct gb *gb_s)
 	struct joypad *pad;
 	SDL_Keycode sym;
 
-	pad = &gb_s->gb_pad;
+	pad = &gb_s->joypad;
 	sym = gb_s->gpu.event.key.keysym.sym;
 	if (sym == SDLK_ESCAPE) {
 		gb_s->running = false;
 	} else if (sym == pad->sym_a) {
 		gb_s->interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_A_FLAG;
+		gb_s->joypad.button_key &= ~BUTTON_A_FLAG;
 	} else if (sym == pad->sym_b) {
 		gb_s->interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_B_FLAG;
+		gb_s->joypad.button_key &= ~BUTTON_B_FLAG;
 	} else if (sym == pad->sym_select) {
 		gb_s->interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_SELECT_FLAG;
+		gb_s->joypad.button_key &= ~BUTTON_SELECT_FLAG;
 	} else if (sym == pad->sym_start) {
 		gb_s->interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_START_FLAG;
+		gb_s->joypad.button_key &= ~BUTTON_START_FLAG;
 	} else if (sym == pad->sym_down) {
 		gb_s->interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_DOWN_FLAG;
+		gb_s->joypad.button_dir &= ~BUTTON_DOWN_FLAG;
 	} else if (sym == pad->sym_up) {
 		gb_s->interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_UP_FLAG;
+		gb_s->joypad.button_dir &= ~BUTTON_UP_FLAG;
 	} else if (sym == pad->sym_left) {
 		gb_s->interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_LEFT_FLAG;
+		gb_s->joypad.button_dir &= ~BUTTON_LEFT_FLAG;
 	} else if (sym == pad->sym_right) {
 		gb_s->interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_RIGHT_FLAG;
+		gb_s->joypad.button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
 }
 
@@ -96,24 +99,24 @@ void keyUp(struct gb *gb_s)
 	struct joypad *pad;
 	SDL_Keycode sym;
 
-	pad = &gb_s->gb_pad;
+	pad = &gb_s->joypad;
 	sym = gb_s->gpu.event.key.keysym.sym;
 	if (sym == pad->sym_a) {
-		gb_s->gb_pad.button_key |= BUTTON_A_FLAG;
+		gb_s->joypad.button_key |= BUTTON_A_FLAG;
 	} else if (sym == pad->sym_b) {
-		gb_s->gb_pad.button_key |= BUTTON_B_FLAG;
+		gb_s->joypad.button_key |= BUTTON_B_FLAG;
 	} else if (sym == pad->sym_select) {
-		gb_s->gb_pad.button_key |= BUTTON_SELECT_FLAG;
+		gb_s->joypad.button_key |= BUTTON_SELECT_FLAG;
 	} else if (sym == pad->sym_start) {
-		gb_s->gb_pad.button_key |= BUTTON_START_FLAG;
+		gb_s->joypad.button_key |= BUTTON_START_FLAG;
 	} else if (sym == pad->sym_down) {
-		gb_s->gb_pad.button_dir |= BUTTON_DOWN_FLAG;
+		gb_s->joypad.button_dir |= BUTTON_DOWN_FLAG;
 	} else if (sym == pad->sym_up) {
-		gb_s->gb_pad.button_dir |= BUTTON_UP_FLAG;
+		gb_s->joypad.button_dir |= BUTTON_UP_FLAG;
 	} else if (sym == pad->sym_left) {
-		gb_s->gb_pad.button_dir |= BUTTON_LEFT_FLAG;
+		gb_s->joypad.button_dir |= BUTTON_LEFT_FLAG;
 	} else if (sym == pad->sym_right) {
-		gb_s->gb_pad.button_dir |= BUTTON_RIGHT_FLAG;
+		gb_s->joypad.button_dir |= BUTTON_RIGHT_FLAG;
 	}
 }
 
@@ -164,17 +167,17 @@ static void button_down(struct gb *gb, enum gb_button button)
 {
 	gb->interrupts.interFlag |= INT_JOYPAD;
 	if (BUTTON_IS_KEY(button))
-		gb->gb_pad.button_key &= ~BUTTON_TO_KEY(button);
+		gb->joypad.button_key &= ~BUTTON_TO_KEY(button);
 	else
-		gb->gb_pad.button_dir &= ~BUTTON_TO_DIR(button);
+		gb->joypad.button_dir &= ~BUTTON_TO_DIR(button);
 }
 
 static void button_up(struct gb *gb, enum gb_button button)
 {
 	if (BUTTON_IS_KEY(button))
-		gb->gb_pad.button_key |= BUTTON_TO_KEY(button);
+		gb->joypad.button_key |= BUTTON_TO_KEY(button);
 	else
-		gb->gb_pad.button_dir |= BUTTON_TO_DIR(button);
+		gb->joypad.button_dir |= BUTTON_TO_DIR(button);
 }
 
 static void joy_button_action(struct gb *gb, const union SDL_Event *event,

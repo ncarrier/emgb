@@ -61,7 +61,7 @@ void displayHeader(struct romHeader *romheader)
 	printf("ram size: %d\n", romheader->ramSize << 2);
 }
 
-int initRom(struct rom *rom, const char *filename)
+int rom_init(struct rom *rom, const char *filename)
 {
 	assert(sizeof(struct romHeader) == 80 ||
 			"sizeof(s_romHeader) != 80" == NULL);

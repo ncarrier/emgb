@@ -19,7 +19,7 @@ static bool is_fullscreen(int width, int height)
 	return dm.w <= width && dm.h <= height;
 }
 
-void initDisplay(struct gb *gb)
+void display_init(struct gb *gb)
 {
 	struct gpu *gpu;
 	bool fullscreen;
@@ -195,9 +195,9 @@ void renderingSprite(struct gb *gb)
 	int index;
 
 	for (index = 0xFE00; index < limit; index += 4) {
-		posy = gb->gb_mem.oam[index - 0xFE00] - 16;
-		posx = gb->gb_mem.oam[index + 1 - 0xFE00] - 8;
-		tileindex = gb->gb_mem.oam[index + 2 - 0xFE00];
+		posy = gb->memory.oam[index - 0xFE00] - 16;
+		posx = gb->memory.oam[index + 1 - 0xFE00] - 8;
+		tileindex = gb->memory.oam[index + 2 - 0xFE00];
 		tmpaddr = baseaddr + (tileindex * 16);
 		for (y = 0; tileindex && y < gb->io.lcd.SpriteSize; y++) {
 			dec = 15;
@@ -264,13 +264,14 @@ static void display(struct gb *gb)
 	/* SDL_RenderPresent(s_gb->gb_gpu.renderer_d); */
 }
 
-void initGpu(struct gb *gb)
+void gpu_init(struct gb *gb)
 {
 	struct gpu *gpu;
 	struct ae_config *conf;
 
 	gpu = &gb->gpu;
 	conf = &gb->config.config;
+	gpu->gpuMode = HBLANK;
 	gpu->scanline = 0;
 	gpu->tick = 0;
 	gpu->last_tick = 0;

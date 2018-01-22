@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	}
 
 	filename = argv[1];
-	ret = initRom(&rom, filename);
+	ret = rom_init(&rom, filename);
 	if (ret != 0) {
 		fprintf(stderr, "initRom failed\n");
 		return EXIT_FAILURE;
