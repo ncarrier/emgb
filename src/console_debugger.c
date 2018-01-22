@@ -731,7 +731,7 @@ static int console_debugger_get_terminal_size(struct console_debugger *debugger)
 }
 
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers, struct s_gb *gb,
+		struct s_register *registers, struct gb *gb,
 		struct ae_config *config)
 {
 	struct editline *el = debugger->editline;
@@ -932,7 +932,7 @@ static void display_disassembly(struct console_debugger *debugger)
 	const struct s_cpu_z80 *instruction;
 	uint16_t pc;
 	const char *value;
-	struct s_gb *gb;
+	struct gb *gb;
 
 	gb = debugger->gb;
 	cursor_save_pos();

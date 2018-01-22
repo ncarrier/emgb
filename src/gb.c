@@ -14,7 +14,7 @@
 
 void gb(const char *fileName)
 {
-	struct s_gb *gb;
+	struct gb *gb;
 	uint8_t fopcode;
 	const struct s_cpu_z80 *instruction;
 	struct s_cpu *cpu;

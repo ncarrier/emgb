@@ -9,7 +9,7 @@ static const unsigned frequencies_table[] = {
 		[3] = 16384u,
 };
 
-void initTimer(struct s_gb *s_gb)
+void initTimer(struct gb *s_gb)
 {
 	uint8_t tac;
 	uint8_t input_clock_select;
@@ -22,7 +22,7 @@ void initTimer(struct s_gb *s_gb)
 	s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
 }
 
-void updateTimer(struct s_gb *s_gb)
+void updateTimer(struct gb *s_gb)
 {
 	struct s_cpu *cpu;
 	uint8_t tac;

@@ -189,7 +189,7 @@ function definition_body_gen() {
 
 	flags=( "${9:0:1}" "${9:1:1}" "${9:2:1}" "${9:3:1}" )
 	echo "/* ${text} [${opcode}] : ${doc} */"
-	echo "static unsigned ${func}(struct s_gb *s_gb)"
+	echo "static unsigned ${func}(struct gb *s_gb)"
 	echo "{"
 	if [ "${title}" = "CB" ]; then
 		generate_cb_opcode "${text}" ${opcode}

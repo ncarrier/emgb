@@ -10,16 +10,16 @@
 #define G 0x0000ff00
 #define B 0x000000ff
 
-void rendering(struct s_gb *gb);
-void initGpu(struct s_gb *gb);
+void rendering(struct gb *gb);
+void initGpu(struct gb *gb);
 char lcdIsEnable(unsigned char lcdc);
-void setLcdStatus(struct s_gb *gb);
-void updateGpu(struct s_gb *gb);
-void initDisplay(struct s_gb *gb);
-void renderingBg(struct s_gb *s_gb);
-void displayAll(struct s_gb *gb);
-void renderingWindow(struct s_gb *gb);
-void renderingSprite(struct s_gb *gb);
+void setLcdStatus(struct gb *gb);
+void updateGpu(struct gb *gb);
+void initDisplay(struct gb *gb);
+void renderingBg(struct gb *s_gb);
+void displayAll(struct gb *gb);
+void renderingWindow(struct gb *gb);
+void renderingSprite(struct gb *gb);
 
 enum gpuMode {
 	HBLANK = 0,

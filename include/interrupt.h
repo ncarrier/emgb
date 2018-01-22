@@ -1,13 +1,13 @@
 #ifndef INTERRUPT
 #define INTERRUPT
 
-struct s_gb;
-void doInterupt(struct s_gb *gb_s);
-void timer(struct s_gb *gb_s);
-void serial(struct s_gb *gb_s);
-void joypad(struct s_gb *gb_s);
-void lcd(struct s_gb *gb_s);
-void vblank(struct s_gb *gb_s);
+struct gb;
+void doInterupt(struct gb *gb_s);
+void timer(struct gb *gb_s);
+void serial(struct gb *gb_s);
+void joypad(struct gb *gb_s);
+void lcd(struct gb *gb_s);
+void vblank(struct gb *gb_s);
 
 #define INT_VBLANK (1 << 0)
 #define INT_LCDSTAT (1 << 1)

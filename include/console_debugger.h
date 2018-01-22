@@ -47,7 +47,7 @@ struct console_debugger {
 	int length;
 	struct command command;
 	struct breakpoint breakpoints[EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS];
-	struct s_gb *gb;
+	struct gb *gb;
 	struct s_register *registers;
 	struct s_register previous_registers;
 	struct {
@@ -66,7 +66,7 @@ struct console_debugger {
 
 void console_debugger_print_registers(const struct s_register *registers);
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers, struct s_gb *gb,
+		struct s_register *registers, struct gb *gb,
 		struct ae_config *config);
 int console_debugger_update(struct console_debugger *debugger);
 

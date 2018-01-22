@@ -54,7 +54,7 @@ void init_joypad(struct s_joypad *pad, struct ae_config *config)
 			CONFIG_JOYPAD_0_START_DEFAULT);
 }
 
-void keyDown(struct s_gb *gb_s)
+void keyDown(struct gb *gb_s)
 {
 	struct s_joypad *pad;
 	SDL_Keycode sym;
@@ -90,7 +90,7 @@ void keyDown(struct s_gb *gb_s)
 	}
 }
 
-void keyUp(struct s_gb *gb_s)
+void keyUp(struct gb *gb_s)
 {
 	struct s_joypad *pad;
 	SDL_Keycode sym;
@@ -116,7 +116,7 @@ void keyUp(struct s_gb *gb_s)
 	}
 }
 
-static void joy_device_added(struct s_gb *gb, uint32_t index)
+static void joy_device_added(struct gb *gb, uint32_t index)
 {
 	int ret;
 	const char *joystick_name;
@@ -139,7 +139,7 @@ static void joy_device_added(struct s_gb *gb, uint32_t index)
 	}
 }
 
-static void joy_device_removed(struct s_gb *gb, const union SDL_Event *event)
+static void joy_device_removed(struct gb *gb, const union SDL_Event *event)
 {
 	struct joystick_config *joystick_config;
 
@@ -159,7 +159,7 @@ static void joy_device_removed(struct s_gb *gb, const union SDL_Event *event)
 		joy_device_added(gb, event->jdevice.which);
 }
 
-static void button_down(struct s_gb *gb, enum gb_button button)
+static void button_down(struct gb *gb, enum gb_button button)
 {
 	gb->gb_interrupts.interFlag |= INT_JOYPAD;
 	if (BUTTON_IS_KEY(button))
@@ -168,7 +168,7 @@ static void button_down(struct s_gb *gb, enum gb_button button)
 		gb->gb_pad.button_dir &= ~BUTTON_TO_DIR(button);
 }
 
-static void button_up(struct s_gb *gb, enum gb_button button)
+static void button_up(struct gb *gb, enum gb_button button)
 {
 	if (BUTTON_IS_KEY(button))
 		gb->gb_pad.button_key |= BUTTON_TO_KEY(button);
@@ -176,8 +176,8 @@ static void button_up(struct s_gb *gb, enum gb_button button)
 		gb->gb_pad.button_dir |= BUTTON_TO_DIR(button);
 }
 
-static void joy_button_action(struct s_gb *gb, const union SDL_Event *event,
-		void (*action)(struct s_gb *, enum gb_button))
+static void joy_button_action(struct gb *gb, const union SDL_Event *event,
+		void (*action)(struct gb *, enum gb_button))
 {
 	struct joystick_config *joystick_config;
 	enum gb_button button;
@@ -197,17 +197,17 @@ static void joy_button_action(struct s_gb *gb, const union SDL_Event *event,
 	}
 }
 
-static void joy_button_down(struct s_gb *gb, const union SDL_Event *event)
+static void joy_button_down(struct gb *gb, const union SDL_Event *event)
 {
 	joy_button_action(gb, event, button_down);
 }
 
-static void joy_button_up(struct s_gb *gb, const union SDL_Event *event)
+static void joy_button_up(struct gb *gb, const union SDL_Event *event)
 {
 	joy_button_action(gb, event, button_up);
 }
 
-static void joy_axis_motion(struct s_gb *gb, const union SDL_Event *event)
+static void joy_axis_motion(struct gb *gb, const union SDL_Event *event)
 {
 	struct joystick_config *joystick_config;
 	enum gb_button button;
@@ -247,7 +247,7 @@ static bool is_fullscreen(const struct SDL_WindowEvent *we)
 	return dm.w == we->data1 && dm.h == we->data2;
 }
 
-void handleEvent(struct s_gb *gb_s)
+void handleEvent(struct gb *gb_s)
 {
 	union SDL_Event *event;
 	struct SDL_WindowEvent *we;

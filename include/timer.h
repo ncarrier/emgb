@@ -6,9 +6,9 @@
 #define TAC_INPUT_CLOCK_SELECT(tac) ((tac) & 0x03)
 #define TAC_TIMER_ENABLED(tac) ((tac) & 0x04)
 
-struct s_gb;
-void initTimer(struct s_gb *s_gb);
-void updateTimer(struct s_gb *s_gb);
+struct gb;
+void initTimer(struct gb *s_gb);
+void updateTimer(struct gb *s_gb);
 
 struct s_timer {
 	unsigned int freq;

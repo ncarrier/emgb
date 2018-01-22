@@ -2,7 +2,7 @@
 
 #include "GB.h"
 
-void vblank(struct s_gb *gb_s)
+void vblank(struct gb *gb_s)
 {
 	gb_s->gb_interrupts.interMaster = 0;
 	gb_s->gb_register.sp -= 2;
@@ -11,7 +11,7 @@ void vblank(struct s_gb *gb_s)
 
 }
 
-void lcd(struct s_gb *gb_s)
+void lcd(struct gb *gb_s)
 {
 	gb_s->gb_interrupts.interMaster = 0;
 	printf("doing lcdc !\n");
@@ -20,7 +20,7 @@ void lcd(struct s_gb *gb_s)
 	gb_s->gb_register.pc = 0x48;
 }
 
-void joypad(struct s_gb *gb_s)
+void joypad(struct gb *gb_s)
 {
 	gb_s->gb_interrupts.interMaster = 0;
 	gb_s->gb_register.sp -= 2;
@@ -28,7 +28,7 @@ void joypad(struct s_gb *gb_s)
 	gb_s->gb_register.pc = 0x60;
 }
 
-void serial(struct s_gb *gb_s)
+void serial(struct gb *gb_s)
 {
 	gb_s->gb_interrupts.interMaster = 0;
 	gb_s->gb_register.sp -= 2;
@@ -36,7 +36,7 @@ void serial(struct s_gb *gb_s)
 	gb_s->gb_register.pc = 0x58;
 }
 
-void timer(struct s_gb *gb_s)
+void timer(struct gb *gb_s)
 {
 	debug(gb_s);
 	gb_s->gb_interrupts.interMaster = 0;
@@ -45,7 +45,7 @@ void timer(struct s_gb *gb_s)
 	gb_s->gb_register.pc = 0x50;
 }
 
-void doInterupt(struct s_gb *gb_s)
+void doInterupt(struct gb *gb_s)
 {
 	unsigned char inter;
 

@@ -5,7 +5,7 @@
 
 #include "cpu_op.h"
 
-struct s_gb;
+struct gb;
 bool is_opcode_undefined(uint8_t opcode);
 
 #pragma pack(push, 1)

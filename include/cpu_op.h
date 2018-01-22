@@ -2,8 +2,8 @@
 #define INCLUDE_CPU_OP_H_
 #include <inttypes.h>
 
-struct s_gb;
-typedef unsigned (*cpufunc)(struct s_gb *);
+struct gb;
+typedef unsigned (*cpufunc)(struct gb *);
 
 struct s_cpu_z80 {
 	unsigned char opcode;

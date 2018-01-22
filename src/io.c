@@ -1,6 +1,6 @@
 #include "GB.h"
 
-void memoryInit(struct s_gb *s_gb)
+void memoryInit(struct gb *s_gb)
 {
 	memset(s_gb->gb_mem.sram, 0, 0x2000);
 	memset(s_gb->gb_mem.vram, 0, 0x2000);
@@ -40,7 +40,7 @@ void memoryInit(struct s_gb *s_gb)
 	write8bit(0xFFFF,  0x00, s_gb);
 }
 
-void updateLcdc(struct s_gb *s_gb)
+void updateLcdc(struct gb *s_gb)
 {
 	struct lcd *lcd;
 	uint8_t lcdc;
@@ -95,7 +95,7 @@ void updateLcdc(struct s_gb *s_gb)
 
 }
 
-unsigned char padState(struct s_gb *s_gb)
+unsigned char padState(struct gb *s_gb)
 {
 	const struct s_joypad *pad;
 
@@ -108,7 +108,7 @@ unsigned char padState(struct s_gb *s_gb)
 	return 0xff;
 }
 
-void oamTransfert(unsigned char src, struct s_gb *gb)
+void oamTransfert(unsigned char src, struct gb *gb)
 {
 	int pos;
 	unsigned short oamsrc;
@@ -118,7 +118,7 @@ void oamTransfert(unsigned char src, struct s_gb *gb)
 		gb->gb_mem.oam[pos] = read8bit(oamsrc + pos, gb);
 }
 
-void ctrlIo(unsigned short addr, unsigned char *io_ports, struct s_gb *s_gb)
+void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb)
 {
 	struct s_io *io;
 

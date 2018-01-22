@@ -10,7 +10,7 @@
 #include "GB.h"
 #include "special_registers.h"
 
-static void initCpu(struct s_gb *gb_s)
+static void initCpu(struct gb *gb_s)
 {
 	struct s_register *registers;
 
@@ -42,9 +42,9 @@ static void initCpu(struct s_gb *gb_s)
 	}
 }
 
-struct s_gb *initGb(const char *fileName)
+struct gb *initGb(const char *fileName)
 {
-	struct s_gb *s_gb = NULL;
+	struct gb *s_gb = NULL;
 
 	s_gb = malloc(sizeof(*s_gb));
 	if (s_gb == NULL)
@@ -64,7 +64,7 @@ struct s_gb *initGb(const char *fileName)
 	return s_gb;
 }
 
-void	initRegister(struct s_gb *s_gb)
+void	initRegister(struct gb *s_gb)
 {
 	struct s_register *registers;
 	struct s_cpu *cpu;

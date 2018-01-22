@@ -19,7 +19,7 @@ static bool is_fullscreen(int width, int height)
 	return dm.w <= width && dm.h <= height;
 }
 
-void initDisplay(struct s_gb *gb)
+void initDisplay(struct gb *gb)
 {
 	struct s_gpu *gpu;
 	bool fullscreen;
@@ -88,7 +88,7 @@ int color_index_to_value(const struct s_gpu *gpu, int color)
 }
 
 /*
-void displayAll(struct s_gb *gb)
+void displayAll(struct gb *gb)
 {
 	int index;
 	int y, x;
@@ -126,7 +126,7 @@ void displayAll(struct s_gb *gb)
 }
 */
 
-void renderingWindow(struct s_gb *gb)
+void renderingWindow(struct gb *gb)
 {
 	int y;
 	int x;
@@ -179,7 +179,7 @@ void renderingWindow(struct s_gb *gb)
 	}
 }
 
-void renderingSprite(struct s_gb *gb)
+void renderingSprite(struct gb *gb)
 {
 	int y;
 	int x;
@@ -223,7 +223,7 @@ void renderingSprite(struct s_gb *gb)
 	}
 }
 
-void rendering(struct s_gb *gb)
+void rendering(struct gb *gb)
 {
 	if (gb->gb_io.lcd.BgWindowDisplay == 1)
 		renderingBg(gb);
@@ -231,7 +231,7 @@ void rendering(struct s_gb *gb)
 		renderingSprite(gb);
 }
 
-static void display(struct s_gb *gb)
+static void display(struct gb *gb)
 {
 	int pitch = 0;
 	void *pixels;
@@ -264,7 +264,7 @@ static void display(struct s_gb *gb)
 	/* SDL_RenderPresent(s_gb->gb_gpu.renderer_d); */
 }
 
-void initGpu(struct s_gb *gb)
+void initGpu(struct gb *gb)
 {
 	struct s_gpu *gpu;
 	struct ae_config *conf;
@@ -289,7 +289,7 @@ char lcdIsEnable(unsigned char lcdc)
 	return (lcdc & 0x01) == 0 ? 0 : 1;
 }
 
-void setLcdStatus(struct s_gb *gb)
+void setLcdStatus(struct gb *gb)
 {
 	if (lcdIsEnable(read8bit(0xff40, gb) >> 7) != 0)
 		return;
@@ -299,7 +299,7 @@ void setLcdStatus(struct s_gb *gb)
 	write8bit(0xff41, 253, gb);
 }
 
-void updateGpu(struct s_gb *gb)
+void updateGpu(struct gb *gb)
 {
 	struct s_gpu *gpu;
 

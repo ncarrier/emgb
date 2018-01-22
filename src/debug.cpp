@@ -12,7 +12,7 @@ extern "C" {
 
 int IMGUI_debugger(void *p_s_gb)
 {
-	struct s_gb		*s_gb = (struct s_gb *)p_s_gb;
+	struct gb		*s_gb = (struct gb *)p_s_gb;
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);

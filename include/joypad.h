@@ -5,10 +5,10 @@
 
 #include "ae_config.h"
 
-struct s_gb;
-void handleEvent(struct s_gb *gb_s);
-void keyUp(struct s_gb *gb_s);
-void keyDown(struct s_gb *gb_s);
+struct gb;
+void handleEvent(struct gb *gb_s);
+void keyUp(struct gb *gb_s);
+void keyDown(struct gb *gb_s);
 
 struct s_joypad {
 	unsigned char key; /* = 0xff */

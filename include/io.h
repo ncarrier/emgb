@@ -1,12 +1,12 @@
 #ifndef IO_HH
 #define IO_HH
 
-struct s_gb;
-void ctrlIo(unsigned short addr, unsigned char *io_ports, struct s_gb *s_gb);
-void oamTransfert(unsigned char src, struct s_gb *s_gb);
-unsigned char padState(struct s_gb *s_gb);
-void updateLcdc(struct s_gb *s_gb);
-void memoryInit(struct s_gb *s_gb);
+struct gb;
+void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb);
+void oamTransfert(unsigned char src, struct gb *s_gb);
+unsigned char padState(struct gb *s_gb);
+void updateLcdc(struct gb *s_gb);
+void memoryInit(struct gb *s_gb);
 
 struct lcd {
 	unsigned char LcdIsOn;

@@ -27,7 +27,7 @@
 #define GB_W 160
 #define GB_H 144
 
-struct s_gb {
+struct gb {
 	unsigned char running;
 	struct s_timer gb_time;
 	struct s_register gb_register;
@@ -44,13 +44,13 @@ struct s_gb {
 };
 
 void gb(const char *fileName);
-void initRegister(struct s_gb *gb);
-void debug(struct s_gb *tmprom);
-void RDBG(struct s_gb *gb);
-void displayStack(struct s_gb *gb);
+void initRegister(struct gb *gb);
+void debug(struct gb *tmprom);
+void RDBG(struct gb *gb);
+void displayStack(struct gb *gb);
 
-void seeu(struct s_gb *gb); /* leaving */
-struct s_gb *initGb(const char *fileName); /* init */
-void initRegister(struct s_gb *gb);
+void seeu(struct gb *gb); /* leaving */
+struct gb *initGb(const char *fileName); /* init */
+void initRegister(struct gb *gb);
 
 #endif

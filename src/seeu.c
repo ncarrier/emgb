@@ -1,7 +1,7 @@
 #include "GB.h"
 #include "config.h"
 
-void seeu(struct s_gb *s_gb)
+void seeu(struct gb *s_gb)
 {
 	config_cleanup(&s_gb->config);
 	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
@@ -14,7 +14,7 @@ void seeu(struct s_gb *s_gb)
 	SDL_Quit();
 }
 
-void displayStack(struct s_gb *s_gb)
+void displayStack(struct gb *s_gb)
 {
 	unsigned short value;
 
@@ -25,7 +25,7 @@ void displayStack(struct s_gb *s_gb)
 	}
 }
 
-void RDBG(struct s_gb *s_gb)
+void RDBG(struct gb *s_gb)
 {
 	/*
 	printf("----------\npc value : %s pc: %x\nsp: %x\nopcode: %x\n"
@@ -55,7 +55,7 @@ void RDBG(struct s_gb *s_gb)
 	/* getchar(); */
 }
 
-void debug(struct s_gb *s_gb)
+void debug(struct gb *s_gb)
 {
 	static int i;
 

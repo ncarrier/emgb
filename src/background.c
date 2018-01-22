@@ -1,7 +1,7 @@
 #include "GB.h"
 #include "gpu.h"
 
-int getRealPosition(struct s_gb *s_gb)
+int getRealPosition(struct gb *s_gb)
 {
 	int yPos;
 	int yDataLine;
@@ -20,7 +20,7 @@ int getRealPosition(struct s_gb *s_gb)
 	return dataOffset;
 }
 
-void renderingBg(struct s_gb *gb)
+void renderingBg(struct gb *gb)
 {
 	unsigned short line;
 	int color;
