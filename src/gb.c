@@ -8,7 +8,7 @@ struct gb *gb_init(const char *fileName)
 {
 	struct gb *gb = NULL;
 
-	gb = malloc(sizeof(*gb));
+	gb = calloc(1, sizeof(*gb));
 	if (gb == NULL)
 		ERR("Cannot allocate gb");
 	gb->running = true;
