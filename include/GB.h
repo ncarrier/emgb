@@ -46,11 +46,9 @@ struct gb {
 	struct config config;
 };
 
-void gb(const char *fileName);
-void initRegister(struct gb *gb);
-
-void seeu(struct gb *gb); /* leaving */
-struct gb *initGb(const char *fileName); /* init */
+void gb(const char *file_name);
+void gb_cleanup(struct gb *gb);
+struct gb *gb_init(const char *file_name);
 void initRegister(struct gb *gb);
 
 #endif
