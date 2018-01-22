@@ -1,7 +1,7 @@
 # functions for generating base set instructions
 # helper functions for instruction code generating functions
 adress_re='\((.*)\)'
-regs="s_gb->gb_register"
+regs="s_gb->registers"
 pc="${regs}.pc"
 function generate_base_ld_dst_adress_code() {
 	echo -e -n "\tuint16_t dst_adr = "
@@ -238,7 +238,7 @@ function generate_base_daa_code() {
 	cat <<here_doc_delim
 	uint16_t s;
 
-	s = s_gb->gb_register.a;
+	s = s_gb->registers.a;
 	if (${regs}.nf) {
 		if (${regs}.hf)
 			s = (s - 0x06) & 0xFF;
@@ -251,9 +251,9 @@ function generate_base_daa_code() {
 			s += 0x60;
 	}
 
-	s_gb->gb_register.a = s;
+	s_gb->registers.a = s;
 
-	${regs}.zf = s_gb->gb_register.a == 0;
+	${regs}.zf = s_gb->registers.a == 0;
 	if (s >= 0x100)
 		${regs}.cf = true;
 here_doc_delim
@@ -292,15 +292,15 @@ here_doc_delim
 }
 
 function generate_base_di_code() {
-	echo -e "\ts_gb->gb_interrupts.interMaster = 0;"
+	echo -e "\ts_gb->interrupts.interMaster = 0;"
 }
 
 function generate_base_ei_code() {
-	echo -e "\ts_gb->gb_interrupts.interMaster = 1;"
+	echo -e "\ts_gb->interrupts.interMaster = 1;"
 }
 
 function generate_base_halt_code() {
-	echo -e "\ts_gb->gb_cpu.halted = true;"
+	echo -e "\ts_gb->cpu.halted = true;"
 }
 
 function generate_base_inc_code() {
@@ -501,7 +501,7 @@ here_doc_delim
 function generate_base_reti_code() {
 	cat <<here_doc_delim
 	${regs}.pc = pop(s_gb);
-	s_gb->gb_interrupts.interMaster = 1;
+	s_gb->interrupts.interMaster = 1;
 here_doc_delim
 }
 
@@ -584,7 +584,7 @@ function generate_base_scf_code() {
 
 function generate_base_stop_code() {
 	cat <<here_doc_delim
-	s_gb->gb_cpu.stopped = true;
+	s_gb->cpu.stopped = true;
 here_doc_delim
 }
 

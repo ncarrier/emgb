@@ -14,28 +14,28 @@ static void initCpu(struct gb *gb_s)
 {
 	struct registers *registers;
 
-	registers = &gb_s->gb_register;
+	registers = &gb_s->registers;
 	/* test bit fields order */
 	registers->f = 0;
-	gb_s->gb_register.zf = true;
+	gb_s->registers.zf = true;
 	if (registers->f != 0x80) {
 		fprintf(stderr, "Unsupported bitfield order\n");
 		exit(1);
 	}
 	registers->f = 0;
-	gb_s->gb_register.nf = true;
+	gb_s->registers.nf = true;
 	if (registers->f != 0x40) {
 		fprintf(stderr, "Unsupported bitfield order\n");
 		exit(1);
 	}
 	registers->f = 0;
-	gb_s->gb_register.hf = true;
+	gb_s->registers.hf = true;
 	if (registers->f != 0x20) {
 		fprintf(stderr, "Unsupported bitfield order\n");
 		exit(1);
 	}
 	registers->f = 0;
-	gb_s->gb_register.cf = true;
+	gb_s->registers.cf = true;
 	if (registers->f != 0x10) {
 		fprintf(stderr, "Unsupported bitfield order\n");
 		exit(1);
@@ -51,8 +51,8 @@ struct gb *initGb(const char *fileName)
 		ERR("Cannot allocate s_gb");
 	config_init(&s_gb->config);
 	init_joypad(&s_gb->gb_pad, &s_gb->config.config);
-	initRom(&s_gb->gb_rom, fileName);
-	displayHeader(&s_gb->gb_rom.romheader);
+	initRom(&s_gb->rom, fileName);
+	displayHeader(&s_gb->rom.romheader);
 	initRegister(s_gb);
 	initDisplay(s_gb);
 	initGpu(s_gb);
@@ -70,7 +70,7 @@ void	initRegister(struct gb *s_gb)
 	struct cpu *cpu;
 	struct joypad *pad;
 
-	registers = &s_gb->gb_register;
+	registers = &s_gb->registers;
 	registers->af = 0x01B0;
 	registers->bc = 0x0013;
 	registers->de = 0x00D8;
@@ -78,13 +78,13 @@ void	initRegister(struct gb *s_gb)
 	registers->pc = 0x0100;
 	registers->sp = 0xFFFA;
 
-	cpu = &s_gb->gb_cpu;
+	cpu = &s_gb->cpu;
 	cpu->stopped = false;
 	cpu->halted = false;
 	cpu->totalTick = 0;
 	cpu->last_tick = 0;
 
-	s_gb->gb_gpu.gpuMode = HBLANK;
+	s_gb->gpu.gpuMode = HBLANK;
 
 	memoryInit(s_gb);
 
@@ -92,5 +92,5 @@ void	initRegister(struct gb *s_gb)
 	pad->button_key = 0x0f;
 	pad->button_dir = 0x0f;
 
-	s_gb->running = 1;
+	s_gb->running = true;
 }

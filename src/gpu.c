@@ -30,7 +30,7 @@ void initDisplay(struct gb *gb)
 	struct ae_config *conf;
 
 	conf = &gb->config.config;
-	gpu = &gb->gb_gpu;
+	gpu = &gb->gpu;
 #ifdef EMGB_CONSOLE_DEBUGGER
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif /* EMGB_CONSOLE_DEBUGGER */
@@ -143,7 +143,7 @@ void renderingWindow(struct gb *gb)
 	struct io *io;
 	struct lcd *lcd;
 
-	io = &gb->gb_io;
+	io = &gb->io;
 	lcd = &io->lcd;
 	limit = lcd->WindowTileMapSelect + 0x400;
 	baseaddr = lcd->BgWindowTileData;
@@ -159,7 +159,7 @@ void renderingWindow(struct gb *gb)
 				color = ((line >> dec) & 0x01)
 						+ ((line >> (dec - 8)) & 0x01);
 				if (color != 0) {
-					gb->gb_gpu.pixels[256
+					gb->gpu.pixels[256
 							* (io->scrollY + posy
 									+ y)
 							+ io->scrollX + posx
@@ -199,21 +199,21 @@ void renderingSprite(struct gb *gb)
 		posx = gb->gb_mem.oam[index + 1 - 0xFE00] - 8;
 		tileindex = gb->gb_mem.oam[index + 2 - 0xFE00];
 		tmpaddr = baseaddr + (tileindex * 16);
-		for (y = 0; tileindex && y < gb->gb_io.lcd.SpriteSize; y++) {
+		for (y = 0; tileindex && y < gb->io.lcd.SpriteSize; y++) {
 			dec = 15;
 			line = read16bit(tmpaddr, gb);
 			for (x = 0; x < 8; x++) {
 				color = ((line >> dec) & 0x01);
 				if ((line >> (dec - 8)) & 0x01)
 					color += 2;
-				color = color_index_to_value(&gb->gb_gpu,
+				color = color_index_to_value(&gb->gpu,
 						color);
 				/*
 				 * check mem corruption error -> need to
 				 * refactor this
 				 */
 				if (GB_W * (posy + y) + posx + x < GB_SURF)
-					gb->gb_gpu.pixels[GB_W * (posy + y)
+					gb->gpu.pixels[GB_W * (posy + y)
 							+ (posx + x)] = color;
 				dec--;
 
@@ -225,9 +225,9 @@ void renderingSprite(struct gb *gb)
 
 void rendering(struct gb *gb)
 {
-	if (gb->gb_io.lcd.BgWindowDisplay == 1)
+	if (gb->io.lcd.BgWindowDisplay == 1)
 		renderingBg(gb);
-	if (gb->gb_io.lcd.SpriteIsOn == 1)
+	if (gb->io.lcd.SpriteIsOn == 1)
 		renderingSprite(gb);
 }
 
@@ -237,13 +237,13 @@ static void display(struct gb *gb)
 	void *pixels;
 
 	pitch = 0;
-	SDL_RenderClear(gb->gb_gpu.renderer);
-	SDL_LockTexture(gb->gb_gpu.texture, NULL, &pixels, &pitch);
-	memcpy(pixels, gb->gb_gpu.pixels, GB_SURF * 4);
-	SDL_UnlockTexture(gb->gb_gpu.texture);
+	SDL_RenderClear(gb->gpu.renderer);
+	SDL_LockTexture(gb->gpu.texture, NULL, &pixels, &pitch);
+	memcpy(pixels, gb->gpu.pixels, GB_SURF * 4);
+	SDL_UnlockTexture(gb->gpu.texture);
 
-	SDL_RenderCopy(gb->gb_gpu.renderer, gb->gb_gpu.texture, NULL, NULL);
-	SDL_RenderPresent(gb->gb_gpu.renderer);
+	SDL_RenderCopy(gb->gpu.renderer, gb->gpu.texture, NULL, NULL);
+	SDL_RenderPresent(gb->gpu.renderer);
 
 	/* step 2 debug */
 
@@ -269,7 +269,7 @@ void initGpu(struct gb *gb)
 	struct gpu *gpu;
 	struct ae_config *conf;
 
-	gpu = &gb->gb_gpu;
+	gpu = &gb->gpu;
 	conf = &gb->config.config;
 	gpu->scanline = 0;
 	gpu->tick = 0;
@@ -293,7 +293,7 @@ void setLcdStatus(struct gb *gb)
 {
 	if (lcdIsEnable(read8bit(0xff40, gb) >> 7) != 0)
 		return;
-	gb->gb_gpu.scanline = 0;
+	gb->gpu.scanline = 0;
 	printf("reset scanline & s_gb->gb_cpu.totalTick\n");
 
 	write8bit(0xff41, 253, gb);
@@ -303,20 +303,20 @@ void updateGpu(struct gb *gb)
 {
 	struct gpu *gpu;
 
-	gpu = &gb->gb_gpu;
-	gpu->tick += gb->gb_cpu.totalTick - gpu->last_tick;
-	gpu->last_tick = gb->gb_cpu.totalTick;
+	gpu = &gb->gpu;
+	gpu->tick += gb->cpu.totalTick - gpu->last_tick;
+	gpu->last_tick = gb->cpu.totalTick;
 
 	switch (gpu->gpuMode) {
 	case HBLANK:
 		if (gpu->tick < 204)
 			break;
 
-		if (gb->gb_io.lcd.LcdIsOn == 1 && gpu->scanline < GB_H)
+		if (gb->io.lcd.LcdIsOn == 1 && gpu->scanline < GB_H)
 			rendering(gb);
 		gpu->scanline++;
 		if (gpu->scanline >= GB_H) {
-			gb->gb_interrupts.interFlag |= INT_VBLANK;
+			gb->interrupts.interFlag |= INT_VBLANK;
 			gpu->gpuMode = VBLANK;
 		}
 
@@ -332,7 +332,7 @@ void updateGpu(struct gb *gb)
 			gpu->gpuMode = OAM;
 		}
 		gpu->tick -= 456;
-		if (gb->gb_io.lcd.LcdIsOn == 1 && gpu->scanline == GB_H + 1)
+		if (gb->io.lcd.LcdIsOn == 1 && gpu->scanline == GB_H + 1)
 			display(gb);
 		break;
 	case OAM:

@@ -206,11 +206,11 @@ function definition_body_gen() {
 			;;
 		"1")
 			echo "	/* ${f} set */"
-			echo "	s_gb->gb_register.${f} = true;"
+			echo "	s_gb->registers.${f} = true;"
 			;;
 		"0")
 			echo "	/* ${f} reset */"
-			echo "	s_gb->gb_register.${f} = false;"
+			echo "	s_gb->registers.${f} = false;"
 			;;
 		"*")
 			echo "	/* ${f} exceptional */"

@@ -18,8 +18,8 @@ void initTimer(struct gb *s_gb)
 	printf("TAC value %d\n", tac);
 	input_clock_select = TAC_INPUT_CLOCK_SELECT(tac);
 
-	s_gb->gb_time.freq = frequencies_table[input_clock_select];
-	s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
+	s_gb->time.freq = frequencies_table[input_clock_select];
+	s_gb->time.timerCount = CLOCKSPEED / s_gb->time.freq;
 }
 
 void updateTimer(struct gb *s_gb)
@@ -30,24 +30,24 @@ void updateTimer(struct gb *s_gb)
 	uint8_t tma;
 
 	tac = read8bit(SPECIAL_REGISTER_TAC, s_gb);
-	cpu = &s_gb->gb_cpu;
+	cpu = &s_gb->cpu;
 
 	if (!TAC_TIMER_ENABLED(tac))
 		return;
 
 	/* FOR TEST !!! - lastTick */
-	s_gb->gb_time.timerCount -= cpu->totalTick - cpu->last_tick;
+	s_gb->time.timerCount -= cpu->totalTick - cpu->last_tick;
 	cpu->last_tick = cpu->totalTick;
 
-	if (s_gb->gb_time.timerCount > 0)
+	if (s_gb->time.timerCount > 0)
 		return;
 
-	s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
+	s_gb->time.timerCount = CLOCKSPEED / s_gb->time.freq;
 	tima = read8bit(SPECIAL_REGISTER_TIMA, s_gb);
 	if (tima == 0xffu) {
 		tma = read8bit(0xff06, s_gb);
 		write8bit(SPECIAL_REGISTER_TIMA, tma, s_gb);
-		s_gb->gb_interrupts.interFlag |= INT_TIMER;
+		s_gb->interrupts.interFlag |= INT_TIMER;
 	} else {
 		write8bit(SPECIAL_REGISTER_TIMA, tima + 1, s_gb);
 	}

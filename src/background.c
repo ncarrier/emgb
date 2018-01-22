@@ -9,8 +9,8 @@ int getRealPosition(struct gb *s_gb)
 	int dataOffset;
 	struct io *io;
 
-	io = &s_gb->gb_io;
-	yPos = io->scrollY + s_gb->gb_gpu.scanline;
+	io = &s_gb->io;
+	yPos = io->scrollY + s_gb->gpu.scanline;
 	yDataLine = yPos / 8;
 	if (yDataLine > 0x1f)
 		yDataLine -= 0x20;
@@ -37,8 +37,8 @@ void renderingBg(struct gb *gb)
 	struct gpu *gpu;
 	int pixel_index;
 
-	gpu = &gb->gb_gpu;
-	io = &gb->gb_io;
+	gpu = &gb->gpu;
+	io = &gb->io;
 	baseaddr = io->lcd.BgWindowTileData;
 	dataOffset = getRealPosition(gb);
 	posx = 0;

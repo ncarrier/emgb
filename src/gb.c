@@ -28,14 +28,14 @@ void gb(const char *fileName)
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
 	gb = initGb(fileName);
-	cpu = &gb->gb_cpu;
-	registers = &gb->gb_register;
+	cpu = &gb->cpu;
+	registers = &gb->registers;
 #if EMGB_CONSOLE_DEBUGGER
 	ret = console_debugger_init(&debugger, registers, gb, &gb->config.config);
 	if (ret < 0)
 		ERR("console_debugger_init: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
-	gb->stopdbg = 0;
+	gb->stopdbg = false;
 #ifdef IMDBG
 	gb->stopdbg = 0;
 	thr = SDL_CreateThread(imgui, "dbg", gb);

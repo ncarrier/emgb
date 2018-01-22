@@ -26,12 +26,12 @@ unsigned char read8bit(unsigned short addr, struct gb *s_gb)
 {
 
 	if (addr == 0xff44) {
-		return s_gb->gb_gpu.scanline;
+		return s_gb->gpu.scanline;
 	} else if (addr < 0x4000) {
-		return s_gb->gb_rom.rom[addr];
+		return s_gb->rom.rom[addr];
 	} else if (addr >= 0x4000 && addr < 0x8000) {
 		/* printf("MCB_romBanking value = %x\n", MCB_romBanking); */
-		return s_gb->gb_rom.rom[(addr - 0x4000)
+		return s_gb->rom.rom[(addr - 0x4000)
 				+ (MCB_romBanking * 0x4000)];
 	} else if (addr >= 0x8000 && addr < 0xA000) {
 		return s_gb->gb_mem.vram[addr - 0x8000];
@@ -52,14 +52,14 @@ unsigned char read8bit(unsigned short addr, struct gb *s_gb)
 		if (addr == 0xff04)
 			return (unsigned char)rand();
 		if (addr == 0xff0f)
-			return s_gb->gb_interrupts.interFlag;
+			return s_gb->interrupts.interFlag;
 		if (addr == 0xff41)
 			printf("reading lcd stat\n");
 		return  s_gb->gb_mem.io_ports[addr - 0xFF00];
 	} else if (addr >= 0xFF80 && addr < 0xFFFF) {
 		return  s_gb->gb_mem.hram[addr - 0xFF80];
 	} else if (addr == 0xffff) {
-		return s_gb->gb_interrupts.interEnable;
+		return s_gb->interrupts.interEnable;
 	}
 	printf("read error : addr %x\n", addr);
 	exit(-2);
@@ -73,7 +73,7 @@ void mcbHandleBanking(unsigned short addr, unsigned char value,
 	low5 = value & 0x1f;
 
 	if (addr >= 0x2000 && addr < 0x4000) {
-		if (s_gb->gb_rom.romheader.cartridgeType == 1) {
+		if (s_gb->rom.romheader.cartridgeType == 1) {
 			MCB_romBanking &= 0xe0;
 			MCB_romBanking |= low5;
 			printf("Lo BANK change. value => %x\n", MCB_romBanking);
@@ -136,7 +136,7 @@ int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb)
 		return 0;
 	} else if (addr == SPECIAL_REGISTER_IE) {
 		printf("%s interEnable = %"PRIu8"\n", __func__, value);
-		s_gb->gb_interrupts.interEnable = value;
+		s_gb->interrupts.interEnable = value;
 		return 0;
 	}
 	/* never reached */
@@ -145,16 +145,16 @@ int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb)
 
 void push(uint16_t value, struct gb *s_gb)
 {
-	s_gb->gb_register.sp -= 2;
-	write16bitToAddr(s_gb->gb_register.sp, value, s_gb);
+	s_gb->registers.sp -= 2;
+	write16bitToAddr(s_gb->registers.sp, value, s_gb);
 }
 
 uint16_t pop(struct gb *s_gb)
 {
 	uint16_t value;
 
-	value = read16bit(s_gb->gb_register.sp, s_gb);
-	s_gb->gb_register.sp += 2;
+	value = read16bit(s_gb->registers.sp, s_gb);
+	s_gb->registers.sp += 2;
 
 	return value;
 }

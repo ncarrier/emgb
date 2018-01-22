@@ -60,32 +60,32 @@ void keyDown(struct gb *gb_s)
 	SDL_Keycode sym;
 
 	pad = &gb_s->gb_pad;
-	sym = gb_s->gb_gpu.event.key.keysym.sym;
+	sym = gb_s->gpu.event.key.keysym.sym;
 	if (sym == SDLK_ESCAPE) {
-		gb_s->running = 0;
+		gb_s->running = false;
 	} else if (sym == pad->sym_a) {
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
+		gb_s->interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_key &= ~BUTTON_A_FLAG;
 	} else if (sym == pad->sym_b) {
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
+		gb_s->interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_key &= ~BUTTON_B_FLAG;
 	} else if (sym == pad->sym_select) {
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
+		gb_s->interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_key &= ~BUTTON_SELECT_FLAG;
 	} else if (sym == pad->sym_start) {
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
+		gb_s->interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_key &= ~BUTTON_START_FLAG;
 	} else if (sym == pad->sym_down) {
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
+		gb_s->interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_dir &= ~BUTTON_DOWN_FLAG;
 	} else if (sym == pad->sym_up) {
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
+		gb_s->interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_dir &= ~BUTTON_UP_FLAG;
 	} else if (sym == pad->sym_left) {
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
+		gb_s->interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_dir &= ~BUTTON_LEFT_FLAG;
 	} else if (sym == pad->sym_right) {
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
+		gb_s->interrupts.interFlag |= INT_JOYPAD;
 		gb_s->gb_pad.button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
 }
@@ -96,7 +96,7 @@ void keyUp(struct gb *gb_s)
 	SDL_Keycode sym;
 
 	pad = &gb_s->gb_pad;
-	sym = gb_s->gb_gpu.event.key.keysym.sym;
+	sym = gb_s->gpu.event.key.keysym.sym;
 	if (sym == pad->sym_a) {
 		gb_s->gb_pad.button_key |= BUTTON_A_FLAG;
 	} else if (sym == pad->sym_b) {
@@ -161,7 +161,7 @@ static void joy_device_removed(struct gb *gb, const union SDL_Event *event)
 
 static void button_down(struct gb *gb, enum gb_button button)
 {
-	gb->gb_interrupts.interFlag |= INT_JOYPAD;
+	gb->interrupts.interFlag |= INT_JOYPAD;
 	if (BUTTON_IS_KEY(button))
 		gb->gb_pad.button_key &= ~BUTTON_TO_KEY(button);
 	else
@@ -255,32 +255,32 @@ void handleEvent(struct gb *gb_s)
 	uint32_t width;
 	uint32_t height;
 
-	event = &(gb_s->gb_gpu.event);
+	event = &(gb_s->gpu.event);
 	if (SDL_PollEvent(event) == 0)
 		return;
 
 	conf = &gb_s->config.config;
-	switch (gb_s->gb_gpu.event.type) {
+	switch (gb_s->gpu.event.type) {
 	case SDL_QUIT: {
 		printf("see u.\n");
-		gb_s->running = 0;
+		gb_s->running = false;
 		config_write(&gb_s->config);
 		break;
 	}
 
 	case SDL_WINDOWEVENT:
-		we = &gb_s->gb_gpu.event.window;
+		we = &gb_s->gpu.event.window;
 		switch (we->event) {
 		case SDL_WINDOWEVENT_SIZE_CHANGED:
 			if (is_fullscreen(we)) {
-				if (gb_s->gb_gpu.mouse_visible) {
+				if (gb_s->gpu.mouse_visible) {
 					SDL_ShowCursor(SDL_DISABLE);
-					gb_s->gb_gpu.mouse_visible = false;
+					gb_s->gpu.mouse_visible = false;
 				}
 			} else {
-				if (!gb_s->gb_gpu.mouse_visible) {
+				if (!gb_s->gpu.mouse_visible) {
 					SDL_ShowCursor(SDL_ENABLE);
-					gb_s->gb_gpu.mouse_visible = true;
+					gb_s->gpu.mouse_visible = true;
 				}
 			}
 			/* TODO min and max */

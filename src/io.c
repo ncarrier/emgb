@@ -46,7 +46,7 @@ void updateLcdc(struct gb *s_gb)
 	uint8_t lcdc;
 	struct io *io;
 
-	io = &s_gb->gb_io;
+	io = &s_gb->io;
 	lcd = &io->lcd;
 	lcdc = io->lcdc;
 	if (lcdc & 0x01)
@@ -122,7 +122,7 @@ void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb)
 {
 	struct io *io;
 
-	io = &s_gb->gb_io;
+	io = &s_gb->io;
 	switch (addr) {
 	case 0xff00:
 		s_gb->gb_pad.key = io_ports[0x00];
@@ -153,7 +153,7 @@ void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb)
 		io->sndStat = io_ports[0x26];
 		break;
 	case 0xff0f:
-		s_gb->gb_interrupts.interFlag = io_ports[0x0f];
+		s_gb->interrupts.interFlag = io_ports[0x0f];
 		break;
 	case 0xff40:
 		io->lcdc = io_ports[0x40];

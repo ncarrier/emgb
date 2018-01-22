@@ -1,4 +1,4 @@
-regs="s_gb->gb_register"
+regs="s_gb->registers"
 
 function generate_cb_bit_code() {
 	local operands

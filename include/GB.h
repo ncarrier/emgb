@@ -7,10 +7,13 @@
 #define SDL_MAIN_HANDLED
 #endif
 
-#include "stdlib.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+
 #include <SDL2/SDL.h>
+
 #include "cpu.h"
 #include "rom.h"
 #include "interrupt.h"
@@ -28,18 +31,18 @@
 #define GB_H 144
 
 struct gb {
-	unsigned char running;
-	struct timer gb_time;
-	struct registers gb_register;
-	struct io gb_io;
-	struct rom gb_rom;
-	struct gpu gb_gpu;
-	struct interupts gb_interrupts;
+	bool running;
+	struct timer time;
+	struct registers registers;
+	struct io io;
+	struct rom rom;
+	struct gpu gpu;
+	struct interupts interrupts;
 	struct memory gb_mem;
 	struct joypad gb_pad;
-	struct cpu gb_cpu;
+	struct cpu cpu;
 	struct joystick_config joystick_config;
-	unsigned char stopdbg;
+	bool stopdbg;
 	struct config config;
 };
 
