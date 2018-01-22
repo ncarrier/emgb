@@ -4,17 +4,6 @@
 #include "log.h"
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-static void cpu_init(struct gb *gb)
-{
-	struct cpu *cpu;
-
-	cpu = &gb->cpu;
-	cpu->stopped = false;
-	cpu->halted = false;
-	cpu->totalTick = 0;
-	cpu->last_tick = 0;
-}
-
 struct gb *gb_init(const char *fileName)
 {
 	struct gb *gb = NULL;
@@ -33,7 +22,7 @@ struct gb *gb_init(const char *fileName)
 	display_init(gb);
 	gpu_init(gb);
 	timer_init(gb);
-	cpu_init(gb);
+	cpu_init(&gb->cpu);
 
 	reset_joystick_config(&gb->joystick_config);
 	config_write(&gb->config);

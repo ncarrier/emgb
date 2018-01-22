@@ -5,9 +5,6 @@
 
 #include "cpu_op.h"
 
-struct gb;
-bool is_opcode_undefined(uint8_t opcode);
-
 extern const struct cpu_op instructions[256];
 
 #pragma pack(push, 1)
@@ -20,5 +17,7 @@ struct cpu {
 } __attribute__((__packed__));
 
 #pragma pack(pop)
+
+void cpu_init(struct cpu *cpu);
 
 #endif
