@@ -1,4 +1,4 @@
-#include "GB.h"
+#include "gb.h"
 
 void memoryInit(struct gb *s_gb)
 {

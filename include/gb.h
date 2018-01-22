@@ -46,8 +46,7 @@ struct gb {
 	struct config config;
 };
 
-void gb(const char *file_name);
-void gb_cleanup(struct gb *gb);
 struct gb *gb_init(const char *file_name);
+void gb_cleanup(struct gb *gb);
 
 #endif

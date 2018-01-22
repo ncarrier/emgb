@@ -1,4 +1,4 @@
-#include "GB.h"
+#include "gb.h"
 #include "gpu.h"
 
 int getRealPosition(struct gb *s_gb)

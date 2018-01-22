@@ -1,5 +1,5 @@
+#include "gb.h"
 #include "io.h"
-#include "GB.h"
 #include "ae_config.h"
 
 #define GB_SURF (GB_W * GB_H)

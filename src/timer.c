@@ -1,5 +1,6 @@
 #include "timer.h"
-#include "GB.h"
+
+#include "gb.h"
 #include "special_registers.h"
 
 static const unsigned frequencies_table[] = {

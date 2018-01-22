@@ -1,6 +1,6 @@
 #include "interrupt.h"
 
-#include "GB.h"
+#include "gb.h"
 
 void vblank(struct gb *gb_s)
 {

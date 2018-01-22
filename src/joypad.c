@@ -1,7 +1,8 @@
 #include <unistd.h>
 
 #include "joypad.h"
-#include "GB.h"
+
+#include "gb.h"
 #include "utils.h"
 #include "ae_config.h"
 #include "config.h"

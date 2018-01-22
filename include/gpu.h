@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
+#include "gb.h"
 #include "io.h"
-#include "GB.h"
 
 #define R 0x00ff0000
 #define G 0x0000ff00

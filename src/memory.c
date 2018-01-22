@@ -1,5 +1,6 @@
-#include "GB.h"
-#include "memory.h"
+#include "../include/memory.h"
+
+#include "gb.h"
 #include "special_registers.h"
 
 static unsigned char MCB_romBanking = 1;

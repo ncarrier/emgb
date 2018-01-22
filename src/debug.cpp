@@ -1,9 +1,11 @@
-#include "GB.h"
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
 #include <stdio.h>
+
 #include <SDL.h>
 #include <SDL_opengl.h>
+
+#include "gb.h"
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
 
 
 extern "C" {

@@ -278,7 +278,7 @@ cat <<here_doc_delim
 
 #include "cpu.h"
 #include "utils.h"
-#include "GB.h"
+#include "gb.h"
 #include "instructions.h"
 
 /* base instruction set */
