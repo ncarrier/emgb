@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	int ret;
 	struct rom rom;
 	const char *filename;
-	struct s_romHeader *header = &rom.romheader;
+	struct romHeader *header = &rom.romheader;
 	size_t size = sizeof(*header);
 	char out[3 * sizeof(*header)];
 	bool dump = false;

@@ -8,7 +8,7 @@
 
 #pragma pack(push, 1)
 
-struct s_romHeader {
+struct romHeader {
 	int entrypoint;
 	char nlogo[LOGO_LENGTH];
 	char title[MAX_TITLE_LENGTH];
@@ -27,12 +27,12 @@ struct s_romHeader {
 struct rom {
 	unsigned int size;
 	unsigned char *rom;
-	struct s_romHeader romheader;
+	struct romHeader romheader;
 } __attribute__((__packed__));
 
 #pragma pack(pop)
 
 int initRom(struct rom *rom, const char *filename);
-void displayHeader(struct s_romHeader *romheader);
+void displayHeader(struct romHeader *romheader);
 
 #endif

@@ -53,7 +53,7 @@ static void loadHeader(struct rom *rom)
 	memcpy(&rom->romheader, rom->rom + 0x0100, size);
 }
 
-void displayHeader(struct s_romHeader *romheader)
+void displayHeader(struct romHeader *romheader)
 {
 	printf("rom name: %.*s\n", MAX_TITLE_LENGTH, romheader->title);
 	printf("cartridge type: %d\n", romheader->cartridgeType);
@@ -63,7 +63,7 @@ void displayHeader(struct s_romHeader *romheader)
 
 int initRom(struct rom *rom, const char *filename)
 {
-	assert(sizeof(struct s_romHeader) == 80 ||
+	assert(sizeof(struct romHeader) == 80 ||
 			"sizeof(s_romHeader) != 80" == NULL);
 
 	if (loadRom(rom, filename) != 0)
