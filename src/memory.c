@@ -6,6 +6,40 @@
 static unsigned char MCB_romBanking = 1;
 static unsigned char romBankingFlag;
 
+void mcbHandleBanking(unsigned short addr, unsigned char value,
+		struct gb *s_gb)
+{
+	char low5;
+
+	low5 = value & 0x1f;
+
+	if (addr >= 0x2000 && addr < 0x4000) {
+		if (s_gb->rom.romheader.cartridgeType == 1) {
+			MCB_romBanking &= 0xe0;
+			MCB_romBanking |= low5;
+			printf("Lo BANK change. value => %x\n", MCB_romBanking);
+			}
+	} else if (addr >= 0x4000 && addr < 0x6000) {
+		/* hiRom bank change */
+		if (romBankingFlag > 0) {
+			MCB_romBanking &= 0x1f;
+			value &= 0xe0;
+			MCB_romBanking |= value;
+			/*
+			 * printf("Hi BANK change. value => %x\n",
+			 *		MCB_romBanking);
+			 */
+
+		}
+	} else if (addr >= 0x6000 && addr < 0x8000) {
+		/* change rom/ram bank */
+		romBankingFlag = ((value & 0x01) == 0) ? 1 : 0;
+
+	}
+	if (MCB_romBanking == 0)
+		MCB_romBanking = 1;
+}
+
 void write16bitToAddr(unsigned short addr, unsigned short value,
 		struct gb *s_gb)
 {
@@ -64,40 +98,6 @@ unsigned char read8bit(unsigned short addr, struct gb *s_gb)
 	}
 	printf("read error : addr %x\n", addr);
 	exit(-2);
-}
-
-void mcbHandleBanking(unsigned short addr, unsigned char value,
-		struct gb *s_gb)
-{
-	char low5;
-
-	low5 = value & 0x1f;
-
-	if (addr >= 0x2000 && addr < 0x4000) {
-		if (s_gb->rom.romheader.cartridgeType == 1) {
-			MCB_romBanking &= 0xe0;
-			MCB_romBanking |= low5;
-			printf("Lo BANK change. value => %x\n", MCB_romBanking);
-			}
-	} else if (addr >= 0x4000 && addr < 0x6000) {
-		/* hiRom bank change */
-		if (romBankingFlag > 0) {
-			MCB_romBanking &= 0x1f;
-			value &= 0xe0;
-			MCB_romBanking |= value;
-			/*
-			 * printf("Hi BANK change. value => %x\n",
-			 *		MCB_romBanking);
-			 */
-
-		}
-	} else if (addr >= 0x6000 && addr < 0x8000) {
-		/* change rom/ram bank */
-		romBankingFlag = ((value & 0x01) == 0) ? 1 : 0;
-
-	}
-	if (MCB_romBanking == 0)
-		MCB_romBanking = 1;
 }
 
 int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb)
