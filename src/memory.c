@@ -144,18 +144,18 @@ int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb)
 	return -1;
 }
 
-void push(uint16_t value, struct gb *s_gb)
+void push(uint16_t value, struct gb *gb)
 {
-	s_gb->registers.sp -= 2;
-	write16bitToAddr(s_gb->registers.sp, value, s_gb);
+	gb->registers.sp -= 2;
+	write16bitToAddr(gb->registers.sp, value, gb);
 }
 
-uint16_t pop(struct gb *s_gb)
+uint16_t pop(struct gb *gb)
 {
 	uint16_t value;
 
-	value = read16bit(s_gb->registers.sp, s_gb);
-	s_gb->registers.sp += 2;
+	value = read16bit(gb->registers.sp, gb);
+	gb->registers.sp += 2;
 
 	return value;
 }
