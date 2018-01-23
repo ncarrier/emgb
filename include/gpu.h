@@ -3,23 +3,15 @@
 
 #include <stdbool.h>
 
+#include <SDL2/SDL.h>
+
 #include "gb.h"
 #include "io.h"
+#include "ae_config.h"
 
 #define R 0x00ff0000
 #define G 0x0000ff00
 #define B 0x000000ff
-
-void rendering(struct gb *gb);
-void gpu_init(struct gb *gb);
-char lcdIsEnable(unsigned char lcdc);
-void setLcdStatus(struct gb *gb);
-void updateGpu(struct gb *gb);
-void display_init(struct gb *gb);
-void renderingBg(struct gb *s_gb);
-void displayAll(struct gb *gb);
-void renderingWindow(struct gb *gb);
-void renderingSprite(struct gb *gb);
 
 enum gpuMode {
 	HBLANK = 0,
@@ -53,6 +45,11 @@ struct gpu {
 	int color_3;
 };
 
+void gpu_init(struct gpu *gpu, struct ae_config *conf);
+void gpu_update(struct gb *gb);
+void displayAll(struct gb *gb);
+void renderingWindow(struct gb *gb); // TODO remove ?
+void renderingSprite(struct gb *gb);
 int color_index_to_value(const struct gpu *gpu, int color);
 
 #endif

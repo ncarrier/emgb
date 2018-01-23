@@ -19,18 +19,14 @@ static bool is_fullscreen(int width, int height)
 	return dm.w <= width && dm.h <= height;
 }
 
-void display_init(struct gb *gb)
+static void display_init(struct gpu *gpu, struct ae_config *conf)
 {
-	struct gpu *gpu;
 	bool fullscreen;
 	int width;
 	int height;
 	int x;
 	int y;
-	struct ae_config *conf;
 
-	conf = &gb->config.config;
-	gpu = &gb->gpu;
 #ifdef EMGB_CONSOLE_DEBUGGER
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif /* EMGB_CONSOLE_DEBUGGER */
@@ -66,7 +62,7 @@ void display_init(struct gb *gb)
 			GB_W, GB_H);
 	if (gpu->texture == NULL)
 		ERR("cannot create SDL texture");
-	gpu->pixels = malloc(sizeof(Uint32) * GB_SURF);
+	gpu->pixels = calloc(GB_SURF, sizeof(*gpu->pixels));
 	if (gpu->pixels == NULL)
 		ERR("cannot alloc pixels");
 }
@@ -126,6 +122,7 @@ void displayAll(struct gb *gb)
 }
 */
 
+/* never called ? to remove ? TODO */
 void renderingWindow(struct gb *gb)
 {
 	int y;
@@ -223,7 +220,72 @@ void renderingSprite(struct gb *gb)
 	}
 }
 
-void rendering(struct gb *gb)
+static int getRealPosition(struct gb *gb)
+{
+	int yPos;
+	int yDataLine;
+	int lineOffset;
+	int dataOffset;
+	struct io *io;
+
+	io = &gb->io;
+	yPos = io->scrollY + gb->gpu.scanline;
+	yDataLine = yPos / 8;
+	if (yDataLine > 0x1f)
+		yDataLine -= 0x20;
+	lineOffset = yDataLine * 32;
+	dataOffset = io->lcd.BgTileMapSelect + lineOffset + io->scrollX;
+
+	return dataOffset;
+}
+
+static void renderingBg(struct gb *gb)
+{
+	unsigned short line;
+	int color;
+	int dec;
+	int posx;
+	int x;
+	unsigned char tileindex;
+	signed char stileindex;
+	int baseaddr;
+	int dataOffset;
+	int index;
+	int tileAddr;
+	struct io *io;
+	struct gpu *gpu;
+	int pixel_index;
+
+	gpu = &gb->gpu;
+	io = &gb->io;
+	baseaddr = io->lcd.BgWindowTileData;
+	dataOffset = getRealPosition(gb);
+	posx = 0;
+	for (index = 0; index < 20; index++) {
+		if (io->lcd.BgWindowTileData == 0x8800) {
+			stileindex = (signed)(read8bit(index + dataOffset, gb));
+			tileAddr = baseaddr + (stileindex + 128) * 16;
+		} else {
+			tileindex = read8bit(index + dataOffset, gb);
+			tileAddr = baseaddr + tileindex * 16;
+		}
+		dec = 15;
+		line = read16bit(tileAddr + (gpu->scanline % 8) * 2, gb);
+		for (x = 0; x < 8; x++) {
+			color = (line >> dec) & 0x01;
+			if ((line >> (dec - 8)) & 0x01)
+				color += 2;
+			color = color_index_to_value(gpu, color);
+			pixel_index = 160 * gpu->scanline + posx + x;
+			if (pixel_index < (160 * 144))
+				gpu->pixels[pixel_index] = color;
+			dec--;
+		}
+		posx += 8;
+	}
+}
+
+static void rendering(struct gb *gb)
 {
 	if (gb->io.lcd.BgWindowDisplay == 1)
 		renderingBg(gb);
@@ -264,13 +326,10 @@ static void display(struct gb *gb)
 	/* SDL_RenderPresent(s_gb->gb_gpu.renderer_d); */
 }
 
-void gpu_init(struct gb *gb)
+void gpu_init(struct gpu *gpu, struct ae_config *conf)
 {
-	struct gpu *gpu;
-	struct ae_config *conf;
+	display_init(gpu, conf);
 
-	gpu = &gb->gpu;
-	conf = &gb->config.config;
 	gpu->gpuMode = HBLANK;
 	gpu->scanline = 0;
 	gpu->tick = 0;
@@ -285,22 +344,7 @@ void gpu_init(struct gb *gb)
 			CONFIG_COLOR_3_DEFAULT);
 }
 
-char lcdIsEnable(unsigned char lcdc)
-{
-	return (lcdc & 0x01) == 0 ? 0 : 1;
-}
-
-void setLcdStatus(struct gb *gb)
-{
-	if (lcdIsEnable(read8bit(0xff40, gb) >> 7) != 0)
-		return;
-	gb->gpu.scanline = 0;
-	printf("reset scanline & s_gb->gb_cpu.totalTick\n");
-
-	write8bit(0xff41, 253, gb);
-}
-
-void updateGpu(struct gb *gb)
+void gpu_update(struct gb *gb)
 {
 	struct gpu *gpu;
 
