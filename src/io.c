@@ -114,7 +114,7 @@ void oamTransfert(unsigned char src, struct gb *gb)
 	unsigned short oamsrc;
 
 	oamsrc = src << 8;
-	for (pos = 0; pos <= 160; pos++)
+	for (pos = 0; pos < 0xa0; pos++)
 		gb->memory.oam[pos] = read8bit(oamsrc + pos, gb);
 }
 
