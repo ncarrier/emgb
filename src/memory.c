@@ -76,24 +76,23 @@ void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type)
 	write8bit(0xFFFF,  0x00, gb);
 }
 
-void write16bitToAddr(unsigned short addr, unsigned short value,
-		struct gb *s_gb)
+void write16bitToAddr(uint16_t addr, uint16_t value, struct gb *gb)
 {
-	write8bit(addr, (unsigned char)value & 0x00ff, s_gb);
-	write8bit(addr + 1, (unsigned char)((value & 0xff00) >> 8), s_gb);
+	write8bit(addr, value & 0x00ffu, gb);
+	write8bit(addr + 1, (value & 0xff00u) >> 8, gb);
 }
 
-unsigned short read16bit(unsigned short addr, struct gb *s_gb)
+uint16_t read16bit(uint16_t addr, struct gb *gb)
 {
-	unsigned short res = 0;
+	uint16_t res;
 
-	res |= read8bit(addr, s_gb);
-	res |= read8bit(addr + 1, s_gb) << 8;
+	res = read8bit(addr, gb);
+	res |= read8bit(addr + 1, gb) << 8;
 
 	return res;
 }
 
-unsigned char read8bit(unsigned short addr, struct gb *s_gb)
+uint8_t read8bit(uint16_t addr, struct gb *gb)
 {
 	struct memory *memory;
 
@@ -138,7 +137,7 @@ unsigned char read8bit(unsigned short addr, struct gb *s_gb)
 	exit(-2);
 }
 
-int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb)
+int write8bit(uint16_t addr, uint8_t value, struct gb *gb)
 {
 	if (addr == 0xffffu)
 		puts("IE");
