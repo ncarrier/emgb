@@ -40,6 +40,46 @@ void mcbHandleBanking(unsigned short addr, unsigned char value,
 		MCB_romBanking = 1;
 }
 
+void memory_init(struct gb *s_gb)
+{
+	memset(s_gb->memory.sram, 0, 0x2000);
+	memset(s_gb->memory.vram, 0, 0x2000);
+	memset(s_gb->memory.ram, 0, 0x2000);
+	memset(s_gb->memory.io_ports, 0, 0x0080);
+
+	write8bit(0xFF05,  0x00, s_gb);
+	write8bit(0xFF06,  0x00, s_gb);
+	write8bit(0xFF07,  0x08, s_gb);
+	write8bit(0xFF10,  0x80, s_gb);
+	write8bit(0xFF11,  0xBF, s_gb);
+	write8bit(0xFF12,  0xF3, s_gb);
+	write8bit(0xFF14,  0xBF, s_gb);
+	write8bit(0xFF16,  0x3F, s_gb);
+	write8bit(0xFF17,  0x00, s_gb);
+	write8bit(0xFF19,  0xBF, s_gb);
+	write8bit(0xFF1A,  0x7F, s_gb);
+	write8bit(0xFF1B,  0xFF, s_gb);
+	write8bit(0xFF1C,  0x9F, s_gb);
+	write8bit(0xFF1E,  0xBF, s_gb);
+	write8bit(0xFF20,  0xFF, s_gb);
+	write8bit(0xFF21,  0x00, s_gb);
+	write8bit(0xFF22,  0x00, s_gb);
+	write8bit(0xFF23,  0xBF, s_gb);
+	write8bit(0xFF24,  0x77, s_gb);
+	write8bit(0xFF25,  0xF3, s_gb);
+	write8bit(0xFF26,  0xF1, s_gb);
+	write8bit(0xFF40,  0x91, s_gb);
+	write8bit(0xFF42,  0x00, s_gb);
+	write8bit(0xFF43,  0x00, s_gb);
+	write8bit(0xFF45,  0x00, s_gb);
+	write8bit(0xFF47,  0xFC, s_gb);
+	write8bit(0xFF48,  0xFF, s_gb);
+	write8bit(0xFF49,  0xFF, s_gb);
+	write8bit(0xFF4A,  0x00, s_gb);
+	write8bit(0xFF4B,  0x00, s_gb);
+	write8bit(0xFFFF,  0x00, s_gb);
+}
+
 void write16bitToAddr(unsigned short addr, unsigned short value,
 		struct gb *s_gb)
 {
