@@ -1,6 +1,6 @@
 #ifndef __MEMORY__
 #define __MEMORY__
-
+#include <stdbool.h>
 #include <inttypes.h>
 
 /*
@@ -14,10 +14,14 @@ struct memory {
 	unsigned char oam[0x00FF];
 	unsigned char io_ports[0x80];
 	unsigned char hram[0x80];
+	uint8_t mcb_rom_banking;
+	bool rom_banking_flag;
+	uint8_t cartridge_type;
 };
 
 #include "gb.h"
 
+void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type);
 int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb);
 void mcbHandleBanking(unsigned short addr, unsigned char value, struct gb *s_gb);
 unsigned char read8bit(unsigned short addr, struct gb *s_gb);

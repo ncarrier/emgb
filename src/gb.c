@@ -14,7 +14,7 @@ struct gb *gb_init(const char *fileName)
 	gb->running = true;
 
 	config_init(&gb->config);
-	memory_init(gb);
+	memory_init(&gb->memory, gb, gb->rom.romheader.cartridgeType);
 	joypad_init(&gb->joypad, &gb->config.config);
 	rom_init(&gb->rom, fileName);
 	displayHeader(&gb->rom.romheader);
