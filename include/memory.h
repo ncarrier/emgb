@@ -23,7 +23,6 @@ struct memory {
 
 void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type);
 int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb);
-void mcbHandleBanking(unsigned short addr, unsigned char value, struct gb *s_gb);
 unsigned char read8bit(unsigned short addr, struct gb *s_gb);
 unsigned short read16bit(unsigned short addr, struct gb *s_gb);
 void write16bitToAddr(unsigned short addr, unsigned short value,

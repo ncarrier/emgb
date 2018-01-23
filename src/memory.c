@@ -3,28 +3,25 @@
 #include "gb.h"
 #include "special_registers.h"
 
-static unsigned char MCB_romBanking = 1;
-static unsigned char romBankingFlag;
-
-void mcbHandleBanking(unsigned short addr, unsigned char value,
-		struct gb *s_gb)
+static void mcbHandleBanking(struct memory *memory, uint16_t addr,
+		uint8_t value)
 {
 	char low5;
 
 	low5 = value & 0x1f;
-
 	if (addr >= 0x2000 && addr < 0x4000) {
-		if (s_gb->rom.romheader.cartridgeType == 1) {
-			MCB_romBanking &= 0xe0;
-			MCB_romBanking |= low5;
-			printf("Lo BANK change. value => %x\n", MCB_romBanking);
-			}
+		if (memory->cartridge_type == 1) {
+			memory->mcb_rom_banking &= 0xe0;
+			memory->mcb_rom_banking |= low5;
+			printf("Lo BANK change. value => %x\n",
+					memory->mcb_rom_banking);
+		}
 	} else if (addr >= 0x4000 && addr < 0x6000) {
 		/* hiRom bank change */
-		if (romBankingFlag > 0) {
-			MCB_romBanking &= 0x1f;
+		if (memory->rom_banking_flag) {
+			memory->mcb_rom_banking &= 0x1f;
 			value &= 0xe0;
-			MCB_romBanking |= value;
+			memory->mcb_rom_banking |= value;
 			/*
 			 * printf("Hi BANK change. value => %x\n",
 			 *		MCB_romBanking);
@@ -33,11 +30,11 @@ void mcbHandleBanking(unsigned short addr, unsigned char value,
 		}
 	} else if (addr >= 0x6000 && addr < 0x8000) {
 		/* change rom/ram bank */
-		romBankingFlag = ((value & 0x01) == 0) ? 1 : 0;
+		memory->rom_banking_flag = !(value & 0x01);
 
 	}
-	if (MCB_romBanking == 0)
-		MCB_romBanking = 1;
+	if (memory->mcb_rom_banking == 0)
+		memory->mcb_rom_banking = 1;
 }
 
 void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type)
@@ -98,7 +95,9 @@ unsigned short read16bit(unsigned short addr, struct gb *s_gb)
 
 unsigned char read8bit(unsigned short addr, struct gb *s_gb)
 {
+	struct memory *memory;
 
+	memory = &s_gb->memory;
 	if (addr == 0xff44) {
 		return s_gb->gpu.scanline;
 	} else if (addr < 0x4000) {
@@ -106,7 +105,7 @@ unsigned char read8bit(unsigned short addr, struct gb *s_gb)
 	} else if (addr >= 0x4000 && addr < 0x8000) {
 		/* printf("MCB_romBanking value = %x\n", MCB_romBanking); */
 		return s_gb->rom.rom[(addr - 0x4000)
-				+ (MCB_romBanking * 0x4000)];
+				+ (memory->mcb_rom_banking * 0x4000)];
 	} else if (addr >= 0x8000 && addr < 0xA000) {
 		return s_gb->memory.vram[addr - 0x8000];
 	} else if (addr >= 0xA000 && addr < 0xC000) {
@@ -144,7 +143,7 @@ int write8bit(uint16_t addr, uint8_t value, struct gb *s_gb)
 	if (addr == 0xffffu)
 		puts("IE");
 	if (addr < 0x8000) {
-		mcbHandleBanking(addr, value, s_gb);
+		mcbHandleBanking(&s_gb->memory, addr, value);
 		return 0;
 	} else if (addr >= 0x8000 && addr < 0xA000) {
 		s_gb->memory.vram[addr - 0x8000] = value;
