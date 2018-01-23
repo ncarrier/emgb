@@ -1,5 +1,6 @@
 #include <unistd.h>
 
+#include "memory.h"
 #include "joypad.h"
 
 #include "gb.h"
@@ -35,8 +36,10 @@ void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
 		*sym = default_sym;
 }
 
-void joypad_init(struct joypad *pad, struct ae_config *config)
+void joypad_init(struct joypad *pad, struct ae_config *config,
+		struct memory *memory)
 {
+	pad->key = &memory->key;
 	pad->button_key = 0x0f;
 	pad->button_dir = 0x0f;
 

@@ -16,7 +16,7 @@ struct gb *gb_init(const char *fileName)
 	config_init(&gb->config);
 	rom_init(&gb->rom, fileName);
 	memory_init(&gb->memory, gb, gb->rom.romheader.cartridgeType);
-	joypad_init(&gb->joypad, &gb->config.config);
+	joypad_init(&gb->joypad, &gb->config.config, &gb->memory);
 	displayHeader(&gb->rom.romheader);
 	registers_init(&gb->registers);
 	gpu_init(&gb->gpu, &gb->config.config);

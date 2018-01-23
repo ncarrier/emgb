@@ -32,7 +32,13 @@ struct memory {
 			/* 0xfea0 */
 			uint8_t empty_usable_for_io_1[0x0060];
 			/* 0xff00 */
-			uint8_t io_ports[0x4c];
+			union {
+				uint8_t io_ports[0x4c];
+				struct {
+					uint8_t key;
+					uint8_t serial;
+				};
+			};
 			/* 0xff4c */
 			uint8_t empty_usable_for_io_2[0x0034];
 			/* 0xff80 */

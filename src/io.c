@@ -60,9 +60,9 @@ unsigned char padState(struct gb *gb)
 	const struct joypad *pad;
 
 	pad = &gb->joypad;
-	if ((pad->key & 0x20) == 0)
+	if ((*pad->key & 0x20) == 0)
 		return 0xc0 | pad->button_key | 0x10;
-	else if ((pad->key & 0x10) == 0)
+	else if ((*pad->key & 0x10) == 0)
 		return 0xc0 | pad->button_dir | 0x20;
 
 	return 0xff;
@@ -85,7 +85,7 @@ void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb)
 	io = &gb->io;
 	switch (addr) {
 	case 0xff00:
-		gb->joypad.key = io_ports[0x00];
+		/* joypad key, handled by direct memory access */
 		break;
 	case 0xff01:
 	case 0xff02:
