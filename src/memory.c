@@ -122,7 +122,7 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 		if (addr == 0xff00)
 			return padState(gb);
 		if (addr == 0xff04)
-			return (unsigned char)rand();
+			return rand();
 		if (addr == 0xff0f)
 			return gb->interrupts.interFlag;
 		if (addr == 0xff41)
