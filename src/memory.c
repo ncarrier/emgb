@@ -97,9 +97,7 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 	struct memory *memory;
 
 	memory = &gb->memory;
-	if (addr == 0xff44) {
-		return gb->gpu.scanline;
-	} else if (addr < 0x4000) {
+	if (addr < 0x4000) {
 		return gb->rom.rom[addr];
 	} else if (addr >= 0x4000 && addr < 0x8000) {
 		/* printf("MCB_romBanking value = %x\n", MCB_romBanking); */
@@ -129,6 +127,8 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 			return gb->interrupts.interFlag;
 		if (addr == 0xff41)
 			printf("reading lcd stat\n");
+		if (addr == 0xff44)
+			return gb->gpu.scanline;
 		return  memory->io_ports[addr - 0xFF00];
 	} else if (addr >= 0xFF4C && addr < 0xFF80) {
 		return  memory->empty_usable_for_io_2[addr - 0xFF4C];
