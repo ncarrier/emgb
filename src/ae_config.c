@@ -57,7 +57,7 @@ int ae_config_read(struct ae_config *conf, const char *path)
 		return -errno;
 
 	/* read all */
-	string = calloc(size, 1);
+	string = calloc(size + 1, 1);
 	if (string == NULL)
 		return -errno;
 
