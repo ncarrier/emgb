@@ -31,6 +31,7 @@ struct gb *gb_init(const char *fileName)
 
 void gb_cleanup(struct gb *gb)
 {
+	cleanup_joystick_config(&gb->joystick_config);
 	config_cleanup(&gb->config);
 	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
 	SDL_DestroyWindow(gb->gpu.window);
