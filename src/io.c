@@ -118,7 +118,7 @@ void oamTransfert(unsigned char src, struct gb *gb)
 		gb->memory.oam[pos] = read8bit(oamsrc + pos, gb);
 }
 
-void ctrlIo(unsigned short addr, unsigned char *io_ports, struct gb *s_gb)
+void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *s_gb)
 {
 	struct io *io;
 
