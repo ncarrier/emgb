@@ -2,33 +2,33 @@
 #define IO_HH
 
 struct gb;
-void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *s_gb);
-void oamTransfert(unsigned char src, struct gb *s_gb);
-unsigned char padState(struct gb *s_gb);
-void updateLcdc(struct gb *s_gb);
+void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb);
+void oamTransfert(uint8_t src, struct gb *gb);
+uint8_t padState(struct gb *gb);
+void updateLcdc(struct gb *gb);
 
 struct lcd {
-	unsigned char LcdIsOn;
-	unsigned short WindowTileMapSelect;
-	unsigned short BgTileMapSelect;
-	unsigned char WindowIsOn;
-	unsigned short BgWindowTileData;
-	unsigned char SpriteSize;
-	unsigned char SpriteIsOn;
-	unsigned char BgWindowDisplay;
+	uint8_t LcdIsOn;
+	uint16_t WindowTileMapSelect;
+	uint16_t BgTileMapSelect;
+	uint8_t WindowIsOn;
+	uint16_t BgWindowTileData;
+	uint8_t SpriteSize;
+	uint8_t SpriteIsOn;
+	uint8_t BgWindowDisplay;
 };
 
 struct io {
-	unsigned char scrollX;
-	unsigned char scrollY;
-	unsigned char winX;
-	unsigned char winY;
-	unsigned char serial;
-	unsigned char timerCtrl;
-	unsigned char sndStat;
-	unsigned char sndStereo;
-	unsigned char voice;
-	unsigned char lcdc;
+	uint8_t scrollX;
+	uint8_t scrollY;
+	uint8_t winX;
+	uint8_t winY;
+	uint8_t serial;
+	uint8_t timerCtrl;
+	uint8_t sndStat;
+	uint8_t sndStereo;
+	uint8_t voice;
+	uint8_t lcdc;
 
 	struct lcd lcd;
 };

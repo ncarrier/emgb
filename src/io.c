@@ -1,12 +1,12 @@
 #include "gb.h"
 
-void updateLcdc(struct gb *s_gb)
+void updateLcdc(struct gb *gb)
 {
 	struct lcd *lcd;
 	uint8_t lcdc;
 	struct io *io;
 
-	io = &s_gb->io;
+	io = &gb->io;
 	lcd = &io->lcd;
 	lcdc = io->lcdc;
 	if (lcdc & 0x01)
@@ -55,11 +55,11 @@ void updateLcdc(struct gb *s_gb)
 
 }
 
-unsigned char padState(struct gb *s_gb)
+unsigned char padState(struct gb *gb)
 {
 	const struct joypad *pad;
 
-	pad = &s_gb->joypad;
+	pad = &gb->joypad;
 	if ((pad->key & 0x20) == 0)
 		return 0xc0 | pad->button_key | 0x10;
 	else if ((pad->key & 0x10) == 0)
@@ -78,14 +78,14 @@ void oamTransfert(unsigned char src, struct gb *gb)
 		gb->memory.oam[pos] = read8bit(oamsrc + pos, gb);
 }
 
-void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *s_gb)
+void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb)
 {
 	struct io *io;
 
-	io = &s_gb->io;
+	io = &gb->io;
 	switch (addr) {
 	case 0xff00:
-		s_gb->joypad.key = io_ports[0x00];
+		gb->joypad.key = io_ports[0x00];
 		break;
 	case 0xff01:
 	case 0xff02:
@@ -100,7 +100,7 @@ void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *s_gb)
 		break;
 	case 0xff07:
 		io->timerCtrl = io_ports[0x07];
-		timer_init(s_gb);
+		timer_init(gb);
 		printf("timer ctrl %x\n", io->timerCtrl);
 		break;
 	case 0xff24:
@@ -113,11 +113,11 @@ void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *s_gb)
 		io->sndStat = io_ports[0x26];
 		break;
 	case 0xff0f:
-		s_gb->interrupts.interFlag = io_ports[0x0f];
+		gb->interrupts.interFlag = io_ports[0x0f];
 		break;
 	case 0xff40:
 		io->lcdc = io_ports[0x40];
-		updateLcdc(s_gb);
+		updateLcdc(gb);
 		break;
 	case 0xff42:
 		io->scrollY = io_ports[0x42];
@@ -127,7 +127,7 @@ void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *s_gb)
 /*		printf("scroll x = %x\n", io->scrollX); */
 		break;
 	case 0xff46:
-		oamTransfert(io_ports[0x46], s_gb);
+		oamTransfert(io_ports[0x46], gb);
 		break;
 	case 0xff4A:
 		break;
