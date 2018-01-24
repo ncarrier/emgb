@@ -15,29 +15,11 @@
 #include "ae_config.h"
 #include "utils.h"
 
-static void file_cleanup(FILE **f)
-{
-	if (f == NULL || *f == NULL)
-		return;
-
-	fclose(*f);
-	*f = NULL;
-}
-
-static void string_cleanup(char **s)
-{
-	if (s == NULL || *s == NULL)
-		return;
-
-	free(*s);
-	*s = NULL;
-}
-
 int ae_config_read(struct ae_config *conf, const char *path)
 {
 	int ret;
-	char cleanup(string_cleanup)*string = NULL;
-	FILE cleanup(file_cleanup)*f = NULL;
+	char cleanup(cleanup_string)*string = NULL;
+	FILE cleanup(cleanup_file)*f = NULL;
 	long size;
 	size_t sret;
 
