@@ -4,17 +4,29 @@
 #include <inttypes.h>
 
 /*
+ * biggest rom encountered so far is Pokemon Red-Blue 2-in-1.
+ * increase this if no true.
+ */
+#define BIGGEST_ROM_SIZE 0x200000
+#define ROM_BANK_SIZE 0x4000
+#define MEMORY_ADDRESS_SPACE 0x10000
+#define TOTAL_MEMORY (BIGGEST_ROM_SIZE + MEMORY_ADDRESS_SPACE - ROM_BANK_SIZE)
+
+/*
  * TODO must be before the gb.h header inclusion, because of an inverted
  * dependency. Fix that ASAP
  */
 #pragma pack(push, 1)
 /* memory mapping extracted from GBCPUman.pdf 2.5.1 */
 struct memory {
+	uint8_t mcb_rom_banking;
+	bool rom_banking_flag;
+	uint8_t cartridge_type;
 	union {
 		struct {
-			uint8_t rom_bank_0[0x4000];
+			uint8_t rom_bank_0[ROM_BANK_SIZE];
 			/* 0x4000 */
-			uint8_t switchable_rom_bank[0x4000];
+			uint8_t switchable_rom_bank[ROM_BANK_SIZE];
 			/* 0x8000 */
 			/* video ram */
 			uint8_t vram[0x2000];
@@ -25,6 +37,13 @@ struct memory {
 			/* internal ram */
 			uint8_t ram[0x2000];
 			/* 0xe000 */
+			/*
+			 * The addresses E000-FE00 appear to access the internal
+			 * RAM the same as C000-DE00. (i.e. If you write a byte
+			 * to address E000 it will appear at C000 and E000.
+			 * Similarly, writing a byte to C000 will appear at C000
+			 * and E000.)
+			 */
 			uint8_t echo_internal_ram[0x1e00];
 			/* 0xfe00 */
 			/* sprite_attribute_memory */
@@ -48,11 +67,8 @@ struct memory {
 			uint8_t interrupt_enable;
 			/* 0x10000 */
 		};
-		uint8_t raw[0xffff];
+		uint8_t raw[TOTAL_MEMORY];
 	};
-	uint8_t mcb_rom_banking;
-	bool rom_banking_flag;
-	uint8_t cartridge_type;
 } __attribute__((__packed__));
 #pragma pack(pop)
 
