@@ -231,9 +231,10 @@ static int getRealPosition(struct gb *gb)
 	io = &gb->io;
 	yPos = io->scrollY + gb->gpu.scanline;
 	yDataLine = yPos / 8;
+	/* TODO shouldn't this be %= 0x20 ? */
 	if (yDataLine > 0x1f)
 		yDataLine -= 0x20;
-	lineOffset = yDataLine * 32;
+	lineOffset = yDataLine * 0x20; /* 0x20 * 8 == 0x100 == 256 (a line) */
 	dataOffset = io->lcd.BgTileMapSelect + lineOffset + io->scrollX;
 
 	return dataOffset;
