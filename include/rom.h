@@ -1,5 +1,6 @@
 #ifndef __ROM__
 #define __ROM__
+#include <inttypes.h>
 
 #define MAX_TITLE_LENGTH 16
 #define LOGO_LENGTH 48
@@ -8,31 +9,31 @@
 
 #pragma pack(push, 1)
 
-struct romHeader {
-	int entrypoint;
-	char nlogo[LOGO_LENGTH];
+struct rom_header {
+	uint32_t entry_point;
+	uint8_t logo[LOGO_LENGTH];
 	char title[MAX_TITLE_LENGTH];
-	unsigned short manufacturerCode;
-	unsigned char cgbFlag;
-	unsigned char cartridgeType;
-	unsigned char romSize;
-	unsigned char ramSize;
-	unsigned char destCode; /* 00 JPN 01 N-JPN */
-	unsigned char oldLicenseeCode;
-	unsigned char gameVersion;
-	unsigned char headerCheckSum;
-	unsigned short glbCheckSum;
+	uint16_t manufacturer_mode;
+	uint8_t cgb_flag;
+	uint8_t cartridge_type;
+	uint8_t rom_size;
+	uint8_t ram_size;
+	uint8_t dest_code; /* 00 JPN 01 N-JPN */
+	uint8_t old_licensee_code;
+	uint8_t game_version;
+	uint8_t header_checksum;
+	uint16_t glb_checksum;
 } __attribute__((__packed__));
 
 struct rom {
-	unsigned int size;
-	unsigned char *rom;
-	struct romHeader romheader;
+	unsigned size;
+	uint8_t *rom;
+	struct rom_header rom_header;
 } __attribute__((__packed__));
 
 #pragma pack(pop)
 
-int rom_init(struct rom *rom, const char *filename);
-void displayHeader(struct romHeader *romheader);
+int rom_init(struct rom *rom, const char *file);
+void rom_display_header(struct rom_header *rom_header);
 
 #endif
