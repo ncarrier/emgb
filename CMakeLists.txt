@@ -37,7 +37,7 @@ endif (UNIX)
 
 
 add_executable(gb ${SOURCE_FILES})
-add_executable(rom_info tools/rom_info/rom_info.c src/rom.c)
+add_executable(rom_info tools/rom_info/rom_info.c src/rom.c src/utils.c)
 add_executable(joypad_mapping tools/joypad_mapping/joypad_mapping.c
 	src/ae_config.c src/joystick_config.c src/utils.c)
 

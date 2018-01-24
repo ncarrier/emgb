@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#include "rom.h"
+#include "memory.h"
 
 static const char *hexdump(const uint8_t *in, char *out, size_t size)
 {
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	}
 
 	filename = argv[1];
-	ret = rom_init(&rom, filename);
+	ret = rom_init(&rom, NULL, NULL, filename);
 	if (ret != 0) {
 		fprintf(stderr, "initRom failed\n");
 		return EXIT_FAILURE;

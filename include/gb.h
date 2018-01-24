@@ -17,7 +17,6 @@
 #include "timer.h"
 #include "registers.h"
 #include "io.h"
-#include "rom.h"
 #include "gpu.h"
 #include "interrupt.h"
 #include "memory.h"
@@ -35,7 +34,6 @@ struct gb {
 	struct timer time;
 	struct registers registers;
 	struct io io;
-	struct rom rom;
 	struct gpu gpu;
 	struct interupts interrupts;
 	struct memory memory;

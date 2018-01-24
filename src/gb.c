@@ -18,11 +18,12 @@ struct gb *gb_init(const char *fileName)
 		ERR("get_file_size_from_path: %s", strerror(-rom_size));
 
 	config_init(&gb->config);
-	rom_init(&gb->rom, fileName);
-	memory_init(&gb->memory, gb, gb->rom.rom_header.cartridge_type,
-			rom_size);
+	memory_init(&gb->memory, gb, rom_size);
+	rom_init(&gb->memory.rom_bank_0_rom,
+			&gb->memory.switchable_rom_bank_rom,
+			gb->memory.extra_rom_banks, fileName);
 	joypad_init(&gb->joypad, &gb->config.config, &gb->memory);
-	rom_display_header(&gb->rom.rom_header);
+	rom_display_header(&gb->memory.rom_bank_0_rom.rom_header);
 	registers_init(&gb->registers);
 	gpu_init(&gb->gpu, &gb->config.config);
 	timer_init(gb);
@@ -40,7 +41,6 @@ void gb_cleanup(struct gb *gb)
 	config_cleanup(&gb->config);
 	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
 	SDL_DestroyWindow(gb->gpu.window);
-	free(gb->rom.rom);
 	/* free(s_gb->gb_gpu.pixels_d); */
 	free(gb->gpu.pixels);
 	free(gb);

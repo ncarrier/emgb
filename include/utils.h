@@ -13,6 +13,13 @@
 #define cleanup(f) __attribute((cleanup(f)))
 #define have_same_sign(n1, n2) (((n1) * (n2)) >= 0)
 
+#define min(a, b) ({ \
+	typeof((a)) _a = (a); \
+	typeof((b)) _b = (b); \
+	\
+	_a < _b ? _a : b; \
+})
+
 static inline bool str_matches(const char *s1, const char *s2)
 {
 	return strcmp(s1, s2) == 0;

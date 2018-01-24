@@ -10,7 +10,7 @@ static void mcbHandleBanking(struct memory *memory, uint16_t addr,
 
 	low5 = value & 0x1f;
 	if (addr >= 0x2000 && addr < 0x4000) {
-		if (memory->cartridge_type == 1) {
+		if (memory->rom_bank_0_rom.rom_header.cartridge_type == 1) {
 			memory->mcb_rom_banking &= 0xe0;
 			memory->mcb_rom_banking |= low5;
 			printf("Lo BANK change. value => %x\n",
@@ -37,11 +37,9 @@ static void mcbHandleBanking(struct memory *memory, uint16_t addr,
 		memory->mcb_rom_banking = 1;
 }
 
-void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type,
-		long rom_size /* TODO allocate memory at the right size */)
+void memory_init(struct memory *memory, struct gb *gb, long rom_size /* TODO allocate memory at the right size */)
 {
 	memset(memory, 0, sizeof(*memory));
-	memory->cartridge_type = cartridge_type;
 	memory->mcb_rom_banking = 1;
 
 	write8bit(0xFF05, 0x00, gb);
@@ -99,11 +97,13 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 
 	memory = &gb->memory;
 	if (addr < 0x4000) {
-		return gb->rom.rom[addr];
+		return gb->memory.rom_bank_0[addr];
 	} else if (addr >= 0x4000 && addr < 0x8000) {
-		/* printf("MCB_romBanking value = %x\n", MCB_romBanking); */
-		return gb->rom.rom[(addr - 0x4000)
-				+ (memory->mcb_rom_banking * 0x4000)];
+		if (memory->mcb_rom_banking == 0)
+			return memory->switchable_rom_bank[addr - ROM_BANK_SIZE];
+		else
+			return memory->extra_rom_banks[(memory->mcb_rom_banking
+					- 2) * ROM_BANK_SIZE + addr];
 	} else if (addr >= 0x8000 && addr < 0xA000) {
 		return memory->vram[addr - 0x8000];
 	} else if (addr >= 0xA000 && addr < 0xC000) {

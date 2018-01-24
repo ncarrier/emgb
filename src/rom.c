@@ -3,15 +3,17 @@
 #include <string.h>
 #include <errno.h>
 
-#include "rom.h"
+#include "memory.h"
 #include "utils.h"
 #include "log.h"
 
-static int load_rom(struct rom *rom, const char *file)
+int rom_init(struct rom *rom, struct rom *switchable_rom_bank,
+		uint8_t *extra_rom_banks, const char *file)
 {
 	unsigned int nb_read;
-	FILE *f;
+	FILE cleanup(cleanup_file)*f = NULL;
 	long size;
+	long rom_bank_0_size;
 
 	f = fopen(file, "rb");
 	if (f == NULL)
@@ -19,32 +21,19 @@ static int load_rom(struct rom *rom, const char *file)
 	size = get_file_size(f);
 	if (size < 0)
 		ERR("get_file_size: %s", strerror(-size));
-	rom->rom = malloc(size * sizeof(*rom->rom));
-	if (rom->rom == NULL)
-		ERR("Cannot alloc s_rom");
-	nb_read = fread(rom->rom, sizeof(char), size, f);
-	if (nb_read == size)
-		return 0;
-
-	return -1;
-}
-
-static void load_header(struct rom *rom)
-{
-	size_t size;
-
-	size = HEADER_OFFSET_E - HEADER_OFFSET_S;
-	memcpy(&rom->rom_header, rom->rom + 0x0100, size);
-}
-
-int rom_init(struct rom *rom, const char *filename)
-{
-	assert(sizeof(struct rom_header) == 80 ||
-			"sizeof(s_romHeader) != 80" == NULL);
-
-	if (load_rom(rom, filename) != 0)
-		ERR("error loading rom");
-	load_header(rom);
+	rom_bank_0_size = min(size, ROM_BANK_SIZE);
+	nb_read = fread(rom->data, sizeof(*rom->data), rom_bank_0_size, f);
+	if (nb_read != rom_bank_0_size)
+		ERR("fread rom bank 0 error");
+	if (switchable_rom_bank != NULL)
+		memcpy(switchable_rom_bank->data, rom->data, rom_bank_0_size);
+	if (extra_rom_banks != NULL) {
+		size -= rom_bank_0_size;
+		nb_read = fread(extra_rom_banks, sizeof(*extra_rom_banks), size,
+				f);
+		if (nb_read != size)
+			ERR("fread rom bank 0 error");
+	}
 
 	return 0;
 }
