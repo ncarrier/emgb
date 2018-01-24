@@ -7,7 +7,7 @@
 #include "utils.h"
 #include "log.h"
 
-static int loadRom(struct rom *rom, const char *file)
+static int load_rom(struct rom *rom, const char *file)
 {
 	unsigned int nb_read;
 	FILE *f;
@@ -20,7 +20,7 @@ static int loadRom(struct rom *rom, const char *file)
 	if (size < 0)
 		ERR("get_file_size: %s", strerror(-size));
 	rom->size = size;
-	rom->rom = malloc(rom->size * sizeof(char));
+	rom->rom = malloc(rom->size * sizeof(*rom->rom));
 	if (rom->rom == NULL)
 		ERR("Cannot alloc s_rom");
 	nb_read = fread(rom->rom, sizeof(char), rom->size, f);
@@ -30,7 +30,7 @@ static int loadRom(struct rom *rom, const char *file)
 	return -1;
 }
 
-static void loadHeader(struct rom *rom)
+static void load_header(struct rom *rom)
 {
 	size_t size;
 
@@ -43,9 +43,9 @@ int rom_init(struct rom *rom, const char *filename)
 	assert(sizeof(struct rom_header) == 80 ||
 			"sizeof(s_romHeader) != 80" == NULL);
 
-	if (loadRom(rom, filename) != 0)
+	if (load_rom(rom, filename) != 0)
 		ERR("error loading rom");
-	loadHeader(rom);
+	load_header(rom);
 
 	return 0;
 }
