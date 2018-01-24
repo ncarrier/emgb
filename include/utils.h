@@ -23,7 +23,7 @@ static inline bool str_matches_prefix(const char *s, const char *prefix)
 	return strncmp(s, prefix, strlen(prefix)) == 0;
 }
 
-/* returns an adress inside string s1 */
+/* returns an address inside string s1 */
 static inline char *str_diff_chr(const char *s1, const char *s2)
 {
 	while (*s1 && *s1 == *s2) {
@@ -36,6 +36,7 @@ static inline char *str_diff_chr(const char *s1, const char *s2)
 
 void cleanup_string(char **str);
 void cleanup_file(FILE **pfile);
+long get_file_size_from_path(const char *path);
 long get_file_size(FILE *f);
 
 #endif /* _UTILS_H */

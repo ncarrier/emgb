@@ -22,6 +22,17 @@ void cleanup_file(FILE **pfile)
 	*pfile = NULL;
 }
 
+long get_file_size_from_path(const char *path)
+{
+	FILE cleanup(cleanup_file)*f = NULL;
+
+	f = fopen(path, "rbe");
+	if (f == NULL)
+		return -errno;
+
+	return get_file_size(f);
+}
+
 long get_file_size(FILE *f)
 {
 	int ret;
