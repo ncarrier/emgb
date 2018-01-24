@@ -26,7 +26,6 @@ struct rom_header {
 } __attribute__((__packed__));
 
 struct rom {
-	unsigned size;
 	uint8_t *rom;
 	struct rom_header rom_header;
 } __attribute__((__packed__));

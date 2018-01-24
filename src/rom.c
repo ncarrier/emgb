@@ -19,12 +19,11 @@ static int load_rom(struct rom *rom, const char *file)
 	size = get_file_size(f);
 	if (size < 0)
 		ERR("get_file_size: %s", strerror(-size));
-	rom->size = size;
-	rom->rom = malloc(rom->size * sizeof(*rom->rom));
+	rom->rom = malloc(size * sizeof(*rom->rom));
 	if (rom->rom == NULL)
 		ERR("Cannot alloc s_rom");
-	nb_read = fread(rom->rom, sizeof(char), rom->size, f);
-	if (nb_read == rom->size)
+	nb_read = fread(rom->rom, sizeof(char), size, f);
+	if (nb_read == size)
 		return 0;
 
 	return -1;
