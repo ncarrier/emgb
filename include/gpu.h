@@ -10,7 +10,6 @@
 #define G 0x0000ff00
 #define B 0x000000ff
 
-int color_index_to_value(int color);
 void rendering(struct s_gb *gb);
 void initGpu(struct s_gb *gb);
 char lcdIsEnable(unsigned char lcdc);
@@ -48,6 +47,12 @@ struct s_gpu {
 
 	SDL_Event event;
 	enum gpuMode gpuMode;
+	int color_0;
+	int color_1;
+	int color_2;
+	int color_3;
 };
+
+int color_index_to_value(const struct s_gpu *gpu, int color);
 
 #endif

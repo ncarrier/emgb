@@ -300,7 +300,7 @@ function generate_base_ei_code() {
 }
 
 function generate_base_halt_code() {
-	echo -e "\ts_gb->gb_cpu.halted = true; puts(\"halted\");"
+	echo -e "\ts_gb->gb_cpu.halted = true;"
 }
 
 function generate_base_inc_code() {

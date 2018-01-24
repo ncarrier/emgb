@@ -1,30 +1,61 @@
 #include "io.h"
 #include "GB.h"
+#include "ae_config.h"
 
-#define GB_W 160
-#define GB_H 144
 #define GB_SURF (GB_W * GB_H)
-#define COLOR_0 0x00101010
-#define COLOR_1 0x00585858
-#define COLOR_2 0x00a0a0a0
-#define COLOR_3 0x00e8e8e8
+#define COLOR_0 0x00000000
+#define COLOR_1 0x00444444
+#define COLOR_2 0x00aaaaaa
+#define COLOR_3 0x00ffffff
+
+static bool is_fullscreen(int width, int height)
+{
+	int ret;
+	SDL_DisplayMode dm;
+	ret = SDL_GetCurrentDisplayMode(0, &dm);
+	if (ret != 0)
+		return false;
+
+	return dm.w <= width && dm.h <= height;
+}
 
 void initDisplay(struct s_gb *gb)
 {
 	struct s_gpu *gpu;
+	bool fullscreen;
+	int width;
+	int height;
+	int x;
+	int y;
+	struct ae_config *conf;
 
+	conf = &gb->config.config;
 	gpu = &gb->gb_gpu;
 #ifdef EMGB_CONSOLE_DEBUGGER
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif /* EMGB_CONSOLE_DEBUGGER */
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-	gpu->mouse_visible = true;
-	gpu->window = SDL_CreateWindow("GB", 300, 300, GB_W, GB_H,
+	if (ae_config_get_int(conf, CONFIG_LINEAR_SCALING,
+			CONFIG_LINEAR_SCALING_DEFAULT) == 1)
+		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+	width = ae_config_get_int(conf, CONFIG_WINDOW_WIDTH,
+			CONFIG_WINDOW_WIDTH_DEFAULT);
+	height = ae_config_get_int(conf, CONFIG_WINDOW_HEIGHT,
+			CONFIG_WINDOW_HEIGHT_DEFAULT);
+	fullscreen = is_fullscreen(width, height);
+	gpu->mouse_visible = !fullscreen;
+	x = ae_config_get_int(conf, CONFIG_WINDOW_X, CONFIG_WINDOW_X_DEFAULT);
+	y = ae_config_get_int(conf, CONFIG_WINDOW_Y, CONFIG_WINDOW_Y_DEFAULT);
+	gpu->window = SDL_CreateWindow("GB", x, y, width, height,
 			SDL_WINDOW_RESIZABLE);
 	if (gpu->window == NULL)
 		ERR("cannot create SDL windows");
+	if (fullscreen) {
+		SDL_SetWindowFullscreen(gpu->window,
+				SDL_WINDOW_FULLSCREEN_DESKTOP);
+		SDL_ShowCursor(SDL_DISABLE);
+	}
 	gpu->renderer = SDL_CreateRenderer(gpu->window, -1,
 			SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
 	if (gpu->renderer == NULL)
@@ -40,19 +71,19 @@ void initDisplay(struct s_gb *gb)
 		ERR("cannot alloc pixels");
 }
 
-int color_index_to_value(int color)
+int color_index_to_value(const struct s_gpu *gpu, int color)
 {
 	switch (color) {
 	case 3:
-		return COLOR_0;
+		return gpu->color_0;
 	case 1:
-		return COLOR_1;
+		return gpu->color_1;
 	case 2:
-		return COLOR_2;
+		return gpu->color_2;
 	case 0:
-		return COLOR_3;
+		return gpu->color_3;
 	default:
-		return COLOR_3;
+		return gpu->color_3;
 	}
 }
 
@@ -175,7 +206,8 @@ void renderingSprite(struct s_gb *gb)
 				color = ((line >> dec) & 0x01);
 				if ((line >> (dec - 8)) & 0x01)
 					color += 2;
-				color = color_index_to_value(color);
+				color = color_index_to_value(&gb->gb_gpu,
+						color);
 				/*
 				 * check mem corruption error -> need to
 				 * refactor this
@@ -234,9 +266,22 @@ static void display(struct s_gb *gb)
 
 void initGpu(struct s_gb *gb)
 {
-	gb->gb_gpu.scanline = 0;
-	gb->gb_gpu.tick = 0;
-	gb->gb_gpu.last_tick = 0;
+	struct s_gpu *gpu;
+	struct ae_config *conf;
+
+	gpu = &gb->gb_gpu;
+	conf = &gb->config.config;
+	gpu->scanline = 0;
+	gpu->tick = 0;
+	gpu->last_tick = 0;
+	gpu->color_0 = ae_config_get_int(conf, CONFIG_COLOR_0,
+			CONFIG_COLOR_0_DEFAULT);
+	gpu->color_1 = ae_config_get_int(conf, CONFIG_COLOR_1,
+			CONFIG_COLOR_1_DEFAULT);
+	gpu->color_2 = ae_config_get_int(conf, CONFIG_COLOR_2,
+			CONFIG_COLOR_2_DEFAULT);
+	gpu->color_3 = ae_config_get_int(conf, CONFIG_COLOR_3,
+			CONFIG_COLOR_3_DEFAULT);
 }
 
 char lcdIsEnable(unsigned char lcdc)

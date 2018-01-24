@@ -1,7 +1,11 @@
+#define _GNU_SOURCE
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include <errno.h>
+#ifdef _WIN32
+#include <direct.h>
+#endif
 
 #include "GB.h"
 #include "special_registers.h"
@@ -40,12 +44,13 @@ static void initCpu(struct s_gb *gb_s)
 
 struct s_gb *initGb(const char *fileName)
 {
-	int ret;
 	struct s_gb *s_gb = NULL;
 
 	s_gb = malloc(sizeof(*s_gb));
 	if (s_gb == NULL)
 		ERR("Cannot allocate s_gb");
+	config_init(&s_gb->config);
+	init_joypad(&s_gb->gb_pad, &s_gb->config.config);
 	initRom(&s_gb->gb_rom, fileName);
 	displayHeader(&s_gb->gb_rom.romheader);
 	initRegister(s_gb);
@@ -54,11 +59,7 @@ struct s_gb *initGb(const char *fileName)
 	initTimer(s_gb);
 	initCpu(s_gb);
 	reset_joystick_config(&s_gb->joystick_config);
-	snprintf(s_gb->config_dir_path, PATH_MAX, "%s/" CONFIG_DIR,
-			getenv("HOME"));
-	ret = mkdir(s_gb->config_dir_path, 0755);
-	if (ret < 0 && errno != EEXIST)
-		perror("mkdir");
+	config_write(&s_gb->config);
 
 	return s_gb;
 }

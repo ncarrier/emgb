@@ -6,6 +6,8 @@
 
 #include "cpu.h"
 #include "utils.h"
+#include "ae_config.h"
+#include "config.h"
 
 #define EMGB_CONSOLE_DEBUGGER_PROMPT "egd > "
 #define EMGB_CONSOLE_DEBUGGER_PROMPT2 "... > "
@@ -64,7 +66,8 @@ struct console_debugger {
 
 void console_debugger_print_registers(const struct s_register *registers);
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers, struct s_gb *gb);
+		struct s_register *registers, struct s_gb *gb,
+		struct ae_config *config);
 int console_debugger_update(struct console_debugger *debugger);
 
 bool str_matches(const char *s1, const char *s2);

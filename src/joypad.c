@@ -3,15 +3,14 @@
 #include "joypad.h"
 #include "GB.h"
 #include "utils.h"
-
-#define MAPPINGS_DIR "~/.emgb/"
+#include "ae_config.h"
+#include "config.h"
 
 #define BUTTON_RIGHT_FLAG (1 << 0)
 #define BUTTON_LEFT_FLAG (1 << 1)
 #define BUTTON_UP_FLAG (1 << 2)
 #define BUTTON_DOWN_FLAG (1 << 3)
 
-/* TODO check A and B aren't swapped with a real game boy */
 #define BUTTON_A_FLAG (1 << 0)
 #define BUTTON_B_FLAG (1 << 1)
 #define BUTTON_SELECT_FLAG (1 << 2)
@@ -22,75 +21,98 @@
 #define BUTTON_TO_KEY(b) (1 << ((b) & ~BUTTON_KEY_OR_DIR_MASK))
 #define BUTTON_TO_DIR(b) (1 << (b))
 
+void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
+		const char *key, SDL_Keycode default_sym)
+{
+	const char *key_name;
+	const char *default_keyname;
+
+	default_keyname = SDL_GetKeyName(default_sym);
+	key_name = ae_config_get_default(config, key, default_keyname);
+	*sym = SDL_GetKeyFromName(key_name);
+	if (*sym == SDLK_UNKNOWN)
+		*sym = default_sym;
+}
+
+void init_joypad(struct s_joypad *pad, struct ae_config *config)
+{
+	get_pad_key_from_config(&pad->sym_right, config, CONFIG_JOYPAD_0_RIGHT,
+			CONFIG_JOYPAD_0_RIGHT_DEFAULT);
+	get_pad_key_from_config(&pad->sym_left, config, CONFIG_JOYPAD_0_LEFT,
+			CONFIG_JOYPAD_0_LEFT_DEFAULT);
+	get_pad_key_from_config(&pad->sym_up, config, CONFIG_JOYPAD_0_UP,
+			CONFIG_JOYPAD_0_UP_DEFAULT);
+	get_pad_key_from_config(&pad->sym_down, config, CONFIG_JOYPAD_0_DOWN,
+			CONFIG_JOYPAD_0_DOWN_DEFAULT);
+	get_pad_key_from_config(&pad->sym_a, config, CONFIG_JOYPAD_0_A,
+			CONFIG_JOYPAD_0_A_DEFAULT);
+	get_pad_key_from_config(&pad->sym_b, config, CONFIG_JOYPAD_0_B,
+			CONFIG_JOYPAD_0_B_DEFAULT);
+	get_pad_key_from_config(&pad->sym_select, config,
+			CONFIG_JOYPAD_0_SELECT, CONFIG_JOYPAD_0_SELECT_DEFAULT);
+	get_pad_key_from_config(&pad->sym_start, config, CONFIG_JOYPAD_0_START,
+			CONFIG_JOYPAD_0_START_DEFAULT);
+}
+
 void keyDown(struct s_gb *gb_s)
 {
-	switch (gb_s->gb_gpu.event.key.keysym.sym) {
-	case SDLK_ESCAPE:
+	struct s_joypad *pad;
+	SDL_Keycode sym;
+
+	pad = &gb_s->gb_pad;
+	sym = gb_s->gb_gpu.event.key.keysym.sym;
+	if (sym == SDLK_ESCAPE) {
 		gb_s->running = 0;
-		break;
-	case SDLK_w:
+	} else if (sym == pad->sym_a) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_DOWN_FLAG;
-		break;
-	case SDLK_x:
+		gb_s->gb_pad.button_key &= ~BUTTON_A_FLAG;
+	} else if (sym == pad->sym_b) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_UP_FLAG;
-		break;
-	case SDLK_c:
+		gb_s->gb_pad.button_key &= ~BUTTON_B_FLAG;
+	} else if (sym == pad->sym_select) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_LEFT_FLAG;
-		break;
-	case SDLK_v:
+		gb_s->gb_pad.button_key &= ~BUTTON_SELECT_FLAG;
+	} else if (sym == pad->sym_start) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~BUTTON_RIGHT_FLAG;
-		break;
-	case SDLK_DOWN:
+		gb_s->gb_pad.button_key &= ~BUTTON_START_FLAG;
+	} else if (sym == pad->sym_down) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_START_FLAG;
-		break;
-	case SDLK_UP:
+		gb_s->gb_pad.button_dir &= ~BUTTON_DOWN_FLAG;
+	} else if (sym == pad->sym_up) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_SELECT_FLAG;
-		break;
-	case SDLK_LEFT:
+		gb_s->gb_pad.button_dir &= ~BUTTON_UP_FLAG;
+	} else if (sym == pad->sym_left) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_B_FLAG;
-		break;
-	case SDLK_RIGHT:
+		gb_s->gb_pad.button_dir &= ~BUTTON_LEFT_FLAG;
+	} else if (sym == pad->sym_right) {
 		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~BUTTON_A_FLAG;
-		break;
+		gb_s->gb_pad.button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
-	return;
 }
 
 void keyUp(struct s_gb *gb_s)
 {
-	switch (gb_s->gb_gpu.event.key.keysym.sym) {
-	case SDLK_w:
-		gb_s->gb_pad.button_key |= BUTTON_DOWN_FLAG;
-		break;
-	case SDLK_x:
-		gb_s->gb_pad.button_key |= BUTTON_UP_FLAG;
-		break;
-	case SDLK_c:
-		gb_s->gb_pad.button_key |= BUTTON_LEFT_FLAG;
-		break;
-	case SDLK_v:
-		gb_s->gb_pad.button_key |= BUTTON_RIGHT_FLAG;
-		break;
-	case SDLK_DOWN:
-		gb_s->gb_pad.button_dir |= BUTTON_START_FLAG;
-		break;
-	case SDLK_UP:
-		gb_s->gb_pad.button_dir |= BUTTON_SELECT_FLAG;
-		break;
-	case SDLK_LEFT:
-		gb_s->gb_pad.button_dir |= BUTTON_B_FLAG;
-		break;
-	case SDLK_RIGHT:
-		gb_s->gb_pad.button_dir |= BUTTON_A_FLAG;
-		break;
+	struct s_joypad *pad;
+	SDL_Keycode sym;
+
+	pad = &gb_s->gb_pad;
+	sym = gb_s->gb_gpu.event.key.keysym.sym;
+	if (sym == pad->sym_a) {
+		gb_s->gb_pad.button_key |= BUTTON_A_FLAG;
+	} else if (sym == pad->sym_b) {
+		gb_s->gb_pad.button_key |= BUTTON_B_FLAG;
+	} else if (sym == pad->sym_select) {
+		gb_s->gb_pad.button_key |= BUTTON_SELECT_FLAG;
+	} else if (sym == pad->sym_start) {
+		gb_s->gb_pad.button_key |= BUTTON_START_FLAG;
+	} else if (sym == pad->sym_down) {
+		gb_s->gb_pad.button_dir |= BUTTON_DOWN_FLAG;
+	} else if (sym == pad->sym_up) {
+		gb_s->gb_pad.button_dir |= BUTTON_UP_FLAG;
+	} else if (sym == pad->sym_left) {
+		gb_s->gb_pad.button_dir |= BUTTON_LEFT_FLAG;
+	} else if (sym == pad->sym_right) {
+		gb_s->gb_pad.button_dir |= BUTTON_RIGHT_FLAG;
 	}
 }
 
@@ -109,7 +131,7 @@ static void joy_device_added(struct s_gb *gb, uint32_t index)
 				joystick_config->joystick.name);
 		return;
 	}
-	ret = init_joystick_config(joystick_config, index, gb->config_dir_path);
+	ret = init_joystick_config(joystick_config, index, gb->config.dir);
 	if (ret < 0) {
 		printf("No mapping for %s, create one with joypad_mapping\n",
 				joystick_name);
@@ -229,15 +251,20 @@ void handleEvent(struct s_gb *gb_s)
 {
 	union SDL_Event *event;
 	struct SDL_WindowEvent *we;
+	struct ae_config *conf;
+	uint32_t width;
+	uint32_t height;
 
 	event = &(gb_s->gb_gpu.event);
 	if (SDL_PollEvent(event) == 0)
 		return;
 
+	conf = &gb_s->config.config;
 	switch (gb_s->gb_gpu.event.type) {
 	case SDL_QUIT: {
 		printf("see u.\n");
 		gb_s->running = 0;
+		config_write(&gb_s->config);
 		break;
 	}
 
@@ -256,8 +283,23 @@ void handleEvent(struct s_gb *gb_s)
 					gb_s->gb_gpu.mouse_visible = true;
 				}
 			}
+			/* TODO min and max */
+			height = we->data2;
+			if (height < GB_H)
+				height = GB_H;
+			width = we->data1;
+			if (width < GB_W)
+				width = GB_W;
+			ae_config_add_int(conf, "window_width", width);
+			ae_config_add_int(conf, "window_height", height);
+			config_write(&gb_s->config);
+
 			break;
 		case SDL_WINDOWEVENT_MOVED:
+			ae_config_add_int(conf, "window_x", we->data1);
+			ae_config_add_int(conf, "window_y", we->data2);
+			config_write(&gb_s->config);
+
 			break;
 		}
 		break;
