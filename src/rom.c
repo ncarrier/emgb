@@ -4,38 +4,22 @@
 #include <errno.h>
 
 #include "rom.h"
+#include "utils.h"
 #include "log.h"
-
-static long get_file_size(FILE *f)
-{
-	int ret;
-	long size;
-
-	if (f == NULL)
-		return -EINVAL;
-
-	ret = fseek(f, 0, SEEK_END);
-	if (ret != 0)
-		ERR("fseek SEEK_END: %m");
-	size = ftell(f);
-	if (size == -1)
-		ERR("fopen: %m");
-	ret = fseek(f, 0, SEEK_SET);
-	if (ret != 0)
-		ERR("fseek SEEK_CUR: %m");
-
-	return size;
-}
 
 static int loadRom(struct rom *rom, const char *file)
 {
 	unsigned int nb_read;
 	FILE *f;
+	long size;
 
 	f = fopen(file, "rb");
 	if (f == NULL)
 		ERR("Cannot open rom file");
-	rom->size = get_file_size(f);
+	size = get_file_size(f);
+	if (size < 0)
+		ERR("get_file_size: %s", strerror(-size));
+	rom->size = size;
 	rom->rom = malloc(rom->size * sizeof(char));
 	if (rom->rom == NULL)
 		ERR("Cannot alloc s_rom");

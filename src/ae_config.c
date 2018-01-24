@@ -28,15 +28,9 @@ int ae_config_read(struct ae_config *conf, const char *path)
 		return -errno;
 
 	/* compute the size of the file */
-	ret = fseek(f, 0, SEEK_END);
-	if (ret == -1)
-		return -errno;
-	size = ftell(f);
-	if (ret == -1)
-		return -errno;
-	ret = fseek(f, 0, SEEK_SET);
-	if (ret == -1)
-		return -errno;
+	size = get_file_size(f);
+	if (size < 0)
+		return size;
 
 	/* read all */
 	string = calloc(size + 1, 1);

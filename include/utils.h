@@ -36,5 +36,6 @@ static inline char *str_diff_chr(const char *s1, const char *s2)
 
 void cleanup_string(char **str);
 void cleanup_file(FILE **pfile);
+long get_file_size(FILE *f);
 
 #endif /* _UTILS_H */
