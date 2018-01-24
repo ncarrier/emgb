@@ -7,15 +7,20 @@
 struct gb *gb_init(const char *fileName)
 {
 	struct gb *gb = NULL;
+	long rom_size;
 
 	gb = calloc(1, sizeof(*gb));
 	if (gb == NULL)
 		ERR("Cannot allocate gb");
 	gb->running = true;
+	rom_size = get_file_size_from_path(fileName);
+	if (rom_size < 0)
+		ERR("get_file_size_from_path: %s", strerror(-rom_size));
 
 	config_init(&gb->config);
 	rom_init(&gb->rom, fileName);
-	memory_init(&gb->memory, gb, gb->rom.rom_header.cartridge_type);
+	memory_init(&gb->memory, gb, gb->rom.rom_header.cartridge_type,
+			rom_size);
 	joypad_init(&gb->joypad, &gb->config.config, &gb->memory);
 	rom_display_header(&gb->rom.rom_header);
 	registers_init(&gb->registers);

@@ -37,7 +37,8 @@ static void mcbHandleBanking(struct memory *memory, uint16_t addr,
 		memory->mcb_rom_banking = 1;
 }
 
-void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type)
+void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type,
+		long rom_size /* TODO allocate memory at the right size */)
 {
 	memset(memory, 0, sizeof(*memory));
 	memory->cartridge_type = cartridge_type;

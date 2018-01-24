@@ -58,7 +58,8 @@ struct memory {
 
 #include "gb.h"
 
-void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type);
+void memory_init(struct memory *memory, struct gb *gb, uint8_t cartridge_type,
+		long rom_size);
 void write16bitToAddr(uint16_t addr, uint16_t value, struct gb *gb);
 uint16_t read16bit(uint16_t addr, struct gb *gb);
 uint8_t read8bit(uint16_t addr, struct gb *gb);
