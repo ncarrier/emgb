@@ -5,10 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#ifdef _WIN32
+#include "platform.h"
+#else
 #include <error.h>
+#endif
 #include <stdbool.h>
 #include <errno.h>
+#include <libgen.h>
 
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
 #include "utils.h"
@@ -536,7 +542,7 @@ int main(int argc, char **argv)
 	/* mandatory for attribute cleanup not to segfault in error cases */
 	reset_joystick_config(&joystick_config);
 	progname = basename(argv[0]);
-	printf("%s[%jd] starting\n", progname, (intmax_t)getpid());
+	printf("%s[%lld] starting\n", progname, (long long)getpid());
 	if (argc == 3) {
 		if (strcmp(argv[1], "--test") != 0)
 			usage(progname);

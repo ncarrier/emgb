@@ -2,24 +2,19 @@
 
 #include "GB.h"
 
+#define DEFAULT_ROMPATH "C:\\proj\\GB_test\\emgb\\roms\\Tetris.gb"
 
 int main(int ac, char **av)
 {
+	const char *rompath;
+
 #if EMGB_CONSOLE_DEBUGGER
 	puts("console debugger enabled");
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-	if (ac == 1)
-	{
-		/* const char * mario = "C:\\proj\\GB_test\\emgb\\roms\\mario.gb"; */
-		char * tetris = "C:\\proj\\GB_test\\emgb\\roms\\Tetris.gb";
-		/* const char * special = "C:\\proj\\GB_test\\emgb\\roms\\01-special.gb"; */
-		{
-			char * rompath = tetris;
-			gb(rompath);
-       	}
-	}
-	else
-		gb(av[1]);
-	return (0);
+	rompath = ac == 1 ? DEFAULT_ROMPATH : av[1];
+
+	gb(rompath);
+
+	return EXIT_SUCCESS;
 }

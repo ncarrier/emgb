@@ -5,107 +5,68 @@
 #endif /* EMGB_CONSOLE_DEBUGGER */
 #include "instructions.h"
 
-// main loop function
-// retrieve opcode & execute it. update gpu interupt & timer
+/*
+ *  main loop function
+ * retrieve opcode & execute it. update gpu interrupt & timer
+ */
 
-int imgui(void *p_s_gb);
+/* int imgui(void *p_s_gb); */
 
-static bool print_log = false;
-
-static void log_instruction(struct s_gb *s_gb,
-		const struct s_cpu_z80 *instruction, uint16_t pc,
-		uint8_t fopcode, unsigned size)
+void gb(const char *fileName)
 {
-	unsigned i;
-
-	printf("[%#"PRIx8"] (%#"PRIx8") %s   ", pc, fopcode,
-			instructions_base[fopcode].value);
-	for (i = 1; i < size; i++)
-		printf("%#"PRIx8" ", read8bit(pc + i, s_gb));
-	puts("");
-}
-
-static void instruction_gen(struct s_gb *s_gb)
-{
+	struct s_gb *gb;
 	uint8_t fopcode;
 	const struct s_cpu_z80 *instruction;
-
-	fopcode = read8bit(s_gb->gb_register.pc, s_gb);
-	instruction = instructions_base + fopcode;
-	if (print_log)
-		log_instruction(s_gb, instruction, s_gb->gb_register.pc,
-				fopcode, instruction->real_size);
-	instruction->func(s_gb);
-	s_gb->gb_register.pc += instruction->size;
-	s_gb->gb_cpu.totalTick += instruction->cycles;
-}
-
-static void instruction_hw(struct s_gb *s_gb)
-{
-	uint8_t fopcode;
-
-	fopcode = read8bit(s_gb->gb_register.pc, s_gb);
-	if (print_log)
-		log_instruction(s_gb, instructions + fopcode,
-				s_gb->gb_register.pc, fopcode,
-				instructions[fopcode].size + 1);
-	s_gb->gb_register.pc += 1; //retrieve func opcode
-	instructions[fopcode].func(s_gb); //call opcode func pointer
-	if (s_gb->gb_cpu.jmpf == 0) //if jmp opcode was called, no need to incr PC
-		s_gb->gb_register.pc += instructions[fopcode].size;
-	s_gb->gb_cpu.jmpf = 0;
-}
-
-void gb(char *fileName)
-{
-	struct s_gb		*s_gb = NULL;
-	void (*execute_instruction)(struct s_gb *s_gb);
+	struct s_cpu *cpu;
+	struct s_register *registers;
 #ifdef IMDBG
-	SDL_Thread		*thr = NULL;
+	SDL_Thread *thr;
 #endif
 #if EMGB_CONSOLE_DEBUGGER
 	struct console_debugger debugger;
 	int ret;
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-	s_gb = initGb(fileName);
-	execute_instruction = getenv("GEN") ? instruction_gen : instruction_hw;
+	gb = initGb(fileName);
+	cpu = &gb->gb_cpu;
+	registers = &gb->gb_register;
 #if EMGB_CONSOLE_DEBUGGER
-	ret = console_debugger_init(&debugger, &s_gb->gb_register, s_gb);
+	ret = console_debugger_init(&debugger, registers, gb);
 	if (ret < 0)
 		ERR("console_debugger_init: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
-	s_gb->stopdbg = 0;
+	gb->stopdbg = 0;
 #ifdef IMDBG
-	s_gb->stopdbg = 0;
-	thr = SDL_CreateThread(imgui, "dbg", s_gb);
+	gb->stopdbg = 0;
+	thr = SDL_CreateThread(imgui, "dbg", gb);
 	if (thr == NULL)
-	{
 		printf("cannot start imGui dbg\n");
-	}
 #endif
-	while (s_gb->running)
-	{
+	while (gb->running) {
 #if EMGB_CONSOLE_DEBUGGER
-          ret = console_debugger_update(&debugger);
-          if (ret < 0)
-            ERR("console_debugger_update: %s", strerror(-ret));
+		ret = console_debugger_update(&debugger);
+		if (ret < 0)
+			ERR("console_debugger_update: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
-	  /* debug(s_gb); */
-	  handleEvent(s_gb);
-	  if (s_gb->gb_cpu.stopCpu == 0)
-		  execute_instruction(s_gb);
-	  updateGpu(s_gb);
-	  doInterupt(s_gb);
-	  updateTimer(s_gb);
+		handleEvent(gb);
+		if (!cpu->stopped) {
+			if (!cpu->halted) {
+				fopcode = read8bit(registers->pc, gb);
+				instruction = instructions_base + fopcode;
+				cpu->totalTick += instruction->func(gb);
+				registers->pc += instruction->size;
+			}
+			updateGpu(gb);
+		}
+		doInterupt(gb);
+		updateTimer(gb);
 	}
 #ifdef IMDBG
-	if (thr != NULL)
-	{
-		s_gb->stopdbg = 1;
+	if (thr != NULL) {
+		gb->stopdbg = 1;
 		printf("Waiting dbg thread to exit\n");
 		SDL_WaitThread(thr, NULL);
 	}
 #endif
-	seeu(s_gb);
+	seeu(gb);
 }

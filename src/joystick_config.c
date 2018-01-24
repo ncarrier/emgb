@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "joystick_config.h"
 #include "utils.h"
@@ -62,7 +63,7 @@ int init_joystick_config(struct joystick_config *joystick_config,
 {
 	int ret;
 	struct joystick *joystick;
-	char cleanup(cleanup_string) *canon_name = NULL;
+	char cleanup(cleanup_string) * canon_name = NULL;
 
 	reset_joystick_config(joystick_config);
 
@@ -110,10 +111,8 @@ int init_joystick_config(struct joystick_config *joystick_config,
 	va_list args;
 	char cleanup(cleanup_string)*path = NULL;
 	FILE cleanup(cleanup_file)*f = NULL;
-	struct ae_config cleanup(ae_config_cleanup)config = {
-			.argz = NULL,
-			.len = 0,
-	};
+	struct ae_config cleanup(ae_config_cleanup)config =
+			AE_CONFIG_INITIALIZER;
 	enum gb_button button;
 	const char *button_config;
 	enum control_type type;

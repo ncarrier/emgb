@@ -1,42 +1,54 @@
 #include "timer.h"
 #include "GB.h"
+#include "special_registers.h"
+
+static const unsigned frequencies_table[] = {
+		[0] = 4096u,
+		[1] = 262144u,
+		[2] = 65536u,
+		[3] = 16384u,
+};
 
 void initTimer(struct s_gb *s_gb)
 {
-	unsigned char TMC = read8bit(0xFF07, s_gb);
-	printf("tmc value %d\n", TMC);
-	if ((TMC & 0x3) == 0)
-		s_gb->gb_time.freq = 4096;
-	else if ((TMC & 0x3) == 1)
-		s_gb->gb_time.freq = 262144;
-	else if ((TMC & 0x3) == 2)
-		s_gb->gb_time.freq = 65536;
-	else if ((TMC & 0x3) == 3)
-		s_gb->gb_time.freq = 16384;
-	s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
+	uint8_t tac;
+	uint8_t input_clock_select;
 
+	tac = read8bit(SPECIAL_REGISTER_TAC, s_gb);
+	printf("TAC value %d\n", tac);
+	input_clock_select = TAC_INPUT_CLOCK_SELECT(tac);
+
+	s_gb->gb_time.freq = frequencies_table[input_clock_select];
+	s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
 }
 
 void updateTimer(struct s_gb *s_gb)
 {
-	static  int lastTick = 0;
-	unsigned char TMC = read8bit(0xFF07, s_gb);
+	struct s_cpu *cpu;
+	uint8_t tac;
+	uint8_t tima;
+	uint8_t tma;
 
-	if (TMC & 4) //is timer enable ?
-	{
-		s_gb->gb_time.timerCount -= (s_gb->gb_cpu.totalTick - lastTick); //FOR TEST !!! - lastTick;
-		lastTick = s_gb->gb_cpu.totalTick;
+	tac = read8bit(SPECIAL_REGISTER_TAC, s_gb);
+	cpu = &s_gb->gb_cpu;
 
-		if (s_gb->gb_time.timerCount <= 0)
-		{
-			s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
-			if (read8bit(0xff05, s_gb) == 255)
-			{
-				write8bit(0xff05, read8bit(0xff06, s_gb), s_gb);
-				s_gb->gb_interrupts.interFlag |= INT_TIMER;
-			}
-			else
-				write8bit(0xff05, read8bit(0xff05, s_gb) + 1, s_gb);
-		}
+	if (!TAC_TIMER_ENABLED(tac))
+		return;
+
+	/* FOR TEST !!! - lastTick */
+	s_gb->gb_time.timerCount -= cpu->totalTick - cpu->last_tick;
+	cpu->last_tick = cpu->totalTick;
+
+	if (s_gb->gb_time.timerCount > 0)
+		return;
+
+	s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
+	tima = read8bit(SPECIAL_REGISTER_TIMA, s_gb);
+	if (tima == 0xffu) {
+		tma = read8bit(0xff06, s_gb);
+		write8bit(SPECIAL_REGISTER_TIMA, tma, s_gb);
+		s_gb->gb_interrupts.interFlag |= INT_TIMER;
+	} else {
+		write8bit(SPECIAL_REGISTER_TIMA, tima + 1, s_gb);
 	}
 }

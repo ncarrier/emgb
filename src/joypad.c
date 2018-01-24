@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include "joypad.h"
 #include "GB.h"
 #include "utils.h"
@@ -20,12 +22,9 @@
 #define BUTTON_TO_KEY(b) (1 << ((b) & ~BUTTON_KEY_OR_DIR_MASK))
 #define BUTTON_TO_DIR(b) (1 << (b))
 
-void keyDown(struct s_gb * gb_s)
+void keyDown(struct s_gb *gb_s)
 {
-	gb_s->gb_cpu.stopCpu = 0;
-	switch (gb_s->gb_gpu.event.key.keysym.sym)
-	{
-		gb_s->gb_cpu.stopCpu = 0;
+	switch (gb_s->gb_gpu.event.key.keysym.sym) {
 	case SDLK_ESCAPE:
 		gb_s->running = 0;
 		break;
@@ -65,10 +64,9 @@ void keyDown(struct s_gb * gb_s)
 	return;
 }
 
-void keyUp(struct s_gb * gb_s)
+void keyUp(struct s_gb *gb_s)
 {
-	switch (gb_s->gb_gpu.event.key.keysym.sym)
-	{
+	switch (gb_s->gb_gpu.event.key.keysym.sym) {
 	case SDLK_w:
 		gb_s->gb_pad.button_key |= BUTTON_DOWN_FLAG;
 		break;
@@ -113,8 +111,8 @@ static void joy_device_added(struct s_gb *gb, uint32_t index)
 	}
 	ret = init_joystick_config(joystick_config, index, gb->config_dir_path);
 	if (ret < 0) {
-		printf("No mapping found for %s, use joypad_mapping to "
-				"create one\n", joystick_name);
+		printf("No mapping for %s, create one with joypad_mapping\n",
+				joystick_name);
 		cleanup_joystick_config(joystick_config);
 	}
 }
@@ -142,7 +140,6 @@ static void joy_device_removed(struct s_gb *gb, const union SDL_Event *event)
 static void button_down(struct s_gb *gb, enum gb_button button)
 {
 	gb->gb_interrupts.interFlag |= INT_JOYPAD;
-	gb->gb_cpu.stopCpu = 0;
 	if (BUTTON_IS_KEY(button))
 		gb->gb_pad.button_key &= ~BUTTON_TO_KEY(button);
 	else
@@ -217,9 +214,21 @@ static void joy_axis_motion(struct s_gb *gb, const union SDL_Event *event)
 	}
 }
 
+static bool is_fullscreen(const struct SDL_WindowEvent *we)
+{
+	int ret;
+	SDL_DisplayMode dm;
+	ret = SDL_GetCurrentDisplayMode(0, &dm);
+	if (ret != 0)
+		return false;
+
+	return dm.w == we->data1 && dm.h == we->data2;
+}
+
 void handleEvent(struct s_gb *gb_s)
 {
 	union SDL_Event *event;
+	struct SDL_WindowEvent *we;
 
 	event = &(gb_s->gb_gpu.event);
 	if (SDL_PollEvent(event) == 0)
@@ -231,6 +240,27 @@ void handleEvent(struct s_gb *gb_s)
 		gb_s->running = 0;
 		break;
 	}
+
+	case SDL_WINDOWEVENT:
+		we = &gb_s->gb_gpu.event.window;
+		switch (we->event) {
+		case SDL_WINDOWEVENT_SIZE_CHANGED:
+			if (is_fullscreen(we)) {
+				if (gb_s->gb_gpu.mouse_visible) {
+					SDL_ShowCursor(SDL_DISABLE);
+					gb_s->gb_gpu.mouse_visible = false;
+				}
+			} else {
+				if (!gb_s->gb_gpu.mouse_visible) {
+					SDL_ShowCursor(SDL_ENABLE);
+					gb_s->gb_gpu.mouse_visible = true;
+				}
+			}
+			break;
+		case SDL_WINDOWEVENT_MOVED:
+			break;
+		}
+		break;
 
 	case SDL_JOYDEVICEADDED:
 		joy_device_added(gb_s, event->jdevice.which);

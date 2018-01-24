@@ -1,7 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#ifdef _WIN32
+#include "platform.h"
+#else
 #include <argz.h>
 #include <envz.h>
+#endif
 
 #include "ae_config.h"
 

@@ -24,7 +24,7 @@ grep -E '</?tr|td|th|table' ${file} > ${temp_file}
 
 re_td='<td [^>]*axis="(.*)">(.*)<.*'
 re_td_ln='<td class="ln">'
-re_help='(.*)\|(.*)\|(.*)\|(.*)'
+re_help='(.*)\|(.*)\|(.*)\|(.*)\|(.*)'
 re_sll='^sll (.*)'
 
 cf=0
@@ -60,8 +60,9 @@ function parse_instruction_line() {
 	flags="${BASH_REMATCH[1]}"
 	size=${BASH_REMATCH[2]}
 	cycles=${BASH_REMATCH[3]}
+	cycles_cond=${BASH_REMATCH[4]}
 	opcode=0x${high_nibble}${low_nibble}
-	doc=${BASH_REMATCH[4]}
+	doc=${BASH_REMATCH[5]}
 	func=$(text_to_func "${title}" ${text})
 }
 
@@ -71,6 +72,7 @@ function parse_exec_line() {
 	flags="----"
 	size=2
 	cycles=0
+	cycles_cond=0
 	doc="execute instruction in subtable ${opcode}"
 	func="${title}exec_${opcode}"
 }
@@ -85,8 +87,8 @@ parse_line() {
 		printf -v low_nibble "%X" ${line_number}
 
 		${action}
-		${body_gen} ${opcode} "${text}" "${doc}" ${cycles} ${size} \
-			${func} "${title}" "${flags}"
+		${body_gen} ${opcode} "${text}" "${doc}" ${cycles} \
+			${cycles_cond} ${size} ${func} "${title}" "${flags}"
 
 		line_number=$((${line_number} + 1))
 	fi
@@ -102,6 +104,7 @@ function generate() {
 	local text
 	local flags
 	local cycles
+	local cycles_cond
 	local doc
 	local opcode
 	local func
@@ -146,6 +149,7 @@ function generate_cb_opcode() {
 function generate_base_opcode() {
 	local text=( $1 )
 	local opcode=$2
+	local cycles_cond=$3
 
 	if [ ${#text[*]} -eq 1 ]; then
 		operands=""
@@ -156,7 +160,7 @@ function generate_base_opcode() {
 
 	# call if function is defined
 	if type -t generate_base_${op}_code > /dev/null; then
-		generate_base_${op}_code "${operands}" ${opcode}
+		generate_base_${op}_code "${operands}" ${opcode} ${cycles_cond}
 	else
 		echo "not implemented yet: [${opcode}] ${op} \"${operands}\"" > /dev/stderr
 	fi
@@ -169,10 +173,11 @@ function definition_body_gen() {
 	local text=$2
 	local doc=$3
 	local cycles=$4
-	local size=$5
-	local func=$6
-	local title=$7
-	local flags=$8
+	local cycles_cond=$5
+	local size=$6
+	local func=$7
+	local title=$8
+	local flags
 
 	if [ "${func}" = "und" ]; then
 		if [ "${und_defined}" = "false" ]; then
@@ -182,14 +187,14 @@ function definition_body_gen() {
 		fi
 	fi
 
-	flags=( "${8:0:1}" "${8:1:1}" "${8:2:1}" "${8:3:1}" )
+	flags=( "${9:0:1}" "${9:1:1}" "${9:2:1}" "${9:3:1}" )
 	echo "/* ${text} [${opcode}] : ${doc} */"
-	echo "static void ${func}(struct s_gb *s_gb)"
+	echo "static unsigned ${func}(struct s_gb *s_gb)"
 	echo "{"
 	if [ "${title}" = "CB" ]; then
 		generate_cb_opcode "${text}" ${opcode}
 	else
-		generate_base_opcode "${text}" ${opcode}
+		generate_base_opcode "${text}" ${opcode} ${cycles_cond}
 	fi
 	for f in zf nf hf cf; do
 		case ${flags[${f}]} in
@@ -214,7 +219,7 @@ function definition_body_gen() {
 			echo "	/* unknown action on ${f} */"
 		esac
 	done
-	echo "}"
+	echo -e "\n\treturn ${cycles};\n}"
 	echo
 }
 
@@ -236,8 +241,9 @@ function struct_body_gen() {
 	local text=$2
 	local doc=$3
 	local cycles=$4
-	local real_size=$5
-	local func=$6
+	local cycles_cond=$5
+	local real_size=$6
+	local func=$7
 
 	size=${real_size}
 	for op in jp jr ret call rst reti; do
@@ -252,6 +258,7 @@ function struct_body_gen() {
 		.value = "${text}",
 		.doc = "${doc}",
 		.cycles = ${cycles},
+		.cycles_cond = ${cycles_cond},
 		.size = ${size},
 		.real_size = ${real_size},
 		.func = ${func},
@@ -273,22 +280,6 @@ cat <<here_doc_delim
 #include "utils.h"
 #include "GB.h"
 #include "instructions.h"
-
-static uint16_t pop16(struct s_gb *s_gb)
-{
-	uint16_t value;
-
-	value = read16bit(s_gb->gb_register.sp, s_gb);
-	s_gb->gb_register.sp += 2;
-
-	return value;
-}
-
-static void push16(uint16_t value, struct s_gb *s_gb)
-{
-	s_gb->gb_register.sp -= 2;
-	write16bitToAddr(s_gb->gb_register.sp, value, s_gb);
-}
 
 /* base instruction set */
 here_doc_delim

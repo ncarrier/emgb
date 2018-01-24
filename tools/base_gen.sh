@@ -187,6 +187,7 @@ function generate_base_call_code() {
 	local operands
 	local cond
 	local neg
+	local cycles_cond=$3
 
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
@@ -195,15 +196,16 @@ function generate_base_call_code() {
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
 	if (${neg}${regs}.${cond: -1}f) {
-		push16(${pc} + 3, s_gb);
+		push(${pc} + 3, s_gb);
 		${pc} = read16bit(${pc} + 1, s_gb);
-	} else {
-		${pc} += 3;
+		return ${cycles_cond};
 	}
+
+	${pc} += 3;
 here_doc_delim
 	else
 		cat <<here_doc_delim
-	push16(${pc} + 3, s_gb);
+	push(${pc} + 3, s_gb);
 	${pc} = read16bit(${pc} + 1, s_gb);
 here_doc_delim
 	fi
@@ -298,7 +300,7 @@ function generate_base_ei_code() {
 }
 
 function generate_base_halt_code() {
-	echo -e "\ts_gb->gb_cpu.stopCpu = 1;"
+	echo -e "\ts_gb->gb_cpu.halted = true; puts(\"halted\");"
 }
 
 function generate_base_inc_code() {
@@ -335,6 +337,7 @@ function generate_base_inc_code() {
 function generate_base_jp_code() {
 	local operands
 	local neg
+	local cycles_cond=$3
 
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
@@ -343,10 +346,12 @@ function generate_base_jp_code() {
 
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
-	if (${neg}${regs}.${cond: -1}f)
+	if (${neg}${regs}.${cond: -1}f) {
 		${pc} = read16bit(${pc} + 1, s_gb);
-	else
-		${pc} += 3;
+		return ${cycles_cond};
+	}
+
+	${pc} += 3;
 here_doc_delim
 	else
 		generate_base_jp_uncond_code $1
@@ -356,6 +361,7 @@ here_doc_delim
 function generate_base_jr_code() {
 	local operands
 	local neg
+	local cycles_cond=$3
 
 	if [[ "$1" == *","* ]]; then
 		OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
@@ -363,10 +369,12 @@ function generate_base_jr_code() {
 
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
-	if (${neg}${regs}.${cond: -1}f)
+	if (${neg}${regs}.${cond: -1}f) {
 		${pc} += (int8_t)read8bit(${pc} + 1, s_gb) + 2;
-	else
-		${pc} += 2;
+		return ${cycles_cond};
+	}
+
+	${pc} += 2;
 here_doc_delim
 	else
 		echo -e "\t${pc} += (int8_t)read8bit(${regs}.pc + 1, s_gb) + 2;"
@@ -455,7 +463,7 @@ function generate_base_or_code() {
 function generate_base_pop_code() {
 	local reg=$1
 
-	echo -e "\t${regs}.${reg} = pop16(s_gb);"
+	echo -e "\t${regs}.${reg} = pop(s_gb);"
 	if [ ${reg} = "af" ]; then
 		echo -e "\t${regs}.f &= 0xf0;"
 	fi
@@ -464,12 +472,13 @@ function generate_base_pop_code() {
 function generate_base_push_code() {
 	local reg=$1
 
-	echo -e "\tpush16(${regs}.${reg}, s_gb);"
+	echo -e "\tpush(${regs}.${reg}, s_gb);"
 }
 
 function generate_base_ret_code() {
 	local operands
 	local neg
+	local cycles_cond=$3
 
 	if [ -n "$1" ]; then
 		OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
@@ -477,19 +486,21 @@ function generate_base_ret_code() {
 
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
-	if (${neg}${regs}.${cond: -1}f)
-		${pc} = pop16(s_gb);
-	else
-		${pc}++;
+	if (${neg}${regs}.${cond: -1}f) {
+		${pc} = pop(s_gb);
+		return ${cycles_cond};
+	}
+
+	${pc}++;
 here_doc_delim
 	else
-		echo -e "\t${pc} = pop16(s_gb);"
+		echo -e "\t${pc} = pop(s_gb);"
 	fi
 }
 
 function generate_base_reti_code() {
 	cat <<here_doc_delim
-	${regs}.pc = pop16(s_gb);
+	${regs}.pc = pop(s_gb);
 	s_gb->gb_interrupts.interMaster = 1;
 here_doc_delim
 }
@@ -573,7 +584,7 @@ function generate_base_scf_code() {
 
 function generate_base_stop_code() {
 	cat <<here_doc_delim
-	s_gb->gb_cpu.stopCpu = 1;
+	s_gb->gb_cpu.stopped = true;
 here_doc_delim
 }
 
