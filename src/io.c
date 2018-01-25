@@ -55,14 +55,16 @@ void updateLcdc(struct gb *gb)
 
 }
 
-unsigned char padState(struct gb *gb)
+unsigned char padState(const struct gb *gb)
 {
 	const struct joypad *pad;
+	const struct memory *memory;
 
+	memory = &gb->memory;
 	pad = &gb->joypad;
-	if ((*pad->key & 0x20) == 0)
+	if ((memory->register_p1 & 0x20) == 0)
 		return 0xc0 | pad->button_key | 0x10;
-	else if ((*pad->key & 0x10) == 0)
+	else if ((memory->register_p1 & 0x10) == 0)
 		return 0xc0 | pad->button_dir | 0x20;
 
 	return 0xff;

@@ -22,7 +22,7 @@ struct gb *gb_init(const char *fileName)
 	rom_init(&gb->memory.rom_bank_0_rom,
 			&gb->memory.switchable_rom_bank_rom,
 			gb->memory.extra_rom_banks, fileName);
-	joypad_init(&gb->joypad, &gb->config.config, &gb->memory);
+	joypad_init(&gb->joypad, &gb->config.config);
 	rom_display_header(&gb->memory.rom_bank_0_rom.rom_header);
 	registers_init(&gb->registers);
 	gpu_init(&gb->gpu, &gb->config.config);

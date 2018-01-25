@@ -101,7 +101,7 @@ struct memory {
 			union {
 				uint8_t io_ports[0x4c];
 				struct {
-					uint8_t key;
+					uint8_t register_p1;
 					uint8_t serial;
 				};
 			};
