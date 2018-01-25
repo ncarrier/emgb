@@ -120,8 +120,6 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 	} else if (addr >= 0xFEA0 && addr < 0xFF00) {
 		return  memory->empty_usable_for_io_1[addr - 0xFEA0];
 	} else if (addr >= 0xFF00 && addr < 0xFF4C) {
-		if (addr == 0xff44)
-			return gb->gpu.scanline;
 		switch (addr) {
 		case 0xff00:
 			memory->io_ports[addr - 0xFF00] = joypad_get_state(

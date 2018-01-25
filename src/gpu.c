@@ -240,7 +240,7 @@ static int getRealPosition(struct gb *gb)
 	lcdc = &memory->lcdc;
 	tile_map = tile_map_display_select_to_addr(
 			lcdc->bg_tile_map_display_select);
-	yPos = memory->register_scy + gb->gpu.scanline;
+	yPos = memory->register_scy + *gb->gpu.scanline;
 	yDataLine = yPos / 8;
 	/* TODO shouldn't this be %= 0x20 ? */
 	if (yDataLine > 0x1f)
@@ -281,13 +281,13 @@ static void renderingBg(struct gb *gb)
 			tileAddr = baseaddr + tileindex * 16;
 		}
 		dec = 15;
-		line = read16bit(tileAddr + (gpu->scanline % 8) * 2, gb);
+		line = read16bit(tileAddr + (*gpu->scanline % 8) * 2, gb);
 		for (x = 0; x < 8; x++) {
 			color = (line >> dec) & 0x01;
 			if ((line >> (dec - 8)) & 0x01)
 				color += 2;
 			color = color_index_to_value(gpu, color);
-			pixel_index = 160 * gpu->scanline + posx + x;
+			pixel_index = 160 * *gpu->scanline + posx + x;
 			if (pixel_index < (160 * 144))
 				gpu->pixels[pixel_index] = color;
 			dec--;
@@ -340,12 +340,12 @@ static void display(struct gb *gb)
 	/* SDL_RenderPresent(s_gb->gb_gpu.renderer_d); */
 }
 
-void gpu_init(struct gpu *gpu, struct ae_config *conf)
+void gpu_init(struct gpu *gpu, struct ae_config *conf, uint8_t *register_ly)
 {
 	display_init(gpu, conf);
 
 	gpu->gpuMode = HBLANK;
-	gpu->scanline = 0;
+	gpu->scanline = register_ly;
 	gpu->tick = 0;
 	gpu->last_tick = 0;
 	gpu->color_0 = ae_config_get_int(conf, CONFIG_COLOR_0,
@@ -373,10 +373,10 @@ void gpu_update(struct gb *gb)
 		if (gpu->tick < 204)
 			break;
 
-		if (memory->lcdc.enable_lcd && gpu->scanline < GB_H)
+		if (memory->lcdc.enable_lcd && *gpu->scanline < GB_H)
 			rendering(gb);
-		gpu->scanline++;
-		if (gpu->scanline >= GB_H) {
+		(*gpu->scanline)++;
+		if (*gpu->scanline >= GB_H) {
 			memory->register_if |= INT_VBLANK;
 			gpu->gpuMode = VBLANK;
 		}
@@ -387,20 +387,20 @@ void gpu_update(struct gb *gb)
 		if (gpu->tick < 456)
 			break;
 
-		gpu->scanline++;
-		if (gpu->scanline >= 153) {
-			gpu->scanline = 0;
+		(*gpu->scanline)++;
+		if (*gpu->scanline >= 153) {
+			*gpu->scanline = 0;
 			gpu->gpuMode = OAM;
 		}
 		gpu->tick -= 456;
-		if (memory->lcdc.enable_lcd && gpu->scanline == GB_H + 1)
+		if (memory->lcdc.enable_lcd && *gpu->scanline == GB_H + 1)
 			display(gb);
 		break;
 	case OAM:
 		if (gpu->tick < 80)
 			break;
 
-		gpu->scanline = 0;
+		*gpu->scanline = 0;
 		gpu->gpuMode = VRAM;
 		gpu->tick -= 80;
 		break;

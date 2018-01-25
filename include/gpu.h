@@ -21,7 +21,7 @@ enum gpuMode {
 };
 
 struct gpu {
-	unsigned char scanline;
+	uint8_t *scanline;
 	unsigned last_tick;
 	unsigned int tick;
 	SDL_Window *window;
@@ -45,7 +45,7 @@ struct gpu {
 	int color_3;
 };
 
-void gpu_init(struct gpu *gpu, struct ae_config *conf);
+void gpu_init(struct gpu *gpu, struct ae_config *conf, uint8_t *register_ly);
 void gpu_update(struct gb *gb);
 void displayAll(struct gb *gb);
 void renderingWindow(struct gb *gb); // TODO remove ?
