@@ -15,8 +15,6 @@ void timer_init(struct memory *memory, struct timer *time)
 	uint8_t input_clock_select;
 
 	input_clock_select = TAC_INPUT_CLOCK_SELECT(memory->register_tac);
-	printf("TAC value %d\n", memory->register_tac);
-
 	time->freq = frequencies_table[input_clock_select];
 	time->timerCount = CLOCKSPEED / time->freq;
 }

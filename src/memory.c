@@ -13,8 +13,8 @@ static void mcbHandleBanking(struct memory *memory, uint16_t addr,
 		if (memory->rom_bank_0_rom.rom_header.cartridge_type == 1) {
 			memory->mcb_rom_banking &= 0xe0;
 			memory->mcb_rom_banking |= low5;
-			printf("Lo BANK change. value => %x\n",
-					memory->mcb_rom_banking);
+//			printf("Lo BANK change. value => %x\n",
+//					memory->mcb_rom_banking);
 		}
 	} else if (addr >= 0x4000 && addr < 0x6000) {
 		/* hiRom bank change */
@@ -109,9 +109,9 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 	} else if (addr >= 0xA000 && addr < 0xC000) {
 		return  memory->sram[addr - 0xA000];
 	} else if (addr >= 0xC000 && addr < 0xE000) {
-		if (addr == 0xc0b7)
-			printf("read from ram 0xc0b7 %x\n",
-					memory->ram[addr - 0xC000]);
+//		if (addr == 0xc0b7)
+//			printf("read from ram 0xc0b7 %x\n",
+//					memory->ram[addr - 0xC000]);
 		return  memory->ram[addr - 0xC000];
 	} else if (addr >= 0xE000 && addr < 0xFE00) {
 		return  memory->ram[addr - 0xE000];
@@ -126,8 +126,8 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 			return rand();
 		if (addr == 0xff0f)
 			return memory->register_if;
-		if (addr == 0xff41)
-			printf("reading lcd stat\n");
+//		if (addr == 0xff41)
+//			printf("reading lcd stat\n");
 		if (addr == 0xff44)
 			return gb->gpu.scanline;
 		return  memory->io_ports[addr - 0xFF00];
@@ -147,8 +147,8 @@ void write8bit(uint16_t addr, uint8_t value, struct gb *gb)
 	struct memory *memory;
 
 	memory = &gb->memory;
-	if (addr == 0xffffu)
-		puts("IE");
+//	if (addr == 0xffffu)
+//		puts("IE");
 	if (addr < 0x8000) {
 		mcbHandleBanking(memory, addr, value);
 	} else if (addr >= 0x8000 && addr < 0xA000) {
@@ -165,15 +165,15 @@ void write8bit(uint16_t addr, uint8_t value, struct gb *gb)
 		memory->empty_usable_for_io_1[addr - 0xFEA0] = value;
 	} else if (addr >= 0xFF00 && addr < 0xFF4C) {
 		memory->io_ports[addr - 0xFF00] = value;
-		if (addr == 0xff41u)
-			printf("writing lcd stat %x\n", value);
+//		if (addr == 0xff41u)
+//			printf("writing lcd stat %x\n", value);
 		ctrlIo(addr, memory->io_ports, gb);
 	} else if (addr >= 0xFF4C && addr < 0xFF80) {
 		memory->empty_usable_for_io_2[addr - 0xFF4C] = value;
 	} else if (addr >= 0xFF80 && addr < 0xFFFF) {
 		memory->hram[addr - 0xFF80] = value;
 	} else if (addr == 0xFFFF) {
-		printf("%s interEnable = %"PRIu8"\n", __func__, value);
+//		printf("%s interEnable = %"PRIu8"\n", __func__, value);
 		memory->interrupt_enable = value;
 	}
 }
