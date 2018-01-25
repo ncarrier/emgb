@@ -121,7 +121,7 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 		return  memory->empty_usable_for_io_1[addr - 0xFEA0];
 	} else if (addr >= 0xFF00 && addr < 0xFF4C) {
 		if (addr == 0xff00)
-			return padState(gb);
+			return joypad_get_state(&gb->joypad, memory);
 		if (addr == 0xff04)
 			return rand();
 		if (addr == 0xff0f)
