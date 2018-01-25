@@ -17,7 +17,6 @@
 
 int ae_config_read(struct ae_config *conf, const char *path)
 {
-	int ret;
 	char cleanup(cleanup_string)*string = NULL;
 	FILE cleanup(cleanup_file)*f = NULL;
 	long size;
@@ -39,7 +38,7 @@ int ae_config_read(struct ae_config *conf, const char *path)
 
 	sret = fread(string, 1, size, f);
 	if (sret < (size_t)size)
-		return feof(f) ? -EIO : ret;
+		return -EIO;
 
 	return ae_config_read_from_string(conf, string);
 }
