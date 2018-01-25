@@ -136,7 +136,7 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 	} else if (addr >= 0xFF80 && addr < 0xFFFF) {
 		return  memory->hram[addr - 0xFF80];
 	} else if (addr == 0xffff) {
-		return gb->interrupts.interEnable;
+		return memory->interrupt_enable;
 	}
 	printf("read error : addr %x\n", addr);
 	exit(-2);
@@ -174,7 +174,7 @@ void write8bit(uint16_t addr, uint8_t value, struct gb *gb)
 		memory->hram[addr - 0xFF80] = value;
 	} else if (addr == 0xFFFF) {
 		printf("%s interEnable = %"PRIu8"\n", __func__, value);
-		gb->interrupts.interEnable = value;
+		memory->interrupt_enable = value;
 	}
 }
 

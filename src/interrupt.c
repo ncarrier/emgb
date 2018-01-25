@@ -47,14 +47,15 @@ void timer(struct gb *gb_s)
 void doInterupt(struct gb *gb_s)
 {
 	unsigned char inter;
+	struct memory *memory;
 
+	memory = &gb_s->memory;
 	if (gb_s->interrupts.interFlag & INT_JOYPAD)
 		gb_s->cpu.stopped = false;
 	gb_s->cpu.halted = false;
-	if (gb_s->interrupts.interMaster && gb_s->interrupts.interEnable
+	if (gb_s->interrupts.interMaster && memory->interrupt_enable
 			&& gb_s->interrupts.interFlag) {
-		inter = gb_s->interrupts.interEnable
-				& gb_s->interrupts.interFlag;
+		inter = memory->interrupt_enable & gb_s->interrupts.interFlag;
 		if (inter != 0)
 			gb_s->cpu.halted = false;
 		if (inter & INT_VBLANK) {

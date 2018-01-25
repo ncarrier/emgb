@@ -18,7 +18,6 @@ void vblank(struct gb *gb_s);
 struct interupts {
 	unsigned char interMaster;
 	unsigned char interFlag;
-	unsigned char interEnable;
 };
 
 #endif
