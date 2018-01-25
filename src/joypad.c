@@ -23,7 +23,7 @@
 #define BUTTON_TO_KEY(b) (1 << ((b) & ~BUTTON_KEY_OR_DIR_MASK))
 #define BUTTON_TO_DIR(b) (1 << (b))
 
-void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
+static void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
 		const char *key, SDL_Keycode default_sym)
 {
 	const char *key_name;
