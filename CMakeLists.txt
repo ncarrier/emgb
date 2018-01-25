@@ -32,7 +32,17 @@ add_custom_command(OUTPUT ${GENERATED_INSTRUCTIONS}
 		${GENERATED_INSTRUCTIONS})
 
 if (UNIX)
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
+add_definitions("
+    -Wall
+    -Wextra
+    -Wformat=2
+    -Wunused-variable
+    -Wold-style-definition
+    -Wstrict-prototypes
+    -Wno-unused-parameter
+    -Wmissing-declarations
+    -Wmissing-prototypes
+    -Wpointer-arith")
 endif (UNIX)
 
 
