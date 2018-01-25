@@ -120,17 +120,18 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 	} else if (addr >= 0xFEA0 && addr < 0xFF00) {
 		return  memory->empty_usable_for_io_1[addr - 0xFEA0];
 	} else if (addr >= 0xFF00 && addr < 0xFF4C) {
-		if (addr == 0xff00)
-			return joypad_get_state(&gb->joypad, memory);
-		if (addr == 0xff04)
-			return rand();
-		if (addr == 0xff0f)
-			return memory->register_if;
-//		if (addr == 0xff41)
-//			printf("reading lcd stat\n");
 		if (addr == 0xff44)
 			return gb->gpu.scanline;
-		return  memory->io_ports[addr - 0xFF00];
+		switch (addr) {
+		case 0xff00:
+			memory->io_ports[addr - 0xFF00] = joypad_get_state(
+					&gb->joypad, memory);
+			break;
+		case 0xff04:
+			memory->io_ports[addr - 0xFF00] = rand();
+			break;
+		}
+		return memory->io_ports[addr - 0xFF00];
 	} else if (addr >= 0xFF4C && addr < 0xFF80) {
 		return  memory->empty_usable_for_io_2[addr - 0xFF4C];
 	} else if (addr >= 0xFF80 && addr < 0xFFFF) {
