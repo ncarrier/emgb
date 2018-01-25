@@ -1,60 +1,5 @@
 #include "gb.h"
 
-void updateLcdc(struct gb *gb)
-{
-	struct lcd *lcd;
-	uint8_t lcdc;
-	struct io *io;
-
-	io = &gb->io;
-	lcd = &io->lcd;
-	lcdc = io->lcdc;
-	if (lcdc & 0x01)
-		lcd->BgWindowDisplay = 1;
-	else
-		lcd->BgWindowDisplay = 0;
-
-	if (lcdc & 0x02)
-		lcd->SpriteIsOn = 1;
-	else
-		lcd->SpriteIsOn = 0;
-
-	if (lcdc & 0x04)
-		lcd->SpriteSize = 16;
-	else
-		lcd->SpriteSize = 8;
-
-	if (lcdc & 0x08)
-		lcd->BgTileMapSelect = 0x9c00;
-	else
-		lcd->BgTileMapSelect = 0x9800;
-
-	if (lcdc & 0x10)
-		lcd->BgWindowTileData = 0x8000;
-	else
-		lcd->BgWindowTileData = 0x8800;
-
-	if (lcdc & 0x20)
-		lcd->WindowIsOn = 1;
-	else
-		lcd->WindowIsOn = 0;
-
-	if (lcdc & 0x40)
-		lcd->WindowTileMapSelect = 0x9c00;
-	else
-		lcd->WindowTileMapSelect = 0x9800;
-
-	if (lcdc & 0x80)
-		lcd->LcdIsOn = 1;
-	else
-		lcd->LcdIsOn = 0;
-
-	printf("lcd->BgTileMapSelect %x lcd->BgWindowTileData %x\n",
-			lcd->BgTileMapSelect, lcd->BgWindowTileData);
-	printf("display windows ? %x\n", lcd->WindowIsOn);
-
-}
-
 unsigned char padState(const struct gb *gb)
 {
 	const struct joypad *pad;
@@ -90,10 +35,6 @@ void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb)
 		io->timerCtrl = io_ports[0x07];
 		timer_init(gb);
 		printf("timer ctrl %x\n", io->timerCtrl);
-		break;
-	case 0xff40:
-		io->lcdc = io_ports[0x40];
-		updateLcdc(gb);
 		break;
 	case 0xff42:
 		io->scrollY = io_ports[0x42];

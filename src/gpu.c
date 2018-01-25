@@ -138,15 +138,18 @@ void renderingWindow(struct gb *gb)
 	unsigned char tileindex;
 	int tmpaddr;
 	struct io *io;
-	struct lcd *lcd;
+	enum tile_map_display_select tile_map_sel;
+	uint16_t tile_map;
 
 	io = &gb->io;
-	lcd = &io->lcd;
-	limit = lcd->WindowTileMapSelect + 0x400;
-	baseaddr = lcd->BgWindowTileData;
+	tile_map_sel = gb->memory.lcdc.window_tile_map_display_select;
+	tile_map = tile_map_display_select_to_addr(tile_map_sel);
+	limit = tile_map + 0x400;
+	baseaddr = bg_window_tile_data_select_to_addr(
+			gb->memory.lcdc.bg_window_tile_data_select);
 	posx = 0;
 	posy = 0;
-	for (i = lcd->WindowTileMapSelect; i < limit; i++) {
+	for (i = tile_map; i < limit; i++) {
 		tileindex = read8bit(i, gb);
 		tmpaddr = baseaddr + tileindex * 16;
 		for (y = 0; y < 8; y++) {
@@ -178,7 +181,7 @@ void renderingWindow(struct gb *gb)
 
 void renderingSprite(struct gb *gb)
 {
-	int y;
+	unsigned y;
 	int x;
 	unsigned short line;
 	int color;
@@ -190,13 +193,15 @@ void renderingSprite(struct gb *gb)
 	int baseaddr = 0x8000;
 	int tmpaddr;
 	int index;
+	unsigned sprite_size;
 
+	sprite_size = gb->memory.lcdc.sprite_size == SPRITE_SIZE_8X8 ? 8 : 16;
 	for (index = 0xFE00; index < limit; index += 4) {
 		posy = gb->memory.oam[index - 0xFE00] - 16;
 		posx = gb->memory.oam[index + 1 - 0xFE00] - 8;
 		tileindex = gb->memory.oam[index + 2 - 0xFE00];
 		tmpaddr = baseaddr + (tileindex * 16);
-		for (y = 0; tileindex && y < gb->io.lcd.SpriteSize; y++) {
+		for (y = 0; tileindex && y < sprite_size; y++) {
 			dec = 15;
 			line = read16bit(tmpaddr, gb);
 			for (x = 0; x < 8; x++) {
@@ -227,15 +232,20 @@ static int getRealPosition(struct gb *gb)
 	int lineOffset;
 	int dataOffset;
 	struct io *io;
+	struct lcdc *lcdc;
+	int tile_map;
 
+	lcdc = &gb->memory.lcdc;
 	io = &gb->io;
+	tile_map = tile_map_display_select_to_addr(
+			lcdc->bg_tile_map_display_select);
 	yPos = io->scrollY + gb->gpu.scanline;
 	yDataLine = yPos / 8;
 	/* TODO shouldn't this be %= 0x20 ? */
 	if (yDataLine > 0x1f)
 		yDataLine -= 0x20;
 	lineOffset = yDataLine * 0x20; /* 0x20 * 8 == 0x100 == 256 (a line) */
-	dataOffset = io->lcd.BgTileMapSelect + lineOffset + io->scrollX;
+	dataOffset = tile_map + lineOffset + io->scrollX;
 
 	return dataOffset;
 }
@@ -253,17 +263,16 @@ static void renderingBg(struct gb *gb)
 	int dataOffset;
 	int index;
 	int tileAddr;
-	struct io *io;
 	struct gpu *gpu;
 	int pixel_index;
 
 	gpu = &gb->gpu;
-	io = &gb->io;
-	baseaddr = io->lcd.BgWindowTileData;
+	baseaddr = bg_window_tile_data_select_to_addr(
+			gb->memory.lcdc.bg_window_tile_data_select);
 	dataOffset = getRealPosition(gb);
 	posx = 0;
 	for (index = 0; index < 20; index++) {
-		if (io->lcd.BgWindowTileData == 0x8800) {
+		if (baseaddr == 0x8800) {
 			stileindex = (signed)(read8bit(index + dataOffset, gb));
 			tileAddr = baseaddr + (stileindex + 128) * 16;
 		} else {
@@ -288,9 +297,12 @@ static void renderingBg(struct gb *gb)
 
 static void rendering(struct gb *gb)
 {
-	if (gb->io.lcd.BgWindowDisplay == 1)
+	struct memory *memory;
+
+	memory = &gb->memory;
+	if (memory->lcdc.enable_bg_window_display)
 		renderingBg(gb);
-	if (gb->io.lcd.SpriteIsOn == 1)
+	if (memory->lcdc.enable_sprite_display)
 		renderingSprite(gb);
 }
 
@@ -360,7 +372,7 @@ void gpu_update(struct gb *gb)
 		if (gpu->tick < 204)
 			break;
 
-		if (gb->io.lcd.LcdIsOn == 1 && gpu->scanline < GB_H)
+		if (memory->lcdc.enable_lcd && gpu->scanline < GB_H)
 			rendering(gb);
 		gpu->scanline++;
 		if (gpu->scanline >= GB_H) {
@@ -380,7 +392,7 @@ void gpu_update(struct gb *gb)
 			gpu->gpuMode = OAM;
 		}
 		gpu->tick -= 456;
-		if (gb->io.lcd.LcdIsOn == 1 && gpu->scanline == GB_H + 1)
+		if (memory->lcdc.enable_lcd && gpu->scanline == GB_H + 1)
 			display(gb);
 		break;
 	case OAM:

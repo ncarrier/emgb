@@ -59,6 +59,54 @@ void rom_display_header(struct rom_header *rom_header);
  */
 #pragma pack(push, 1)
 
+enum sprite_size {
+	SPRITE_SIZE_8X8,
+	SPRITE_SIZE_8X16,
+};
+
+enum tile_map_display_select {
+	TILE_MAP_DISPLAY_SELECT_8,
+	TILE_MAP_DISPLAY_SELECT_C,
+};
+
+enum bg_window_tile_data_select {
+	BG_WINDOW_TILE_DATA_SELECT_8,
+	BG_WINDOW_TILE_DATA_SELECT_0,
+};
+
+static inline uint16_t tile_map_display_select_to_addr(
+		enum tile_map_display_select sel)
+{
+	static const uint16_t addr[] = {
+			[TILE_MAP_DISPLAY_SELECT_8] = 0x9800,
+			[TILE_MAP_DISPLAY_SELECT_C] = 0x9c00,
+	};
+
+	return addr[sel];
+}
+
+static inline uint16_t bg_window_tile_data_select_to_addr(
+		enum bg_window_tile_data_select sel)
+{
+	static const uint16_t addr[] = {
+			[BG_WINDOW_TILE_DATA_SELECT_8] = 0x8800,
+			[BG_WINDOW_TILE_DATA_SELECT_0] = 0x8000,
+	};
+
+	return addr[sel];
+}
+
+struct lcdc {
+	bool enable_bg_window_display:1;
+	bool enable_sprite_display:1;
+	enum sprite_size sprite_size:1;
+	enum tile_map_display_select bg_tile_map_display_select:1;
+	enum bg_window_tile_data_select bg_window_tile_data_select:1;
+	bool enable_window_display:1;
+	enum tile_map_display_select window_tile_map_display_select:1;
+	bool enable_lcd:1;
+};
+
 /* memory mapping extracted from GBCPUman.pdf 2.5.1 */
 struct memory {
 	uint8_t mcb_rom_banking;
@@ -144,7 +192,10 @@ struct memory {
 					uint8_t register_nr52; /*  0xff26u */
 					uint8_t register_padding_ff27_2f[9];
 					uint8_t register_wpram[0x10];
-					uint8_t register_lcdc; /*  0xff40u */
+					union {
+						uint8_t register_lcdc; /*  0xff40u */
+						struct lcdc lcdc;
+					};
 					uint8_t register_stat; /*  0xff41u */
 					uint8_t register_scy; /*  0xff42u */
 					uint8_t register_scx; /*  0xff43u */
