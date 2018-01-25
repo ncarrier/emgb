@@ -33,7 +33,6 @@
 struct gb {
 	struct timer time;
 	struct registers registers;
-	struct io io;
 	struct gpu gpu;
 	struct interrupts interrupts;
 	struct memory memory;

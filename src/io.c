@@ -27,21 +27,9 @@ void oamTransfert(unsigned char src, struct gb *gb)
 
 void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb)
 {
-	struct io *io;
-
-	io = &gb->io;
 	switch (addr) {
 	case 0xff07:
-		io->timerCtrl = io_ports[0x07];
-		timer_init(gb);
-		printf("timer ctrl %x\n", io->timerCtrl);
-		break;
-	case 0xff42:
-		io->scrollY = io_ports[0x42];
-		break;
-	case 0xff43:
-		io->scrollX = io_ports[0x43];
-/*		printf("scroll x = %x\n", io->scrollX); */
+		timer_init(&gb->memory, &gb->time);
 		break;
 	case 0xff46:
 		oamTransfert(io_ports[0x46], gb);

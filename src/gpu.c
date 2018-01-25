@@ -137,16 +137,16 @@ void renderingWindow(struct gb *gb)
 	int i;
 	unsigned char tileindex;
 	int tmpaddr;
-	struct io *io;
 	enum tile_map_display_select tile_map_sel;
 	uint16_t tile_map;
+	struct memory *memory;
 
-	io = &gb->io;
-	tile_map_sel = gb->memory.lcdc.window_tile_map_display_select;
+	memory = &gb->memory;
+	tile_map_sel = memory->lcdc.window_tile_map_display_select;
 	tile_map = tile_map_display_select_to_addr(tile_map_sel);
 	limit = tile_map + 0x400;
 	baseaddr = bg_window_tile_data_select_to_addr(
-			gb->memory.lcdc.bg_window_tile_data_select);
+			memory->lcdc.bg_window_tile_data_select);
 	posx = 0;
 	posy = 0;
 	for (i = tile_map; i < limit; i++) {
@@ -160,11 +160,12 @@ void renderingWindow(struct gb *gb)
 						+ ((line >> (dec - 8)) & 0x01);
 				if (color != 0) {
 					gb->gpu.pixels[256
-							* (io->scrollY + posy
+							* (memory->register_scy
+									+ posy
 									+ y)
-							+ io->scrollX + posx
-									+ x] =
-							(color * 0xff) | B;
+							+ memory->register_scx
+							+ posx + x] = (color
+							* 0xff) | B;
 				}
 				dec--;
 			}
@@ -231,21 +232,21 @@ static int getRealPosition(struct gb *gb)
 	int yDataLine;
 	int lineOffset;
 	int dataOffset;
-	struct io *io;
 	struct lcdc *lcdc;
 	int tile_map;
+	struct memory *memory;
 
-	lcdc = &gb->memory.lcdc;
-	io = &gb->io;
+	memory = &gb->memory;
+	lcdc = &memory->lcdc;
 	tile_map = tile_map_display_select_to_addr(
 			lcdc->bg_tile_map_display_select);
-	yPos = io->scrollY + gb->gpu.scanline;
+	yPos = memory->register_scy + gb->gpu.scanline;
 	yDataLine = yPos / 8;
 	/* TODO shouldn't this be %= 0x20 ? */
 	if (yDataLine > 0x1f)
 		yDataLine -= 0x20;
 	lineOffset = yDataLine * 0x20; /* 0x20 * 8 == 0x100 == 256 (a line) */
-	dataOffset = tile_map + lineOffset + io->scrollX;
+	dataOffset = tile_map + lineOffset + memory->register_scx;
 
 	return dataOffset;
 }

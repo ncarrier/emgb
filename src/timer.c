@@ -10,17 +10,15 @@ static const unsigned frequencies_table[] = {
 		[3] = 16384u,
 };
 
-void timer_init(struct gb *s_gb)
+void timer_init(struct memory *memory, struct timer *time)
 {
-	uint8_t tac;
 	uint8_t input_clock_select;
 
-	tac = read8bit(SPECIAL_REGISTER_TAC, s_gb);
-	printf("TAC value %d\n", tac);
-	input_clock_select = TAC_INPUT_CLOCK_SELECT(tac);
+	input_clock_select = TAC_INPUT_CLOCK_SELECT(memory->register_tac);
+	printf("TAC value %d\n", memory->register_tac);
 
-	s_gb->time.freq = frequencies_table[input_clock_select];
-	s_gb->time.timerCount = CLOCKSPEED / s_gb->time.freq;
+	time->freq = frequencies_table[input_clock_select];
+	time->timerCount = CLOCKSPEED / time->freq;
 }
 
 void updateTimer(struct gb *s_gb)

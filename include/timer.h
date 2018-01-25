@@ -7,14 +7,15 @@
 #define TAC_TIMER_ENABLED(tac) ((tac) & 0x04)
 
 struct gb;
-void timer_init(struct gb *s_gb);
-void updateTimer(struct gb *s_gb);
-
+struct memory;
 struct timer {
 	unsigned int freq;
 	unsigned char ctrl;
 	unsigned char modulator;
 	int timerCount;
 };
+
+void timer_init(struct memory *memory, struct timer *time);
+void updateTimer(struct gb *s_gb);
 
 #endif
