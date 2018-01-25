@@ -17,7 +17,6 @@ void vblank(struct gb *gb_s);
 
 struct interrupts {
 	unsigned char interMaster;
-	unsigned char interFlag;
 };
 
 #endif

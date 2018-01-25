@@ -125,7 +125,7 @@ uint8_t read8bit(uint16_t addr, struct gb *gb)
 		if (addr == 0xff04)
 			return rand();
 		if (addr == 0xff0f)
-			return gb->interrupts.interFlag;
+			return memory->register_if;
 		if (addr == 0xff41)
 			printf("reading lcd stat\n");
 		if (addr == 0xff44)

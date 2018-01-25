@@ -29,7 +29,9 @@ void updateTimer(struct gb *s_gb)
 	uint8_t tac;
 	uint8_t tima;
 	uint8_t tma;
+	struct memory *memory;
 
+	memory = &s_gb->memory;
 	tac = read8bit(SPECIAL_REGISTER_TAC, s_gb);
 	cpu = &s_gb->cpu;
 
@@ -48,7 +50,7 @@ void updateTimer(struct gb *s_gb)
 	if (tima == 0xffu) {
 		tma = read8bit(0xff06, s_gb);
 		write8bit(SPECIAL_REGISTER_TIMA, tma, s_gb);
-		s_gb->interrupts.interFlag |= INT_TIMER;
+		memory->register_if |= INT_TIMER;
 	} else {
 		write8bit(SPECIAL_REGISTER_TIMA, tima + 1, s_gb);
 	}

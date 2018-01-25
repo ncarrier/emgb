@@ -58,6 +58,7 @@ void rom_display_header(struct rom_header *rom_header);
  * dependency. Fix that ASAP
  */
 #pragma pack(push, 1)
+
 /* memory mapping extracted from GBCPUman.pdf 2.5.1 */
 struct memory {
 	uint8_t mcb_rom_banking;
@@ -101,8 +102,60 @@ struct memory {
 			union {
 				uint8_t io_ports[0x4c];
 				struct {
+					/* joypad state */
 					uint8_t register_p1;
-					uint8_t serial;
+					/* serial transfer data */
+					uint8_t register_sb;
+					/* serial io control */
+					uint8_t register_sc;
+					uint8_t register_padding_ff03;
+					/* divide register */
+					uint8_t register_div;
+					/* timer counter */
+					uint8_t register_tima;
+					/* timer modulo */
+					uint8_t register_tma;
+					/* timer control */
+					uint8_t register_tac;
+					uint8_t register_padding_ff08_0e[7];
+					uint8_t register_if; /*  0xff0fu */
+					uint8_t register_nr10; /*  0xff10u */
+					uint8_t register_nr11; /*  0xff11u */
+					uint8_t register_nr12; /*  0xff12u */
+					uint8_t register_nr13; /*  0xff13u */
+					uint8_t register_nr14; /*  0xff14u */
+					uint8_t register_padding_ff15;
+					uint8_t register_nr21; /*  0xff16u */
+					uint8_t register_nr22; /*  0xff17u */
+					uint8_t register_nr23; /*  0xff18u */
+					uint8_t register_nr24; /*  0xff19u */
+					uint8_t register_nr30; /*  0xff1au */
+					uint8_t register_nr31; /*  0xff1bu */
+					uint8_t register_nr32; /*  0xff1cu */
+					uint8_t register_nr33; /*  0xff1du */
+					uint8_t register_nr34; /*  0xff1eu */
+					uint8_t register_padding_ff1f;
+					uint8_t register_nr41; /*  0xff20u */
+					uint8_t register_nr42; /*  0xff21u */
+					uint8_t register_nr43; /*  0xff22u */
+					uint8_t register_nr44; /*  0xff23u */
+					uint8_t register_nr50; /*  0xff24u */
+					uint8_t register_nr51; /*  0xff25u */
+					uint8_t register_nr52; /*  0xff26u */
+					uint8_t register_padding_ff27_2f[9];
+					uint8_t register_wpram[0x10];
+					uint8_t register_lcdc; /*  0xff40u */
+					uint8_t register_stat; /*  0xff41u */
+					uint8_t register_scy; /*  0xff42u */
+					uint8_t register_scx; /*  0xff43u */
+					uint8_t register_ly; /*  0xff44u */
+					uint8_t register_lyc; /*  0xff45u */
+					uint8_t register_dma; /*  0xff46u */
+					uint8_t register_bgp; /*  0xff47u */
+					uint8_t register_obp0; /*  0xff48u */
+					uint8_t register_obp1; /*  0xff49u */
+					uint8_t register_wy; /*  0xff4au */
+					uint8_t register_wx; /*  0xff4bu */
 				};
 			};
 			/* 0xff4c */

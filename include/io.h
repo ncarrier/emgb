@@ -27,7 +27,6 @@ struct io {
 	uint8_t timerCtrl;
 	uint8_t sndStat;
 	uint8_t sndStereo;
-	uint8_t voice;
 	uint8_t lcdc;
 
 	struct lcd lcd;

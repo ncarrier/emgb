@@ -348,7 +348,9 @@ void gpu_init(struct gpu *gpu, struct ae_config *conf)
 void gpu_update(struct gb *gb)
 {
 	struct gpu *gpu;
+	struct memory *memory;
 
+	memory = &gb->memory;
 	gpu = &gb->gpu;
 	gpu->tick += gb->cpu.totalTick - gpu->last_tick;
 	gpu->last_tick = gb->cpu.totalTick;
@@ -362,7 +364,7 @@ void gpu_update(struct gb *gb)
 			rendering(gb);
 		gpu->scanline++;
 		if (gpu->scanline >= GB_H) {
-			gb->interrupts.interFlag |= INT_VBLANK;
+			memory->register_if |= INT_VBLANK;
 			gpu->gpuMode = VBLANK;
 		}
 

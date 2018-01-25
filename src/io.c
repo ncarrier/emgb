@@ -86,36 +86,10 @@ void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb)
 
 	io = &gb->io;
 	switch (addr) {
-	case 0xff00:
-		/* joypad key, handled by direct memory access */
-		break;
-	case 0xff01:
-	case 0xff02:
-		io->serial = io_ports[0x01];
-		break;
-	case 0xff04:
-		/* divide counter */
-		break;
-	case 0xff05:
-		break;
-	case 0xff06:
-		break;
 	case 0xff07:
 		io->timerCtrl = io_ports[0x07];
 		timer_init(gb);
 		printf("timer ctrl %x\n", io->timerCtrl);
-		break;
-	case 0xff24:
-		io->voice = io_ports[0x24];
-		break;
-	case 0xff25:
-		io->sndStereo = io_ports[0x25];
-		break;
-	case 0xff26:
-		io->sndStat = io_ports[0x26];
-		break;
-	case 0xff0f:
-		gb->interrupts.interFlag = io_ports[0x0f];
 		break;
 	case 0xff40:
 		io->lcdc = io_ports[0x40];

@@ -63,34 +63,36 @@ void keyDown(struct gb *gb_s)
 {
 	struct joypad *pad;
 	SDL_Keycode sym;
+	struct memory *memory;
 
+	memory = &gb_s->memory;
 	pad = &gb_s->joypad;
 	sym = gb_s->gpu.event.key.keysym.sym;
 	if (sym == SDLK_ESCAPE) {
 		gb_s->running = false;
 	} else if (sym == pad->sym_a) {
-		gb_s->interrupts.interFlag |= INT_JOYPAD;
+		memory->register_if |= INT_JOYPAD;
 		gb_s->joypad.button_key &= ~BUTTON_A_FLAG;
 	} else if (sym == pad->sym_b) {
-		gb_s->interrupts.interFlag |= INT_JOYPAD;
+		memory->register_if |= INT_JOYPAD;
 		gb_s->joypad.button_key &= ~BUTTON_B_FLAG;
 	} else if (sym == pad->sym_select) {
-		gb_s->interrupts.interFlag |= INT_JOYPAD;
+		memory->register_if |= INT_JOYPAD;
 		gb_s->joypad.button_key &= ~BUTTON_SELECT_FLAG;
 	} else if (sym == pad->sym_start) {
-		gb_s->interrupts.interFlag |= INT_JOYPAD;
+		memory->register_if |= INT_JOYPAD;
 		gb_s->joypad.button_key &= ~BUTTON_START_FLAG;
 	} else if (sym == pad->sym_down) {
-		gb_s->interrupts.interFlag |= INT_JOYPAD;
+		memory->register_if |= INT_JOYPAD;
 		gb_s->joypad.button_dir &= ~BUTTON_DOWN_FLAG;
 	} else if (sym == pad->sym_up) {
-		gb_s->interrupts.interFlag |= INT_JOYPAD;
+		memory->register_if |= INT_JOYPAD;
 		gb_s->joypad.button_dir &= ~BUTTON_UP_FLAG;
 	} else if (sym == pad->sym_left) {
-		gb_s->interrupts.interFlag |= INT_JOYPAD;
+		memory->register_if |= INT_JOYPAD;
 		gb_s->joypad.button_dir &= ~BUTTON_LEFT_FLAG;
 	} else if (sym == pad->sym_right) {
-		gb_s->interrupts.interFlag |= INT_JOYPAD;
+		memory->register_if |= INT_JOYPAD;
 		gb_s->joypad.button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
 }
@@ -166,7 +168,10 @@ static void joy_device_removed(struct gb *gb, const union SDL_Event *event)
 
 static void button_down(struct gb *gb, enum gb_button button)
 {
-	gb->interrupts.interFlag |= INT_JOYPAD;
+	struct memory *memory;
+
+	memory = &gb->memory;
+	memory->register_if |= INT_JOYPAD;
 	if (BUTTON_IS_KEY(button))
 		gb->joypad.button_key &= ~BUTTON_TO_KEY(button);
 	else
