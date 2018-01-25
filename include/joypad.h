@@ -24,7 +24,6 @@ struct joypad {
 };
 
 void joypad_init(struct joypad *pad, struct ae_config *config);
-
-unsigned char joypad_get_state(const struct joypad *pad, const struct memory *memory);
+unsigned char joypad_get_state(const struct joypad *pad, uint8_t register_p1);
 
 #endif

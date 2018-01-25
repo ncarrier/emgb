@@ -11,17 +11,17 @@ static void mcbHandleBanking(struct memory *memory, uint16_t addr,
 	low5 = value & 0x1f;
 	if (addr >= 0x2000 && addr < 0x4000) {
 		if (memory->rom_bank_0_rom.rom_header.cartridge_type == 1) {
-			memory->mcb_rom_banking &= 0xe0;
-			memory->mcb_rom_banking |= low5;
+			memory->mbc_rom_bank &= 0xe0;
+			memory->mbc_rom_bank |= low5;
 //			printf("Lo BANK change. value => %x\n",
 //					memory->mcb_rom_banking);
 		}
 	} else if (addr >= 0x4000 && addr < 0x6000) {
 		/* hiRom bank change */
 		if (memory->rom_banking_flag) {
-			memory->mcb_rom_banking &= 0x1f;
+			memory->mbc_rom_bank &= 0x1f;
 			value &= 0xe0;
-			memory->mcb_rom_banking |= value;
+			memory->mbc_rom_bank |= value;
 			/*
 			 * printf("Hi BANK change. value => %x\n",
 			 *		MCB_romBanking);
@@ -33,14 +33,17 @@ static void mcbHandleBanking(struct memory *memory, uint16_t addr,
 		memory->rom_banking_flag = !(value & 0x01);
 
 	}
-	if (memory->mcb_rom_banking == 0)
-		memory->mcb_rom_banking = 1;
+	if (memory->mbc_rom_bank == 0)
+		memory->mbc_rom_bank = 1;
 }
 
-void memory_init(struct memory *memory, struct gb *gb, long rom_size /* TODO allocate memory at the right size */)
+/* TODO allocate memory at the right size */
+void memory_init(struct memory *memory, struct gb *gb, long rom_size,
+		struct joypad *joypad)
 {
 	memset(memory, 0, sizeof(*memory));
-	memory->mcb_rom_banking = 1;
+	memory->mbc_rom_bank = 1;
+	memory->joypad = joypad;
 
 	write8bit(0xFF05, 0x00, gb);
 	write8bit(0xFF06, 0x00, gb);
@@ -91,54 +94,32 @@ uint16_t read16bit(uint16_t addr, struct gb *gb)
 	return res;
 }
 
+static void refresh_memory(struct memory *mem, uint16_t addr)
+{
+	if (addr == SPECIAL_REGISTER_P1)
+		mem->register_p1 = joypad_get_state(mem->joypad,
+				mem->register_p1);
+	else if (addr == SPECIAL_REGISTER_DIV)
+		/* TODO, doesn't correspond to the documentation */
+		mem->register_div = rand();
+}
+
+static bool in_switchable_rom_bank(uint16_t addr)
+{
+	return addr >= 0x4000 && addr < 0x8000;
+}
+
 uint8_t read8bit(uint16_t addr, struct gb *gb)
 {
-	struct memory *memory;
+	struct memory *mem;
 
-	memory = &gb->memory;
-	if (addr < 0x4000) {
-		return gb->memory.rom_bank_0[addr];
-	} else if (addr >= 0x4000 && addr < 0x8000) {
-		if (memory->mcb_rom_banking == 0)
-			return memory->switchable_rom_bank[addr - ROM_BANK_SIZE];
-		else
-			return memory->extra_rom_banks[(memory->mcb_rom_banking
-					- 2) * ROM_BANK_SIZE + addr];
-	} else if (addr >= 0x8000 && addr < 0xA000) {
-		return memory->vram[addr - 0x8000];
-	} else if (addr >= 0xA000 && addr < 0xC000) {
-		return  memory->sram[addr - 0xA000];
-	} else if (addr >= 0xC000 && addr < 0xE000) {
-//		if (addr == 0xc0b7)
-//			printf("read from ram 0xc0b7 %x\n",
-//					memory->ram[addr - 0xC000]);
-		return  memory->ram[addr - 0xC000];
-	} else if (addr >= 0xE000 && addr < 0xFE00) {
-		return  memory->ram[addr - 0xE000];
-	} else if (addr >= 0xFE00 && addr < 0xFEA0) {
-		return  memory->oam[addr - 0xFE00];
-	} else if (addr >= 0xFEA0 && addr < 0xFF00) {
-		return  memory->empty_usable_for_io_1[addr - 0xFEA0];
-	} else if (addr >= 0xFF00 && addr < 0xFF4C) {
-		switch (addr) {
-		case 0xff00:
-			memory->io_ports[addr - 0xFF00] = joypad_get_state(
-					&gb->joypad, memory);
-			break;
-		case 0xff04:
-			memory->io_ports[addr - 0xFF00] = rand();
-			break;
-		}
-		return memory->io_ports[addr - 0xFF00];
-	} else if (addr >= 0xFF4C && addr < 0xFF80) {
-		return  memory->empty_usable_for_io_2[addr - 0xFF4C];
-	} else if (addr >= 0xFF80 && addr < 0xFFFF) {
-		return  memory->hram[addr - 0xFF80];
-	} else if (addr == 0xffff) {
-		return memory->interrupt_enable;
-	}
-	printf("read error : addr %x\n", addr);
-	exit(-2);
+	mem = &gb->memory;
+	refresh_memory(mem, addr);
+	if (in_switchable_rom_bank(addr) && mem->mbc_rom_bank != 0)
+		return mem->extra_rom_banks[(mem->mbc_rom_bank - 2)
+				* ROM_BANK_SIZE + addr];
+
+	return mem->raw[addr];
 }
 
 void write8bit(uint16_t addr, uint8_t value, struct gb *gb)

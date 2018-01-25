@@ -19,9 +19,5 @@ void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb)
 	case 0xff46:
 		oam_transfert(gb);
 		break;
-	case 0xff4A:
-		break;
-	case 0xff4B:
-		break;
 	}
 }
