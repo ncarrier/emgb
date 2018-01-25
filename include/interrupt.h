@@ -15,7 +15,7 @@ void vblank(struct gb *gb_s);
 #define INT_SERIAL (1 << 3)
 #define INT_JOYPAD (1 << 4)
 
-struct interupts {
+struct interrupts {
 	unsigned char interMaster;
 	unsigned char interFlag;
 };

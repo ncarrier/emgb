@@ -35,7 +35,7 @@ struct gb {
 	struct registers registers;
 	struct io io;
 	struct gpu gpu;
-	struct interupts interrupts;
+	struct interrupts interrupts;
 	struct memory memory;
 	struct joypad joypad;
 	struct cpu cpu;
