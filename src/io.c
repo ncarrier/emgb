@@ -5,7 +5,7 @@ static void oam_transfert(struct memory *memory)
 	int pos;
 	unsigned short oamsrc;
 
-	oamsrc = memory->register_dma << 8;
+	oamsrc = memory->spec_reg.dma << 8;
 	for (pos = 0; pos < 0xa0; pos++)
 		memory->oam[pos] = read8bit(memory, oamsrc + pos);
 }

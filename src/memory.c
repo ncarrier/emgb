@@ -98,11 +98,11 @@ uint16_t read16bit(struct memory *memory, uint16_t addr)
 static void refresh_memory(struct memory *mem, uint16_t addr)
 {
 	if (addr == SPECIAL_REGISTER_P1)
-		mem->register_p1 = joypad_get_state(mem->joypad,
-				mem->register_p1);
+		mem->spec_reg.p1 = joypad_get_state(mem->joypad,
+				mem->spec_reg.p1);
 	else if (addr == SPECIAL_REGISTER_DIV)
 		/* TODO, doesn't correspond to the documentation */
-		mem->register_div = rand();
+		mem->spec_reg.div = rand();
 }
 
 static bool in_switchable_rom_bank(uint16_t addr)

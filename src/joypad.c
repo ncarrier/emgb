@@ -71,28 +71,28 @@ void keyDown(struct gb *gb_s)
 	if (sym == SDLK_ESCAPE) {
 		gb_s->running = false;
 	} else if (sym == pad->sym_a) {
-		memory->register_if |= INT_JOYPAD;
+		memory->spec_reg.ifl |= INT_JOYPAD;
 		gb_s->joypad.button_key &= ~BUTTON_A_FLAG;
 	} else if (sym == pad->sym_b) {
-		memory->register_if |= INT_JOYPAD;
+		memory->spec_reg.ifl |= INT_JOYPAD;
 		gb_s->joypad.button_key &= ~BUTTON_B_FLAG;
 	} else if (sym == pad->sym_select) {
-		memory->register_if |= INT_JOYPAD;
+		memory->spec_reg.ifl |= INT_JOYPAD;
 		gb_s->joypad.button_key &= ~BUTTON_SELECT_FLAG;
 	} else if (sym == pad->sym_start) {
-		memory->register_if |= INT_JOYPAD;
+		memory->spec_reg.ifl |= INT_JOYPAD;
 		gb_s->joypad.button_key &= ~BUTTON_START_FLAG;
 	} else if (sym == pad->sym_down) {
-		memory->register_if |= INT_JOYPAD;
+		memory->spec_reg.ifl |= INT_JOYPAD;
 		gb_s->joypad.button_dir &= ~BUTTON_DOWN_FLAG;
 	} else if (sym == pad->sym_up) {
-		memory->register_if |= INT_JOYPAD;
+		memory->spec_reg.ifl |= INT_JOYPAD;
 		gb_s->joypad.button_dir &= ~BUTTON_UP_FLAG;
 	} else if (sym == pad->sym_left) {
-		memory->register_if |= INT_JOYPAD;
+		memory->spec_reg.ifl |= INT_JOYPAD;
 		gb_s->joypad.button_dir &= ~BUTTON_LEFT_FLAG;
 	} else if (sym == pad->sym_right) {
-		memory->register_if |= INT_JOYPAD;
+		memory->spec_reg.ifl |= INT_JOYPAD;
 		gb_s->joypad.button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
 }
@@ -171,7 +171,7 @@ static void button_down(struct gb *gb, enum gb_button button)
 	struct memory *memory;
 
 	memory = &gb->memory;
-	memory->register_if |= INT_JOYPAD;
+	memory->spec_reg.ifl |= INT_JOYPAD;
 	if (BUTTON_IS_KEY(button))
 		gb->joypad.button_key &= ~BUTTON_TO_KEY(button);
 	else

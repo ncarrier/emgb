@@ -63,6 +63,66 @@ struct lcdc {
 	bool enable_lcd:1;
 };
 
+struct spec_reg {
+	/* joypad state */
+	uint8_t p1;
+	/* serial transfer data */
+	uint8_t sb;
+	/* serial io control */
+	uint8_t sc;
+	uint8_t padding_ff03;
+	/* divide register */
+	uint8_t div;
+	/* timer counter */
+	uint8_t tima;
+	/* timer modulo */
+	uint8_t tma;
+	/* timer control */
+	uint8_t tac;
+	uint8_t padding_ff08_0e[7];
+	uint8_t ifl; /*  0xff0fu */
+	uint8_t nr10; /*  0xff10u */
+	uint8_t nr11; /*  0xff11u */
+	uint8_t nr12; /*  0xff12u */
+	uint8_t nr13; /*  0xff13u */
+	uint8_t nr14; /*  0xff14u */
+	uint8_t padding_ff15;
+	uint8_t nr21; /*  0xff16u */
+	uint8_t nr22; /*  0xff17u */
+	uint8_t nr23; /*  0xff18u */
+	uint8_t nr24; /*  0xff19u */
+	uint8_t nr30; /*  0xff1au */
+	uint8_t nr31; /*  0xff1bu */
+	uint8_t nr32; /*  0xff1cu */
+	uint8_t nr33; /*  0xff1du */
+	uint8_t nr34; /*  0xff1eu */
+	uint8_t padding_ff1f;
+	uint8_t nr41; /*  0xff20u */
+	uint8_t nr42; /*  0xff21u */
+	uint8_t nr43; /*  0xff22u */
+	uint8_t nr44; /*  0xff23u */
+	uint8_t nr50; /*  0xff24u */
+	uint8_t nr51; /*  0xff25u */
+	uint8_t nr52; /*  0xff26u */
+	uint8_t padding_ff27_2f[9];
+	uint8_t wpram[0x10];
+	union {
+		uint8_t raw; /*  0xff40u */
+		struct lcdc lcdc;
+	};
+	uint8_t stat; /*  0xff41u */
+	uint8_t scy; /*  0xff42u */
+	uint8_t scx; /*  0xff43u */
+	uint8_t ly; /*  0xff44u */
+	uint8_t lyc; /*  0xff45u */
+	uint8_t dma; /*  0xff46u */
+	uint8_t bgp; /*  0xff47u */
+	uint8_t obp0; /*  0xff48u */
+	uint8_t obp1; /*  0xff49u */
+	uint8_t wy; /*  0xff4au */
+	uint8_t wx; /*  0xff4bu */
+};
+
 struct joypad;
 struct timer;
 /* memory mapping extracted from GBCPUman.pdf 2.5.1 */
@@ -109,65 +169,7 @@ struct memory {
 			/* 0xff00 */
 			union {
 				uint8_t io_ports[0x4c];
-				struct {
-					/* joypad state */
-					uint8_t register_p1;
-					/* serial transfer data */
-					uint8_t register_sb;
-					/* serial io control */
-					uint8_t register_sc;
-					uint8_t register_padding_ff03;
-					/* divide register */
-					uint8_t register_div;
-					/* timer counter */
-					uint8_t register_tima;
-					/* timer modulo */
-					uint8_t register_tma;
-					/* timer control */
-					uint8_t register_tac;
-					uint8_t register_padding_ff08_0e[7];
-					uint8_t register_if; /*  0xff0fu */
-					uint8_t register_nr10; /*  0xff10u */
-					uint8_t register_nr11; /*  0xff11u */
-					uint8_t register_nr12; /*  0xff12u */
-					uint8_t register_nr13; /*  0xff13u */
-					uint8_t register_nr14; /*  0xff14u */
-					uint8_t register_padding_ff15;
-					uint8_t register_nr21; /*  0xff16u */
-					uint8_t register_nr22; /*  0xff17u */
-					uint8_t register_nr23; /*  0xff18u */
-					uint8_t register_nr24; /*  0xff19u */
-					uint8_t register_nr30; /*  0xff1au */
-					uint8_t register_nr31; /*  0xff1bu */
-					uint8_t register_nr32; /*  0xff1cu */
-					uint8_t register_nr33; /*  0xff1du */
-					uint8_t register_nr34; /*  0xff1eu */
-					uint8_t register_padding_ff1f;
-					uint8_t register_nr41; /*  0xff20u */
-					uint8_t register_nr42; /*  0xff21u */
-					uint8_t register_nr43; /*  0xff22u */
-					uint8_t register_nr44; /*  0xff23u */
-					uint8_t register_nr50; /*  0xff24u */
-					uint8_t register_nr51; /*  0xff25u */
-					uint8_t register_nr52; /*  0xff26u */
-					uint8_t register_padding_ff27_2f[9];
-					uint8_t register_wpram[0x10];
-					union {
-						uint8_t register_lcdc; /*  0xff40u */
-						struct lcdc lcdc;
-					};
-					uint8_t register_stat; /*  0xff41u */
-					uint8_t register_scy; /*  0xff42u */
-					uint8_t register_scx; /*  0xff43u */
-					uint8_t register_ly; /*  0xff44u */
-					uint8_t register_lyc; /*  0xff45u */
-					uint8_t register_dma; /*  0xff46u */
-					uint8_t register_bgp; /*  0xff47u */
-					uint8_t register_obp0; /*  0xff48u */
-					uint8_t register_obp1; /*  0xff49u */
-					uint8_t register_wy; /*  0xff4au */
-					uint8_t register_wx; /*  0xff4bu */
-				};
+				struct spec_reg spec_reg;
 			};
 			/* 0xff4c */
 			uint8_t empty_usable_for_io_2[0x0034];

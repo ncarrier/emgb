@@ -1,13 +1,10 @@
 #ifndef INTERRUPT
 #define INTERRUPT
+#include "interrupt.h"
+#include "memory.h"
+#include "cpu.h"
+#include "registers.h"
 
-struct gb;
-void doInterupt(struct gb *gb_s);
-void timer(struct gb *gb_s);
-void serial(struct gb *gb_s);
-void joypad(struct gb *gb_s);
-void lcd(struct gb *gb_s);
-void vblank(struct gb *gb_s);
 
 #define INT_VBLANK (1 << 0)
 #define INT_LCDSTAT (1 << 1)
@@ -16,7 +13,16 @@ void vblank(struct gb *gb_s);
 #define INT_JOYPAD (1 << 4)
 
 struct interrupts {
-	unsigned char interMaster;
+	uint8_t interMaster;
+	struct memory *memory;
+	struct cpu *cpu;
+	struct spec_reg *spec_reg;
+	struct registers *registers;
 };
+
+void interrupt_init(struct interrupts *interrupts, struct memory *memory,
+		struct cpu *cpu, struct spec_reg *spec_reg,
+		struct registers *registers);
+void interrupt_do(struct interrupts *interupts);
 
 #endif

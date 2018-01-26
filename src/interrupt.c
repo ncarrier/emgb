@@ -1,87 +1,78 @@
+#include <stdbool.h>
+#include <stdio.h>
+
 #include "interrupt.h"
 
-#include "gb.h"
+#define IT_VBLANK 0x40
+#define IT_LCD 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
 
-void vblank(struct gb *gb)
+static void interrupt_handle(struct memory *memory,
+		struct interrupts *interrupts, struct registers *registers,
+		uint16_t address)
 {
-	gb->interrupts.interMaster = 0;
-	gb->registers.sp -= 2;
-	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
-	gb->registers.pc = 0x40;
-
+	interrupts->interMaster= 0;
+	registers->sp -= 2;
+	write16bit(memory, registers->sp, registers->pc);
+	registers->pc = address;
 }
 
-void lcd(struct gb *gb)
+void interrupt_init(struct interrupts *interrupts, struct memory *memory,
+		struct cpu *cpu, struct spec_reg *spec_reg,
+		struct registers *registers)
 {
-	gb->interrupts.interMaster = 0;
-	printf("doing lcdc !\n");
-	gb->registers.sp -= 2;
-	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
-	gb->registers.pc = 0x48;
+	interrupts->memory = memory;
+	interrupts->cpu = cpu;
+	interrupts->spec_reg = spec_reg;
+	interrupts->registers = registers;
 }
 
-void joypad(struct gb *gb)
-{
-	gb->interrupts.interMaster = 0;
-	gb->registers.sp -= 2;
-	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
-	gb->registers.pc = 0x60;
-}
-
-void serial(struct gb *gb)
-{
-	gb->interrupts.interMaster = 0;
-	gb->registers.sp -= 2;
-	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
-	gb->registers.pc = 0x58;
-}
-
-void timer(struct gb *gb)
-{
-	gb->interrupts.interMaster = 0;
-	gb->registers.sp -= 2;
-	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
-	gb->registers.pc = 0x50;
-}
-
-void doInterupt(struct gb *gb)
+void interrupt_do(struct interrupts *interrupts)
 {
 	unsigned char inter;
 	struct memory *memory;
+	struct cpu *cpu;
+	struct spec_reg *spec_reg;
+	struct registers *registers;
 
-	memory = &gb->memory;
-	if (memory->register_if & INT_JOYPAD)
-		gb->cpu.stopped = false;
-	gb->cpu.halted = false;
-	if (gb->interrupts.interMaster && memory->interrupt_enable
-			&& memory->register_if) {
-		inter = memory->interrupt_enable & memory->register_if;
-		if (inter != 0)
-			gb->cpu.halted = false;
-		if (inter & INT_VBLANK) {
-			memory->register_if &= ~(INT_VBLANK);
-			vblank(gb);
-		}
-		if (inter & INT_LCDSTAT) {
-			printf("LCD interrupt\n");
-			memory->register_if &= ~(INT_LCDSTAT);
-			lcd(gb);
-		}
-		if (inter & INT_TIMER) {
-			timer(gb);
-/*			printf("TIMER interrupt\n"); */
-			memory->register_if &= ~(INT_TIMER);
-		}
-		if (inter & INT_JOYPAD) {
-			gb->cpu.stopped = false;
-			printf("JOYPAD interrupt\n");
-			joypad(gb);
-			memory->register_if &= ~(INT_JOYPAD);
-		}
-		if (inter & INT_SERIAL) {
-			printf("serial interrupt\n");
-			serial(gb);
-			memory->register_if &= ~(INT_SERIAL);
-		}
+	memory = interrupts->memory;
+	cpu = interrupts->cpu;
+	spec_reg = interrupts->spec_reg;
+	registers = interrupts->registers;
+	if (spec_reg->ifl & INT_JOYPAD)
+		cpu->stopped = false;
+	cpu->halted = false;
+	if (!interrupts->interMaster || !memory->interrupt_enable
+			|| !spec_reg->ifl)
+		return;
+	inter = memory->interrupt_enable & spec_reg->ifl;
+	if (inter != 0)
+		cpu->halted = false;
+	if (inter & INT_VBLANK) {
+		spec_reg->ifl &= ~INT_VBLANK;
+		interrupt_handle(memory, interrupts, registers, IT_VBLANK);
+	}
+	if (inter & INT_LCDSTAT) {
+		printf("LCD interrupt\n");
+		spec_reg->ifl &= ~INT_LCDSTAT;
+		interrupt_handle(memory, interrupts, registers, IT_LCD);
+	}
+	if (inter & INT_TIMER) {
+		interrupt_handle(memory, interrupts, registers, IT_TIMER);
+		/*			printf("TIMER interrupt\n"); */
+		spec_reg->ifl &= ~INT_TIMER;
+	}
+	if (inter & INT_JOYPAD) {
+		cpu->stopped = false;
+		printf("JOYPAD interrupt\n");
+		interrupt_handle(memory, interrupts, registers, IT_JOYPAD);
+		spec_reg->ifl &= ~INT_JOYPAD;
+	}
+	if (inter & INT_SERIAL) {
+		printf("serial interrupt\n");
+		interrupt_handle(memory, interrupts, registers, IT_SERIAL);
+		spec_reg->ifl &= ~INT_SERIAL;
 	}
 }

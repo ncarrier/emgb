@@ -34,7 +34,7 @@ void timer_arm(struct timer *timer)
 	if (timer->memory == NULL)
 		return;
 
-	input_clock_sel = TAC_INPUT_CLOCK_SELECT(timer->memory->register_tac);
+	input_clock_sel = TAC_INPUT_CLOCK_SELECT(timer->memory->spec_reg.tac);
 	timer->freq = frequencies_table[input_clock_sel];
 	timer->timer_count = CLOCKSPEED / timer->freq;
 }
@@ -46,7 +46,7 @@ void timer_update(struct timer *timer)
 
 	cpu = timer->cpu;
 	memory = timer->memory;
-	if (!TAC_TIMER_ENABLED(memory->register_tac))
+	if (!TAC_TIMER_ENABLED(memory->spec_reg.tac))
 		return;
 
 	/* FOR TEST !!! - lastTick */
@@ -57,11 +57,11 @@ void timer_update(struct timer *timer)
 		return;
 
 	timer->timer_count = CLOCKSPEED / timer->freq;
-	if (memory->register_tima == 0xffu) {
-		write8bit(memory, SPECIAL_REGISTER_TIMA, memory->register_tma);
-		memory->register_if |= INT_TIMER;
+	if (memory->spec_reg.tima == 0xffu) {
+		write8bit(memory, SPECIAL_REGISTER_TIMA, memory->spec_reg.tma);
+		memory->spec_reg.ifl |= INT_TIMER;
 	} else {
 		write8bit(memory, SPECIAL_REGISTER_TIMA,
-				memory->register_tima + 1);
+				memory->spec_reg.tima + 1);
 	}
 }

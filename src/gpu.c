@@ -142,11 +142,11 @@ __attribute((unused)) static void gpu_render_window(struct gpu *gpu,
 	enum tile_map_display_select tile_map_sel;
 	uint16_t tile_map;
 
-	tile_map_sel = memory->lcdc.window_tile_map_display_select;
+	tile_map_sel = memory->spec_reg.lcdc.window_tile_map_display_select;
 	tile_map = tile_map_display_select_to_addr(tile_map_sel);
 	limit = tile_map + 0x400;
 	baseaddr = bg_window_tile_data_select_to_addr(
-			memory->lcdc.bg_window_tile_data_select);
+			memory->spec_reg.lcdc.bg_window_tile_data_select);
 	posx = 0;
 	posy = 0;
 	for (i = tile_map; i < limit; i++) {
@@ -159,9 +159,9 @@ __attribute((unused)) static void gpu_render_window(struct gpu *gpu,
 				color = ((line >> dec) & 0x01)
 						+ ((line >> (dec - 8)) & 0x01);
 				if (color != 0) {
-					gpu->pixels[256 * (memory->register_scy
+					gpu->pixels[256 * (memory->spec_reg.scy
 							+ posy + y)
-							+ memory->register_scx
+							+ memory->spec_reg.scx
 							+ posx + x] = (color
 							* 0xff) | B;
 				}
@@ -194,7 +194,7 @@ static void gpu_render_sprite(struct gpu *gpu, struct memory *memory)
 	int index;
 	unsigned sprite_size;
 
-	sprite_size = memory->lcdc.sprite_size == SPRITE_SIZE_8X8 ? 8 : 16;
+	sprite_size = memory->spec_reg.lcdc.sprite_size == SPRITE_SIZE_8X8 ? 8 : 16;
 	for (index = 0xFE00; index < limit; index += 4) {
 		posy = memory->oam[index - 0xFE00] - 16;
 		posx = memory->oam[index + 1 - 0xFE00] - 8;
@@ -232,17 +232,17 @@ static int gpu_get_real_position(struct gpu *gpu, struct memory *memory)
 	struct lcdc *lcdc;
 	int tile_map;
 
-	lcdc = &memory->lcdc;
+	lcdc = &memory->spec_reg.lcdc;
 	tile_map = tile_map_display_select_to_addr(
 			lcdc->bg_tile_map_display_select);
-	y = memory->register_scy + memory->register_ly;
+	y = memory->spec_reg.scy + memory->spec_reg.ly;
 	y_data_line = y / 8;
 	/* 0x20 * 8 == 0x100 == 256 (a line) */
 	/* TODO shouldn't this be %= 0x20 ? */
 	if (y_data_line > 0x1f)
 		y_data_line -= 0x20;
 	line_offset = y_data_line * 0x20;
-	data_offset = tile_map + line_offset + memory->register_scx;
+	data_offset = tile_map + line_offset + memory->spec_reg.scx;
 
 	return data_offset;
 }
@@ -263,7 +263,7 @@ static void gpu_render_bg(struct gpu *gpu, struct memory *memory)
 	int pixel_index;
 
 	baseaddr = bg_window_tile_data_select_to_addr(
-			memory->lcdc.bg_window_tile_data_select);
+			memory->spec_reg.lcdc.bg_window_tile_data_select);
 	data_offset = gpu_get_real_position(gpu, memory);
 	posx = 0;
 	for (index = 0; index < 20; index++) {
@@ -277,13 +277,13 @@ static void gpu_render_bg(struct gpu *gpu, struct memory *memory)
 		}
 		dec = 15;
 		line = read16bit(memory,
-				tile_addr + (memory->register_ly % 8) * 2);
+				tile_addr + (memory->spec_reg.ly % 8) * 2);
 		for (x = 0; x < 8; x++) {
 			color = (line >> dec) & 0x01;
 			if ((line >> (dec - 8)) & 0x01)
 				color += 2;
 			color = color_index_to_value(gpu, color);
-			pixel_index = 160 * memory->register_ly + posx + x;
+			pixel_index = 160 * memory->spec_reg.ly + posx + x;
 			if (pixel_index < (160 * 144))
 				gpu->pixels[pixel_index] = color;
 			dec--;
@@ -294,9 +294,9 @@ static void gpu_render_bg(struct gpu *gpu, struct memory *memory)
 
 static void gpu_rendering(struct gpu *gpu, struct memory *memory)
 {
-	if (memory->lcdc.enable_bg_window_display)
+	if (memory->spec_reg.lcdc.enable_bg_window_display)
 		gpu_render_bg(gpu, memory);
-	if (memory->lcdc.enable_sprite_display)
+	if (memory->spec_reg.lcdc.enable_sprite_display)
 		gpu_render_sprite(gpu, memory);
 }
 
@@ -366,11 +366,11 @@ void gpu_update(struct gpu *gpu)
 		if (gpu->tick < 204)
 			break;
 
-		if (memory->lcdc.enable_lcd && memory->register_ly < GB_H)
+		if (memory->spec_reg.lcdc.enable_lcd && memory->spec_reg.ly < GB_H)
 			gpu_rendering(gpu, memory);
-		memory->register_ly++;
-		if (memory->register_ly >= GB_H) {
-			memory->register_if |= INT_VBLANK;
+		memory->spec_reg.ly++;
+		if (memory->spec_reg.ly >= GB_H) {
+			memory->spec_reg.ifl |= INT_VBLANK;
 			gpu->mode = VBLANK;
 		}
 
@@ -380,20 +380,20 @@ void gpu_update(struct gpu *gpu)
 		if (gpu->tick < 456)
 			break;
 
-		memory->register_ly++;
-		if (memory->register_ly >= 153) {
-			memory->register_ly = 0;
+		memory->spec_reg.ly++;
+		if (memory->spec_reg.ly >= 153) {
+			memory->spec_reg.ly = 0;
 			gpu->mode = OAM;
 		}
 		gpu->tick -= 456;
-		if (memory->lcdc.enable_lcd && memory->register_ly == GB_H + 1)
+		if (memory->spec_reg.lcdc.enable_lcd && memory->spec_reg.ly == GB_H + 1)
 			gpu_display(gpu);
 		break;
 	case OAM:
 		if (gpu->tick < 80)
 			break;
 
-		memory->register_ly = 0;
+		memory->spec_reg.ly = 0;
 		gpu->mode = VRAM;
 		gpu->tick -= 80;
 		break;

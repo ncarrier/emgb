@@ -26,6 +26,8 @@ struct gb *gb_init(const char *file)
 	rom_display_header(&gb->memory.rom_bank_0_rom.rom_header);
 	registers_init(&gb->registers);
 	cpu_init(&gb->cpu);
+	interrupt_init(&gb->interrupts, &gb->memory, &gb->cpu,
+			&gb->memory.spec_reg, &gb->registers);
 	gpu_init(&gb->gpu, &gb->cpu, &gb->memory, &gb->config.config);
 	timer_init(&gb->timer, &gb->memory, &gb->cpu);
 
