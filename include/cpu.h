@@ -10,7 +10,7 @@ extern const struct cpu_op instructions[256];
 #pragma pack(push, 1)
 
 struct cpu {
-	unsigned int totalTick;
+	unsigned int total_tick;
 	int last_tick;
 	bool stopped;
 	bool halted;

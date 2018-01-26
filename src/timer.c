@@ -50,8 +50,8 @@ void timer_update(struct timer *timer)
 		return;
 
 	/* FOR TEST !!! - lastTick */
-	timer->timer_count -= cpu->totalTick - cpu->last_tick;
-	cpu->last_tick = cpu->totalTick;
+	timer->timer_count -= cpu->total_tick - cpu->last_tick;
+	cpu->last_tick = cpu->total_tick;
 
 	if (timer->timer_count > 0)
 		return;

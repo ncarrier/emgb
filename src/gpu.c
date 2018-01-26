@@ -1,5 +1,6 @@
 #include "gb.h"
 #include "io.h"
+#include "log.h"
 #include "ae_config.h"
 
 #define GB_SURF (GB_W * GB_H)
@@ -358,8 +359,8 @@ void gpu_update(struct gpu *gpu)
 	struct memory *memory;
 
 	memory = gpu->memory;
-	gpu->tick += gpu->cpu->totalTick - gpu->last_tick;
-	gpu->last_tick = gpu->cpu->totalTick;
+	gpu->tick += gpu->cpu->total_tick - gpu->last_tick;
+	gpu->last_tick = gpu->cpu->total_tick;
 
 	switch (gpu->mode) {
 	case HBLANK:

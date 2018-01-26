@@ -58,7 +58,7 @@ static void gb_loop(const char *fileName)
 			if (!cpu->halted) {
 				fopcode = read8bit(memory, registers->pc);
 				instruction = instructions_base + fopcode;
-				cpu->totalTick += instruction->func(gb);
+				cpu->total_tick += instruction->func(gb);
 				registers->pc += instruction->size;
 			}
 			gpu_update(&gb->gpu);
