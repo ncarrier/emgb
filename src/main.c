@@ -61,7 +61,7 @@ static void gb_loop(const char *fileName)
 				cpu->totalTick += instruction->func(gb);
 				registers->pc += instruction->size;
 			}
-			gpu_update(gb);
+			gpu_update(&gb->gpu);
 		}
 		doInterupt(gb);
 		timer_update(&gb->timer, gb, &gb->memory, &gb->cpu);

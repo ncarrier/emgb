@@ -4,7 +4,7 @@
 #include "log.h"
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-struct gb *gb_init(const char *fileName)
+struct gb *gb_init(const char *file)
 {
 	struct gb *gb = NULL;
 	long rom_size;
@@ -13,7 +13,7 @@ struct gb *gb_init(const char *fileName)
 	if (gb == NULL)
 		ERR("Cannot allocate gb");
 	gb->running = true;
-	rom_size = get_file_size_from_path(fileName);
+	rom_size = get_file_size_from_path(file);
 	if (rom_size < 0)
 		ERR("get_file_size_from_path: %s", strerror(-rom_size));
 
@@ -22,12 +22,12 @@ struct gb *gb_init(const char *fileName)
 	memory_init(&gb->memory, &gb->joypad, &gb->timer, rom_size);
 	rom_init(&gb->memory.rom_bank_0_rom,
 			&gb->memory.switchable_rom_bank_rom,
-			gb->memory.extra_rom_banks, fileName);
+			gb->memory.extra_rom_banks, file);
 	rom_display_header(&gb->memory.rom_bank_0_rom.rom_header);
 	registers_init(&gb->registers);
-	gpu_init(&gb->gpu, &gb->config.config, &gb->memory.register_ly);
-	timer_init(&gb->memory, &gb->timer);
 	cpu_init(&gb->cpu);
+	gpu_init(&gb->gpu, &gb->cpu, &gb->memory, &gb->config.config);
+	timer_init(&gb->memory, &gb->timer);
 
 	reset_joystick_config(&gb->joystick_config);
 	config_write(&gb->config);
@@ -38,11 +38,8 @@ struct gb *gb_init(const char *fileName)
 void gb_cleanup(struct gb *gb)
 {
 	cleanup_joystick_config(&gb->joystick_config);
+	gpu_cleanup(&gb->gpu);
 	config_cleanup(&gb->config);
-	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
-	SDL_DestroyWindow(gb->gpu.window);
-	/* free(s_gb->gb_gpu.pixels_d); */
-	free(gb->gpu.pixels);
 	free(gb);
 
 	SDL_Quit();
