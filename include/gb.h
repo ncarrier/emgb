@@ -31,7 +31,7 @@
 #define GB_H 144
 
 struct gb {
-	struct timer time;
+	struct timer timer;
 	struct registers registers;
 	struct gpu gpu;
 	struct interrupts interrupts;

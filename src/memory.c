@@ -1,9 +1,9 @@
-#include "../include/memory.h"
+#include "memory.h"
 
 #include "gb.h"
 #include "special_registers.h"
 
-static void mcbHandleBanking(struct memory *memory, uint16_t addr,
+static void mcb_handle_banking(struct memory *memory, uint16_t addr,
 		uint8_t value)
 {
 	char low5;
@@ -39,11 +39,12 @@ static void mcbHandleBanking(struct memory *memory, uint16_t addr,
 
 /* TODO allocate memory at the right size */
 void memory_init(struct memory *memory, struct gb *gb, long rom_size,
-		struct joypad *joypad)
+		struct joypad *joypad, struct timer *timer)
 {
 	memset(memory, 0, sizeof(*memory));
 	memory->mbc_rom_bank = 1;
 	memory->joypad = joypad;
+	memory->timer = timer;
 
 	write8bit(0xFF05, 0x00, gb);
 	write8bit(0xFF06, 0x00, gb);
@@ -127,7 +128,7 @@ void write8bit(uint16_t addr, uint8_t value, struct gb *gb)
 //	if (addr == 0xffffu)
 //		puts("IE");
 	if (addr < 0x8000) {
-		mcbHandleBanking(memory, addr, value);
+		mcb_handle_banking(memory, addr, value);
 	} else if (addr >= 0x8000 && addr < 0xA000) {
 		memory->vram[addr - 0x8000] = value;
 	} else if (addr >= 0xA000 && addr < 0xC000) {
@@ -144,7 +145,7 @@ void write8bit(uint16_t addr, uint8_t value, struct gb *gb)
 		memory->io_ports[addr - 0xFF00] = value;
 //		if (addr == 0xff41u)
 //			printf("writing lcd stat %x\n", value);
-		io_ctrl(memory, &gb->time, addr);
+		io_ctrl(memory, memory->timer, addr);
 	} else if (addr >= 0xFF4C && addr < 0xFF80) {
 		memory->empty_usable_for_io_2[addr - 0xFF4C] = value;
 	} else if (addr >= 0xFF80 && addr < 0xFFFF) {

@@ -19,14 +19,14 @@ struct gb *gb_init(const char *fileName)
 
 	config_init(&gb->config);
 	joypad_init(&gb->joypad, &gb->config.config);
-	memory_init(&gb->memory, gb, rom_size, &gb->joypad);
+	memory_init(&gb->memory, gb, rom_size, &gb->joypad, &gb->timer);
 	rom_init(&gb->memory.rom_bank_0_rom,
 			&gb->memory.switchable_rom_bank_rom,
 			gb->memory.extra_rom_banks, fileName);
 	rom_display_header(&gb->memory.rom_bank_0_rom.rom_header);
 	registers_init(&gb->registers);
 	gpu_init(&gb->gpu, &gb->config.config, &gb->memory.register_ly);
-	timer_init(&gb->memory, &gb->time);
+	timer_init(&gb->memory, &gb->timer);
 	cpu_init(&gb->cpu);
 
 	reset_joystick_config(&gb->joystick_config);

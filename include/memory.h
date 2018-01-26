@@ -106,11 +106,14 @@ struct lcdc {
 	bool enable_lcd:1;
 };
 
+struct joypad;
+struct timer;
 /* memory mapping extracted from GBCPUman.pdf 2.5.1 */
 struct memory {
 	uint8_t mbc_rom_bank;
 	bool rom_banking_flag;
 	struct joypad *joypad;
+	struct timer *timer;
 	union {
 		struct {
 			/* TODO rename fields of the two first unions */
@@ -227,7 +230,7 @@ struct memory {
 #include "gb.h"
 
 void memory_init(struct memory *memory, struct gb *gb, long rom_size,
-		struct joypad *joypad);
+		struct joypad *joypad, struct timer *timer);
 void write16bitToAddr(uint16_t addr, uint16_t value, struct gb *gb);
 uint16_t read16bit(struct memory *memory, uint16_t addr);
 uint8_t read8bit(struct memory *memory, uint16_t addr);
