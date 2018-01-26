@@ -71,8 +71,4 @@ int console_debugger_init(struct console_debugger *debugger,
 		struct ae_config *config);
 int console_debugger_update(struct console_debugger *debugger);
 
-bool str_matches(const char *s1, const char *s2);
-bool str_matches_prefix(const char *s, const char *prefix);
-char *str_diff_chr(const char *s1, const char *s2);
-
 #endif /* CONSOLE_DEBUGGER_H */
