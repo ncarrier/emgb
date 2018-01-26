@@ -21,6 +21,7 @@ static void gb_loop(const char *fileName)
 	const struct cpu_op *instruction;
 	struct cpu *cpu;
 	struct registers *registers;
+	struct memory *memory;
 #ifdef IMDBG
 	SDL_Thread *thr;
 #endif
@@ -30,10 +31,11 @@ static void gb_loop(const char *fileName)
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
 	gb = gb_init(fileName);
+	memory = &gb->memory;
 	cpu = &gb->cpu;
 	registers = &gb->registers;
 #if EMGB_CONSOLE_DEBUGGER
-	ret = console_debugger_init(&debugger, registers, gb,
+	ret = console_debugger_init(&debugger, registers, memory,
 			&gb->config.config);
 	if (ret < 0)
 		ERR("console_debugger_init: %s", strerror(-ret));
@@ -54,7 +56,7 @@ static void gb_loop(const char *fileName)
 		handleEvent(gb);
 		if (!cpu->stopped) {
 			if (!cpu->halted) {
-				fopcode = read8bit(registers->pc, gb);
+				fopcode = read8bit(memory, registers->pc);
 				instruction = instructions_base + fopcode;
 				cpu->totalTick += instruction->func(gb);
 				registers->pc += instruction->size;

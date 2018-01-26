@@ -230,8 +230,8 @@ struct memory {
 void memory_init(struct memory *memory, struct gb *gb, long rom_size,
 		struct joypad *joypad);
 void write16bitToAddr(uint16_t addr, uint16_t value, struct gb *gb);
-uint16_t read16bit(uint16_t addr, struct gb *gb);
-uint8_t read8bit(uint16_t addr, struct gb *gb);
+uint16_t read16bit(struct memory *memory, uint16_t addr);
+uint8_t read8bit(struct memory *mem, uint16_t addr);
 void write8bit(uint16_t addr, uint8_t value, struct gb *gb);
 void push(uint16_t value, struct gb *gb);
 uint16_t pop(struct gb *gb);

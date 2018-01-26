@@ -19,35 +19,29 @@ void timer_init(struct memory *memory, struct timer *time)
 	time->timerCount = CLOCKSPEED / time->freq;
 }
 
-void updateTimer(struct gb *s_gb)
+void updateTimer(struct gb *gb)
 {
 	struct cpu *cpu;
-	uint8_t tac;
-	uint8_t tima;
-	uint8_t tma;
 	struct memory *memory;
 
-	memory = &s_gb->memory;
-	tac = read8bit(SPECIAL_REGISTER_TAC, s_gb);
-	cpu = &s_gb->cpu;
+	memory = &gb->memory;
+	cpu = &gb->cpu;
 
-	if (!TAC_TIMER_ENABLED(tac))
+	if (!TAC_TIMER_ENABLED(memory->register_tac))
 		return;
 
 	/* FOR TEST !!! - lastTick */
-	s_gb->time.timerCount -= cpu->totalTick - cpu->last_tick;
+	gb->time.timerCount -= cpu->totalTick - cpu->last_tick;
 	cpu->last_tick = cpu->totalTick;
 
-	if (s_gb->time.timerCount > 0)
+	if (gb->time.timerCount > 0)
 		return;
 
-	s_gb->time.timerCount = CLOCKSPEED / s_gb->time.freq;
-	tima = read8bit(SPECIAL_REGISTER_TIMA, s_gb);
-	if (tima == 0xffu) {
-		tma = read8bit(0xff06, s_gb);
-		write8bit(SPECIAL_REGISTER_TIMA, tma, s_gb);
+	gb->time.timerCount = CLOCKSPEED / gb->time.freq;
+	if (memory->register_tima == 0xffu) {
+		write8bit(SPECIAL_REGISTER_TIMA, memory->register_tma, gb);
 		memory->register_if |= INT_TIMER;
 	} else {
-		write8bit(SPECIAL_REGISTER_TIMA, tima + 1, s_gb);
+		write8bit(SPECIAL_REGISTER_TIMA, memory->register_tima + 1, gb);
 	}
 }

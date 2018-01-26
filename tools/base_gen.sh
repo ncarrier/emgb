@@ -6,9 +6,9 @@ pc="${regs}.pc"
 function generate_base_ld_dst_adress_code() {
 	echo -e -n "\tuint16_t dst_adr = "
 	if [ ${dst_adress} = "**" ]; then
-		echo -e "read16bit(${pc} + 1, s_gb);"
+		echo -e "read16bit(&s_gb->memory, ${pc} + 1);"
 	elif [ ${dst_adress} = "*" ]; then
-		echo -e "0xFF00u + read8bit(${pc} + 1, s_gb);"
+		echo -e "0xFF00u + read8bit(&s_gb->memory, ${pc} + 1);"
 	elif [ ${dst_adress} = "c" ]; then
 		echo -e "0xFF00u + ${regs}.${dst_adress};"
 	else
@@ -24,12 +24,12 @@ function generate_base_binary_op_code() {
 	if [ "${operand}" = "(hl)" ]; then
 		target="value";
 	cat <<here_doc_delim
-	uint8_t value = read8bit(${regs}.hl, s_gb);
+	uint8_t value = read8bit(&s_gb->memory, ${regs}.hl);
 here_doc_delim
 	elif [ "${operand}" = "*" ]; then
 		target="value";
 	cat <<here_doc_delim
-	uint8_t value = read8bit(${pc} + 1, s_gb);
+	uint8_t value = read8bit(&s_gb->memory, ${pc} + 1);
 here_doc_delim
 	else
 		target="${regs}.${operand}"
@@ -58,12 +58,12 @@ function generate_base_sub_gen_code() {
 	if [ "${operand}" = "(hl)" ]; then
 		target="value";
 	cat <<here_doc_delim
-	uint8_t value = read8bit(${regs}.hl, s_gb);
+	uint8_t value = read8bit(&s_gb->memory, ${regs}.hl);
 here_doc_delim
 	elif [ "${operand}" = "*" ]; then
 		target="value";
 	cat <<here_doc_delim
-	uint8_t value = read8bit(${pc} + 1, s_gb);
+	uint8_t value = read8bit(&s_gb->memory, ${pc} + 1);
 here_doc_delim
 	else
 		target="${regs}.${operand}"
@@ -109,11 +109,11 @@ function generate_base_add_carry_code() {
 here_doc_delim
 	echo -n -e "\tvalue = "
 	if [ "${src}" = "*" ]; then
-		echo "read8bit(${pc} + 1, s_gb);"
+		echo "read8bit(&s_gb->memory, ${pc} + 1);"
 	elif [ "${src}" = "**" ]; then
-		echo "read16bit(${pc} + 1, s_gb);"
+		echo "read16bit(&s_gb->memory, ${pc} + 1);"
 	elif [ "${src}" = "(hl)" ]; then
-		echo "read16bit(${regs}.hl, s_gb);"
+		echo "read16bit(&s_gb->memory, ${regs}.hl);"
 	else
 		echo "${regs}.${src};"
 	fi
@@ -146,7 +146,7 @@ function generate_base_jp_uncond_code() {
 	if [ "${dest}" = "(hl)" ]; then
 		echo -e "\t${pc} = ${regs}.hl;"
 	else
-		echo -e "\t${pc} = read16bit(${pc} + 1, s_gb);"
+		echo -e "\t${pc} = read16bit(&s_gb->memory, ${pc} + 1);"
 	fi
 }
 
@@ -159,7 +159,7 @@ function generate_base_ldi_or_ldd_code() {
 
 	if [ "${dst}" = "a" ]; then
 		cat <<here_doc_delim
-	${regs}.a = read8bit(${regs}.hl, s_gb);
+	${regs}.a = read8bit(&s_gb->memory, ${regs}.hl);
 	${regs}.hl${operator};
 here_doc_delim
 	else
@@ -197,7 +197,7 @@ function generate_base_call_code() {
 	cat <<here_doc_delim
 	if (${neg}${regs}.${cond: -1}f) {
 		push(${pc} + 3, s_gb);
-		${pc} = read16bit(${pc} + 1, s_gb);
+		${pc} = read16bit(&s_gb->memory, ${pc} + 1);
 		return ${cycles_cond};
 	}
 
@@ -206,7 +206,7 @@ here_doc_delim
 	else
 		cat <<here_doc_delim
 	push(${pc} + 3, s_gb);
-	${pc} = read16bit(${pc} + 1, s_gb);
+	${pc} = read16bit(&s_gb->memory, ${pc} + 1);
 here_doc_delim
 	fi
 }
@@ -215,7 +215,7 @@ function generate_base_cb_code() {
 	cat <<here_doc_delim
 	uint8_t opcode;
 
-	opcode = read8bit(${pc} + 1, s_gb);
+	opcode = read8bit(&s_gb->memory, ${pc} + 1);
 	instructions_cb[opcode].func(s_gb);
 here_doc_delim
 }
@@ -268,7 +268,7 @@ function generate_base_dec_code() {
 	if [ "${operand}" = "(hl)" ]; then
 		target="value";
 	cat <<here_doc_delim
-	uint8_t value = read8bit(${regs}.hl, s_gb);
+	uint8_t value = read8bit(&s_gb->memory, ${regs}.hl);
 here_doc_delim
 	else
 		target="${regs}.${operand}"
@@ -314,7 +314,7 @@ function generate_base_inc_code() {
 
 	if [ "${operand}" = "(hl)" ]; then
 		target="value";
-		echo -e "\tuint8_t value = read8bit(${regs}.hl, s_gb);\n"
+		echo -e "\tuint8_t value = read8bit(&s_gb->memory, ${regs}.hl);\n"
 	else
 		target="${regs}.${operand}"
 	fi
@@ -347,7 +347,7 @@ function generate_base_jp_code() {
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
 	if (${neg}${regs}.${cond: -1}f) {
-		${pc} = read16bit(${pc} + 1, s_gb);
+		${pc} = read16bit(&s_gb->memory, ${pc} + 1);
 		return ${cycles_cond};
 	}
 
@@ -370,14 +370,14 @@ function generate_base_jr_code() {
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
 	if (${neg}${regs}.${cond: -1}f) {
-		${pc} += (int8_t)read8bit(${pc} + 1, s_gb) + 2;
+		${pc} += (int8_t)read8bit(&s_gb->memory, ${pc} + 1) + 2;
 		return ${cycles_cond};
 	}
 
 	${pc} += 2;
 here_doc_delim
 	else
-		echo -e "\t${pc} += (int8_t)read8bit(${regs}.pc + 1, s_gb) + 2;"
+		echo -e "\t${pc} += (int8_t)read8bit(&s_gb->memory, ${regs}.pc + 1) + 2;"
 	fi
 }
 
@@ -391,15 +391,15 @@ function generate_base_ld_code() {
 		src_adress=${BASH_REMATCH[1]}
 		echo -e -n "\tuint16_t src_adr = "
 		if [ "${src_adress}" = '**' ]; then
-			echo "read16bit(${pc} + 1, s_gb);"
+			echo "read16bit(&s_gb->memory, ${pc} + 1);"
 		elif [ "${src_adress}" = '*' ]; then
-			echo "0xFF00u + read8bit(${pc} + 1, s_gb);"
+			echo "0xFF00u + read8bit(&s_gb->memory, ${pc} + 1);"
 		elif [ "${src_adress}" = 'c' ]; then
 			echo "0xFF00u + ${regs}.c;"
 		else
 			echo "${regs}.${src_adress};"
 		fi
-		echo -e "\tuint8_t src_val = read8bit(src_adr, s_gb);"
+		echo -e "\tuint8_t src_val = read8bit(&s_gb->memory, src_adr);"
 		if [[ ${dst} =~ ${adress_re} ]]; then
 			dst_adress=${BASH_REMATCH[1]}
 			generate_base_ld_dst_adress_code ${dst_adress}
@@ -409,9 +409,9 @@ function generate_base_ld_code() {
 		fi
 	else
 		if [ ${src} = "*" ]; then
-			echo -e "\tuint8_t src_val = read8bit(${pc} + 1, s_gb);"
+			echo -e "\tuint8_t src_val = read8bit(&s_gb->memory, ${pc} + 1);"
 		elif [ ${src} = "**" ]; then
-			echo -e "\tuint16_t src_val = read16bit(${pc} + 1, s_gb);"
+			echo -e "\tuint16_t src_val = read16bit(&s_gb->memory, ${pc} + 1);"
 		else
 			src_reg="${regs}.${src}"
 			echo -e "\t__typeof__(${src_reg}) src_val = ${src_reg};"
@@ -436,7 +436,7 @@ function generate_base_ldd_code() {
 
 function generate_base_ldhl_code() {
 	cat <<here_doc_delim
-	int8_t value = read8bit(${regs}.pc +  1, s_gb);
+	int8_t value = read8bit(&s_gb->memory, ${regs}.pc +  1);
 	int32_t res;
 
 	res = value + ${regs}.sp;
@@ -559,9 +559,9 @@ function generate_base_sbc_code() {
 	echo -e "\tbool carry = ${regs}.cf;"
 	echo -e -n "\tuint8_t value = "
 	if [ "${operand}" = "(hl)" ]; then
-		echo  "read8bit(${regs}.hl, s_gb);"
+		echo  "read8bit(&s_gb->memory, ${regs}.hl);"
 	elif [ "${operand}" = "*" ]; then
-		echo "read8bit(${pc} + 1, s_gb);"
+		echo "read8bit(&s_gb->memory, ${pc} + 1);"
 	else
 		echo "${regs}.${operand};"
 	fi

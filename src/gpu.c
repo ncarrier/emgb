@@ -100,7 +100,7 @@ void displayAll(struct gb *gb)
 		int tmpaddr = index;
 		for (y = 0; y < 8; y++) {
 			dec = 15;
-			line = read16bit(tmpaddr, gb);
+			line = read16bit(memory, tmpaddr);
 			for (x = 0; x < 8; x++) {
 				color = (line >> dec) & 0x01;
 				if ((line >> (dec - 8)) & 0x01)
@@ -150,11 +150,11 @@ void renderingWindow(struct gb *gb)
 	posx = 0;
 	posy = 0;
 	for (i = tile_map; i < limit; i++) {
-		tileindex = read8bit(i, gb);
+		tileindex = read8bit(memory, i);
 		tmpaddr = baseaddr + tileindex * 16;
 		for (y = 0; y < 8; y++) {
 			dec = 15;
-			line = read16bit(tmpaddr, gb);
+			line = read16bit(memory, tmpaddr);
 			for (x = 0; x < 8; x++) {
 				color = ((line >> dec) & 0x01)
 						+ ((line >> (dec - 8)) & 0x01);
@@ -195,16 +195,18 @@ void renderingSprite(struct gb *gb)
 	int tmpaddr;
 	int index;
 	unsigned sprite_size;
+	struct memory *memory;
 
-	sprite_size = gb->memory.lcdc.sprite_size == SPRITE_SIZE_8X8 ? 8 : 16;
+	memory = &gb->memory;
+	sprite_size = memory->lcdc.sprite_size == SPRITE_SIZE_8X8 ? 8 : 16;
 	for (index = 0xFE00; index < limit; index += 4) {
-		posy = gb->memory.oam[index - 0xFE00] - 16;
-		posx = gb->memory.oam[index + 1 - 0xFE00] - 8;
-		tileindex = gb->memory.oam[index + 2 - 0xFE00];
+		posy = memory->oam[index - 0xFE00] - 16;
+		posx = memory->oam[index + 1 - 0xFE00] - 8;
+		tileindex = memory->oam[index + 2 - 0xFE00];
 		tmpaddr = baseaddr + (tileindex * 16);
 		for (y = 0; tileindex && y < sprite_size; y++) {
 			dec = 15;
-			line = read16bit(tmpaddr, gb);
+			line = read16bit(memory, tmpaddr);
 			for (x = 0; x < 8; x++) {
 				color = ((line >> dec) & 0x01);
 				if ((line >> (dec - 8)) & 0x01)
@@ -266,22 +268,25 @@ static void renderingBg(struct gb *gb)
 	int tileAddr;
 	struct gpu *gpu;
 	int pixel_index;
+	struct memory *memory;
 
+	memory = &gb->memory;
 	gpu = &gb->gpu;
 	baseaddr = bg_window_tile_data_select_to_addr(
-			gb->memory.lcdc.bg_window_tile_data_select);
+			memory->lcdc.bg_window_tile_data_select);
 	dataOffset = getRealPosition(gb);
 	posx = 0;
 	for (index = 0; index < 20; index++) {
 		if (baseaddr == 0x8800) {
-			stileindex = (signed)(read8bit(index + dataOffset, gb));
+			stileindex = (signed)(read8bit(memory,
+					index + dataOffset));
 			tileAddr = baseaddr + (stileindex + 128) * 16;
 		} else {
-			tileindex = read8bit(index + dataOffset, gb);
+			tileindex = read8bit(memory, index + dataOffset);
 			tileAddr = baseaddr + tileindex * 16;
 		}
 		dec = 15;
-		line = read16bit(tileAddr + (*gpu->scanline % 8) * 2, gb);
+		line = read16bit(memory, tileAddr + (*gpu->scanline % 8) * 2);
 		for (x = 0; x < 8; x++) {
 			color = (line >> dec) & 0x01;
 			if ((line >> (dec - 8)) & 0x01)

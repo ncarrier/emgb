@@ -1,13 +1,13 @@
 #include "gb.h"
 
-static void oam_transfert(struct gb *gb)
+static void oam_transfert(struct memory *memory)
 {
 	int pos;
 	unsigned short oamsrc;
 
-	oamsrc = gb->memory.register_dma << 8;
+	oamsrc = memory->register_dma << 8;
 	for (pos = 0; pos < 0xa0; pos++)
-		gb->memory.oam[pos] = read8bit(oamsrc + pos, gb);
+		memory->oam[pos] = read8bit(memory, oamsrc + pos);
 }
 
 void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb)
@@ -17,7 +17,7 @@ void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb)
 		timer_init(&gb->memory, &gb->time);
 		break;
 	case 0xff46:
-		oam_transfert(gb);
+		oam_transfert(&gb->memory);
 		break;
 	}
 }

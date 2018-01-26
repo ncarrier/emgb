@@ -84,12 +84,12 @@ void write16bitToAddr(uint16_t addr, uint16_t value, struct gb *gb)
 	write8bit(addr + 1, (value & 0xff00u) >> 8, gb);
 }
 
-uint16_t read16bit(uint16_t addr, struct gb *gb)
+uint16_t read16bit(struct memory *memory, uint16_t addr)
 {
 	uint16_t res;
 
-	res = read8bit(addr, gb);
-	res |= read8bit(addr + 1, gb) << 8;
+	res = read8bit(memory, addr);
+	res |= read8bit(memory, addr + 1) << 8;
 
 	return res;
 }
@@ -109,11 +109,8 @@ static bool in_switchable_rom_bank(uint16_t addr)
 	return addr >= 0x4000 && addr < 0x8000;
 }
 
-uint8_t read8bit(uint16_t addr, struct gb *gb)
+uint8_t read8bit(struct memory *mem, uint16_t addr)
 {
-	struct memory *mem;
-
-	mem = &gb->memory;
 	refresh_memory(mem, addr);
 	if (in_switchable_rom_bank(addr) && mem->mbc_rom_bank != 0)
 		return mem->extra_rom_banks[(mem->mbc_rom_bank - 2)
@@ -168,7 +165,7 @@ uint16_t pop(struct gb *gb)
 {
 	uint16_t value;
 
-	value = read16bit(gb->registers.sp, gb);
+	value = read16bit(&gb->memory, gb->registers.sp);
 	gb->registers.sp += 2;
 
 	return value;
