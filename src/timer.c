@@ -19,25 +19,20 @@ void timer_init(struct memory *memory, struct timer *time)
 	time->timerCount = CLOCKSPEED / time->freq;
 }
 
-void updateTimer(struct gb *gb)
+void timer_update(struct timer *timer, struct gb *gb, struct memory *memory,
+		struct cpu *cpu)
 {
-	struct cpu *cpu;
-	struct memory *memory;
-
-	memory = &gb->memory;
-	cpu = &gb->cpu;
-
 	if (!TAC_TIMER_ENABLED(memory->register_tac))
 		return;
 
 	/* FOR TEST !!! - lastTick */
-	gb->time.timerCount -= cpu->totalTick - cpu->last_tick;
+	timer->timerCount -= cpu->totalTick - cpu->last_tick;
 	cpu->last_tick = cpu->totalTick;
 
-	if (gb->time.timerCount > 0)
+	if (timer->timerCount > 0)
 		return;
 
-	gb->time.timerCount = CLOCKSPEED / gb->time.freq;
+	timer->timerCount = CLOCKSPEED / timer->freq;
 	if (memory->register_tima == 0xffu) {
 		write8bit(SPECIAL_REGISTER_TIMA, memory->register_tma, gb);
 		memory->register_if |= INT_TIMER;

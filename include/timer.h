@@ -8,6 +8,7 @@
 
 struct gb;
 struct memory;
+struct cpu;
 struct timer {
 	unsigned int freq;
 	unsigned char ctrl;
@@ -16,6 +17,7 @@ struct timer {
 };
 
 void timer_init(struct memory *memory, struct timer *time);
-void updateTimer(struct gb *s_gb);
+void timer_update(struct timer *timer, struct gb *gb, struct memory *memory,
+		struct cpu *cpu);
 
 #endif
