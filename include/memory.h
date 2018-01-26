@@ -234,6 +234,6 @@ uint16_t read16bit(struct memory *memory, uint16_t addr);
 uint8_t read8bit(struct memory *mem, uint16_t addr);
 void write8bit(uint16_t addr, uint8_t value, struct gb *gb);
 void push(uint16_t value, struct gb *gb);
-uint16_t pop(struct gb *gb);
+uint16_t pop(struct memory *memory, uint16_t *sp);
 
 #endif

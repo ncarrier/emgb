@@ -161,12 +161,12 @@ void push(uint16_t value, struct gb *gb)
 	write16bitToAddr(gb->registers.sp, value, gb);
 }
 
-uint16_t pop(struct gb *gb)
+uint16_t pop(struct memory *memory, uint16_t *sp)
 {
 	uint16_t value;
 
-	value = read16bit(&gb->memory, gb->registers.sp);
-	gb->registers.sp += 2;
+	value = read16bit(memory, *sp);
+	*sp += 2;
 
 	return value;
 }

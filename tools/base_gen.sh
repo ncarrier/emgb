@@ -463,7 +463,7 @@ function generate_base_or_code() {
 function generate_base_pop_code() {
 	local reg=$1
 
-	echo -e "\t${regs}.${reg} = pop(s_gb);"
+	echo -e "\t${regs}.${reg} = pop(&s_gb->memory, &${regs}.sp);"
 	if [ ${reg} = "af" ]; then
 		echo -e "\t${regs}.f &= 0xf0;"
 	fi
@@ -487,20 +487,20 @@ function generate_base_ret_code() {
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
 	if (${neg}${regs}.${cond: -1}f) {
-		${pc} = pop(s_gb);
+		${pc} = pop(&s_gb->memory, &${regs}.sp);
 		return ${cycles_cond};
 	}
 
 	${pc}++;
 here_doc_delim
 	else
-		echo -e "\t${pc} = pop(s_gb);"
+		echo -e "\t${pc} = pop(&s_gb->memory, &${regs}.sp);"
 	fi
 }
 
 function generate_base_reti_code() {
 	cat <<here_doc_delim
-	${regs}.pc = pop(s_gb);
+	${regs}.pc = pop(&s_gb->memory, &${regs}.sp);
 	s_gb->interrupts.interMaster = 1;
 here_doc_delim
 }
