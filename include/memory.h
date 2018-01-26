@@ -52,10 +52,6 @@ int rom_init(struct rom *rom, struct rom *switchable_rom_bank,
 		uint8_t *extra_rom_banks, const char *filename);
 void rom_display_header(struct rom_header *rom_header);
 
-/*
- * TODO must be before the gb.h header inclusion, because of an inverted
- * dependency. Fix that ASAP
- */
 #pragma pack(push, 1)
 
 enum sprite_size {
@@ -227,15 +223,13 @@ struct memory {
 } __attribute__((__packed__));
 #pragma pack(pop)
 
-#include "gb.h"
-
-void memory_init(struct memory *memory, struct gb *gb, long rom_size,
-		struct joypad *joypad, struct timer *timer);
-void write16bitToAddr(uint16_t addr, uint16_t value, struct gb *gb);
+void memory_init(struct memory *memory, struct joypad *joypad,
+		struct timer *timer, long rom_size);
+void write16bit(struct memory *memory, uint16_t addr, uint16_t value);
 uint16_t read16bit(struct memory *memory, uint16_t addr);
 uint8_t read8bit(struct memory *memory, uint16_t addr);
-void write8bit(uint16_t addr, uint8_t value, struct gb *gb);
-void push(uint16_t value, struct gb *gb);
+void write8bit(struct memory *memory, uint16_t addr, uint8_t value);
+void push(struct memory *memory, uint16_t *sp, uint16_t value);
 uint16_t pop(struct memory *memory, uint16_t *sp);
 
 #endif

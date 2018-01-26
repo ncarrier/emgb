@@ -34,9 +34,10 @@ void timer_update(struct timer *timer, struct gb *gb, struct memory *memory,
 
 	timer->timerCount = CLOCKSPEED / timer->freq;
 	if (memory->register_tima == 0xffu) {
-		write8bit(SPECIAL_REGISTER_TIMA, memory->register_tma, gb);
+		write8bit(memory, SPECIAL_REGISTER_TIMA, memory->register_tma);
 		memory->register_if |= INT_TIMER;
 	} else {
-		write8bit(SPECIAL_REGISTER_TIMA, memory->register_tima + 1, gb);
+		write8bit(memory, SPECIAL_REGISTER_TIMA,
+				memory->register_tima + 1);
 	}
 }

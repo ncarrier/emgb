@@ -164,7 +164,7 @@ function generate_base_ldi_or_ldd_code() {
 here_doc_delim
 	else
 		cat <<here_doc_delim
-	write8bit(${regs}.hl, ${regs}.a, s_gb);
+	write8bit(&s_gb->memory, ${regs}.hl, ${regs}.a);
 	${regs}.hl${operator};
 here_doc_delim
 	fi
@@ -196,7 +196,7 @@ function generate_base_call_code() {
 		[[ ${cond} == "n"* ]] && neg="!" || neg=""
 	cat <<here_doc_delim
 	if (${neg}${regs}.${cond: -1}f) {
-		push(${pc} + 3, s_gb);
+		push(&s_gb->memory, &${regs}.sp, ${pc} + 3);
 		${pc} = read16bit(&s_gb->memory, ${pc} + 1);
 		return ${cycles_cond};
 	}
@@ -205,7 +205,7 @@ function generate_base_call_code() {
 here_doc_delim
 	else
 		cat <<here_doc_delim
-	push(${pc} + 3, s_gb);
+	push(&s_gb->memory, &${regs}.sp, ${pc} + 3);
 	${pc} = read16bit(&s_gb->memory, ${pc} + 1);
 here_doc_delim
 	fi
@@ -286,7 +286,7 @@ here_doc_delim
 	fi
 	if [ "${operand}" = "(hl)" ]; then
 		cat <<here_doc_delim
-	write8bit(${regs}.hl, value, s_gb);
+	write8bit(&s_gb->memory, ${regs}.hl, value);
 here_doc_delim
 	fi
 }
@@ -330,7 +330,7 @@ function generate_base_inc_code() {
 	fi
 
 	if [ "${operand}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	fi
 }
 
@@ -403,7 +403,7 @@ function generate_base_ld_code() {
 		if [[ ${dst} =~ ${adress_re} ]]; then
 			dst_adress=${BASH_REMATCH[1]}
 			generate_base_ld_dst_adress_code ${dst_adress}
-			echo -e "\twrite8bit(dst_adr, src_val, s_gb);"
+			echo -e "\twrite8bit(&s_gb->memory, dst_adr, src_val);"
 		else
 			echo -e "\t${regs}.${dst} = src_val;"
 		fi
@@ -420,9 +420,9 @@ function generate_base_ld_code() {
 			dst_adress=${BASH_REMATCH[1]}
 			generate_base_ld_dst_adress_code ${dst_adress}
 			if [ ${#src} -eq 1 ]; then
-				echo -e "\twrite8bit(dst_adr, src_val, s_gb);"
+				echo -e "\twrite8bit(&s_gb->memory, dst_adr, src_val);"
 			else
-				echo -e "\twrite16bitToAddr(dst_adr, src_val, s_gb);"
+				echo -e "\twrite16bit(&s_gb->memory, dst_adr, src_val);"
 			fi
 		else
 			echo -e "\t${regs}.${dst} = src_val;"
@@ -472,7 +472,7 @@ function generate_base_pop_code() {
 function generate_base_push_code() {
 	local reg=$1
 
-	echo -e "\tpush(${regs}.${reg}, s_gb);"
+	echo -e "\tpush(&s_gb->memory, &${regs}.sp, ${regs}.${reg});"
 }
 
 function generate_base_ret_code() {
@@ -548,7 +548,7 @@ function generate_base_rst_code() {
 
 	cat <<here_doc_delim
 	${regs}.sp -= 2;
-	write16bitToAddr(${regs}.sp, ${pc} + 1, s_gb);
+	write16bit(&s_gb->memory, ${regs}.sp, ${pc} + 1);
 	${pc} = ${offset};
 here_doc_delim
 }

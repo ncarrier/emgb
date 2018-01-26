@@ -2,85 +2,85 @@
 
 #include "gb.h"
 
-void vblank(struct gb *gb_s)
+void vblank(struct gb *gb)
 {
-	gb_s->interrupts.interMaster = 0;
-	gb_s->registers.sp -= 2;
-	write16bitToAddr(gb_s->registers.sp, gb_s->registers.pc, gb_s);
-	gb_s->registers.pc = 0x40;
+	gb->interrupts.interMaster = 0;
+	gb->registers.sp -= 2;
+	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
+	gb->registers.pc = 0x40;
 
 }
 
-void lcd(struct gb *gb_s)
+void lcd(struct gb *gb)
 {
-	gb_s->interrupts.interMaster = 0;
+	gb->interrupts.interMaster = 0;
 	printf("doing lcdc !\n");
-	gb_s->registers.sp -= 2;
-	write16bitToAddr(gb_s->registers.sp, gb_s->registers.pc, gb_s);
-	gb_s->registers.pc = 0x48;
+	gb->registers.sp -= 2;
+	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
+	gb->registers.pc = 0x48;
 }
 
-void joypad(struct gb *gb_s)
+void joypad(struct gb *gb)
 {
-	gb_s->interrupts.interMaster = 0;
-	gb_s->registers.sp -= 2;
-	write16bitToAddr(gb_s->registers.sp, gb_s->registers.pc, gb_s);
-	gb_s->registers.pc = 0x60;
+	gb->interrupts.interMaster = 0;
+	gb->registers.sp -= 2;
+	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
+	gb->registers.pc = 0x60;
 }
 
-void serial(struct gb *gb_s)
+void serial(struct gb *gb)
 {
-	gb_s->interrupts.interMaster = 0;
-	gb_s->registers.sp -= 2;
-	write16bitToAddr(gb_s->registers.sp, gb_s->registers.pc, gb_s);
-	gb_s->registers.pc = 0x58;
+	gb->interrupts.interMaster = 0;
+	gb->registers.sp -= 2;
+	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
+	gb->registers.pc = 0x58;
 }
 
-void timer(struct gb *gb_s)
+void timer(struct gb *gb)
 {
-	gb_s->interrupts.interMaster = 0;
-	gb_s->registers.sp -= 2;
-	write16bitToAddr(gb_s->registers.sp, gb_s->registers.pc, gb_s);
-	gb_s->registers.pc = 0x50;
+	gb->interrupts.interMaster = 0;
+	gb->registers.sp -= 2;
+	write16bit(&gb->memory, gb->registers.sp, gb->registers.pc);
+	gb->registers.pc = 0x50;
 }
 
-void doInterupt(struct gb *gb_s)
+void doInterupt(struct gb *gb)
 {
 	unsigned char inter;
 	struct memory *memory;
 
-	memory = &gb_s->memory;
+	memory = &gb->memory;
 	if (memory->register_if & INT_JOYPAD)
-		gb_s->cpu.stopped = false;
-	gb_s->cpu.halted = false;
-	if (gb_s->interrupts.interMaster && memory->interrupt_enable
+		gb->cpu.stopped = false;
+	gb->cpu.halted = false;
+	if (gb->interrupts.interMaster && memory->interrupt_enable
 			&& memory->register_if) {
 		inter = memory->interrupt_enable & memory->register_if;
 		if (inter != 0)
-			gb_s->cpu.halted = false;
+			gb->cpu.halted = false;
 		if (inter & INT_VBLANK) {
 			memory->register_if &= ~(INT_VBLANK);
-			vblank(gb_s);
+			vblank(gb);
 		}
 		if (inter & INT_LCDSTAT) {
 			printf("LCD interrupt\n");
 			memory->register_if &= ~(INT_LCDSTAT);
-			lcd(gb_s);
+			lcd(gb);
 		}
 		if (inter & INT_TIMER) {
-			timer(gb_s);
+			timer(gb);
 /*			printf("TIMER interrupt\n"); */
 			memory->register_if &= ~(INT_TIMER);
 		}
 		if (inter & INT_JOYPAD) {
-			gb_s->cpu.stopped = false;
+			gb->cpu.stopped = false;
 			printf("JOYPAD interrupt\n");
-			joypad(gb_s);
+			joypad(gb);
 			memory->register_if &= ~(INT_JOYPAD);
 		}
 		if (inter & INT_SERIAL) {
 			printf("serial interrupt\n");
-			serial(gb_s);
+			serial(gb);
 			memory->register_if &= ~(INT_SERIAL);
 		}
 	}
