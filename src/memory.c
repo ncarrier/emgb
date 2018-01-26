@@ -1,7 +1,11 @@
-#include "memory.h"
+#include <stdlib.h>
+#include <string.h>
 
-#include "gb.h"
+#include "memory.h"
+#include "joypad.h"
 #include "special_registers.h"
+#include "rom.h"
+#include "io.h"
 
 static void mcb_handle_banking(struct memory *memory, uint16_t addr,
 		uint8_t value)
