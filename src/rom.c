@@ -3,7 +3,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "memory.h"
+#include "rom.h"
 #include "utils.h"
 #include "log.h"
 
