@@ -29,7 +29,7 @@ void interrupt_init(struct interrupts *interrupts, struct memory *memory,
 	interrupts->registers = registers;
 }
 
-void interrupt_do(struct interrupts *interrupts)
+void interrupt_update(struct interrupts *interrupts)
 {
 	unsigned char inter;
 	struct memory *memory;

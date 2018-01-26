@@ -2,6 +2,7 @@
 #include <inttypes.h>
 
 #include "gb.h"
+#include "log.h"
 #include "console_debugger.h"
 #include "instructions.h"
 
@@ -63,7 +64,7 @@ static void gb_loop(const char *fileName)
 			}
 			gpu_update(&gb->gpu);
 		}
-		interrupt_do(&gb->interrupts);
+		interrupt_update(&gb->interrupts);
 		timer_update(&gb->timer);
 	}
 #ifdef IMDBG
