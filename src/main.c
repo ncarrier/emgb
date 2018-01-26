@@ -64,7 +64,7 @@ static void gb_loop(const char *fileName)
 			gpu_update(&gb->gpu);
 		}
 		doInterupt(gb);
-		timer_update(&gb->timer, gb, &gb->memory, &gb->cpu);
+		timer_update(&gb->timer);
 	}
 #ifdef IMDBG
 	if (thr != NULL) {

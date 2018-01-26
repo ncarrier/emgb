@@ -6,18 +6,19 @@
 #define TAC_INPUT_CLOCK_SELECT(tac) ((tac) & 0x03)
 #define TAC_TIMER_ENABLED(tac) ((tac) & 0x04)
 
-struct gb;
 struct memory;
 struct cpu;
 struct timer {
+	struct cpu *cpu;
+	struct memory *memory;
 	unsigned int freq;
 	unsigned char ctrl;
 	unsigned char modulator;
-	int timerCount;
+	int timer_count;
 };
 
-void timer_init(struct memory *memory, struct timer *time);
-void timer_update(struct timer *timer, struct gb *gb, struct memory *memory,
-		struct cpu *cpu);
+void timer_init(struct timer *timer, struct memory *memory, struct cpu *cpu);
+void timer_arm(struct timer *timer);
+void timer_update(struct timer *timer);
 
 #endif

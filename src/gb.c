@@ -27,7 +27,7 @@ struct gb *gb_init(const char *file)
 	registers_init(&gb->registers);
 	cpu_init(&gb->cpu);
 	gpu_init(&gb->gpu, &gb->cpu, &gb->memory, &gb->config.config);
-	timer_init(&gb->memory, &gb->timer);
+	timer_init(&gb->timer, &gb->memory, &gb->cpu);
 
 	reset_joystick_config(&gb->joystick_config);
 	config_write(&gb->config);
