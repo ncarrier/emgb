@@ -144,7 +144,7 @@ void write8bit(uint16_t addr, uint8_t value, struct gb *gb)
 		memory->io_ports[addr - 0xFF00] = value;
 //		if (addr == 0xff41u)
 //			printf("writing lcd stat %x\n", value);
-		ctrlIo(addr, memory->io_ports, gb);
+		io_ctrl(memory, &gb->time, addr);
 	} else if (addr >= 0xFF4C && addr < 0xFF80) {
 		memory->empty_usable_for_io_2[addr - 0xFF4C] = value;
 	} else if (addr >= 0xFF80 && addr < 0xFFFF) {

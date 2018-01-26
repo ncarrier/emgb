@@ -1,7 +1,10 @@
 #ifndef IO_HH
 #define IO_HH
+#include <inttypes.h>
 
-struct gb;
-void ctrlIo(uint16_t addr, uint8_t *io_ports, struct gb *gb);
+#include "memory.h"
+#include "timer.h"
+
+void io_ctrl(struct memory *memory, struct timer *timer, uint16_t addr);
 
 #endif
