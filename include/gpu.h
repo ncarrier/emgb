@@ -1,8 +1,10 @@
 #ifndef GB_GPU
 #define GB_GPU
-
 #include <stdbool.h>
 
+#ifdef _WIN32
+#define SDL_MAIN_HANDLED
+#endif
 #include <SDL2/SDL.h>
 
 #include "cpu.h"

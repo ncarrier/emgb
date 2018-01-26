@@ -1,4 +1,7 @@
 #include "gb.h"
+#include "io.h"
+#include "utils.h"
+#include "log.h"
 #if EMGB_CONSOLE_DEBUGGER
 #include "console_debugger.h"
 #include "log.h"
