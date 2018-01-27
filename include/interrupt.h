@@ -5,7 +5,6 @@
 #include "cpu.h"
 #include "registers.h"
 
-
 #define INT_VBLANK (1 << 0)
 #define INT_LCDSTAT (1 << 1)
 #define INT_TIMER (1 << 2)

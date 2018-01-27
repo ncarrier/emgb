@@ -1,25 +1,15 @@
-#include "gb.h"
+#include "gpu.h"
 #include "io.h"
 #include "log.h"
-#include "ae_config.h"
+#include "config.h"
+#include "video_common.h"
+#include "interrupt.h"
 
 #define GB_SURF (GB_W * GB_H)
 #define COLOR_0 0x00000000
 #define COLOR_1 0x00444444
 #define COLOR_2 0x00aaaaaa
 #define COLOR_3 0x00ffffff
-
-static bool is_fullscreen(int width, int height)
-{
-	int ret;
-	SDL_DisplayMode dm;
-
-	ret = SDL_GetCurrentDisplayMode(0, &dm);
-	if (ret != 0)
-		return false;
-
-	return dm.w <= width && dm.h <= height;
-}
 
 static void gpu_init_display(struct gpu *gpu, struct ae_config *conf)
 {
@@ -41,7 +31,7 @@ static void gpu_init_display(struct gpu *gpu, struct ae_config *conf)
 			CONFIG_WINDOW_WIDTH_DEFAULT);
 	height = ae_config_get_int(conf, CONFIG_WINDOW_HEIGHT,
 			CONFIG_WINDOW_HEIGHT_DEFAULT);
-	fullscreen = is_fullscreen(width, height);
+	fullscreen = is_window_fullscreen(width, height);
 	x = ae_config_get_int(conf, CONFIG_WINDOW_X, CONFIG_WINDOW_X_DEFAULT);
 	y = ae_config_get_int(conf, CONFIG_WINDOW_Y, CONFIG_WINDOW_Y_DEFAULT);
 	gpu->window = SDL_CreateWindow("GB", x, y, width, height,

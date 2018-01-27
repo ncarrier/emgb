@@ -12,9 +12,6 @@
 #include "joystick_config.h"
 #include "config.h"
 
-#define GB_W 160
-#define GB_H 144
-
 struct gb {
 	struct timer timer;
 	struct registers registers;

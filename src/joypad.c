@@ -5,10 +5,11 @@
 #endif
 #include <SDL2/SDL.h>
 
-#include "memory.h"
 #include "joypad.h"
+#include "video_common.h"
+#include "memory.h"
+#include "interrupt.h"
 
-#include "gb.h"
 #include "utils.h"
 #include "ae_config.h"
 #include "config.h"
@@ -39,19 +40,6 @@ static void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
 	*sym = SDL_GetKeyFromName(key_name);
 	if (*sym == SDLK_UNKNOWN)
 		*sym = default_sym;
-}
-
-/* TODO factor with gpu */
-static bool is_window_fullscreen(int width, int height)
-{
-	int ret;
-	SDL_DisplayMode dm;
-
-	ret = SDL_GetCurrentDisplayMode(0, &dm);
-	if (ret != 0)
-		return false;
-
-	return dm.w <= width && dm.h <= height;
 }
 
 void joypad_init(struct joypad *pad, struct config *config,
@@ -331,7 +319,6 @@ void joypad_handle_event(struct joypad *joypad)
 					joypad->mouse_visible = true;
 				}
 			}
-			/* TODO min and max */
 			height = we->data2;
 			if (height < GB_H)
 				height = GB_H;
@@ -341,13 +328,12 @@ void joypad_handle_event(struct joypad *joypad)
 			ae_config_add_int(aec, "window_width", width);
 			ae_config_add_int(aec, "window_height", height);
 			config_write(config);
-
 			break;
+
 		case SDL_WINDOWEVENT_MOVED:
 			ae_config_add_int(aec, "window_x", we->data1);
 			ae_config_add_int(aec, "window_y", we->data2);
 			config_write(config);
-
 			break;
 		}
 		break;
