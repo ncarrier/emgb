@@ -121,35 +121,11 @@ uint8_t read8bit(struct memory *mem, uint16_t addr)
 
 void write8bit(struct memory *memory, uint16_t addr, uint8_t value)
 {
-//	if (addr == 0xffffu)
-//		puts("IE");
-	if (addr < 0x8000) {
+	if (addr < 0x8000)
 		mcb_handle_banking(memory, addr, value);
-	} else if (addr >= 0x8000 && addr < 0xA000) {
-		memory->vram[addr - 0x8000] = value;
-	} else if (addr >= 0xA000 && addr < 0xC000) {
-		memory->sram[addr - 0xA000] = value;
-	} else if (addr >= 0xC000 && addr < 0xE000) {
-		memory->ram[addr - 0xC000] = value;
-	} else if (addr >= 0xE000 && addr < 0xFE00) {
-		memory->ram[addr - 0xE000] = value;
-	} else if (addr >= 0xFE00 && addr < 0xFEA0) {
-		memory->oam[addr - 0xFE00] = value;
-	} else if (addr >= 0xFEa0 && addr < 0xFF00) {
-		memory->empty_usable_for_io_1[addr - 0xFEA0] = value;
-	} else if (addr >= 0xFF00 && addr < 0xFF4C) {
-		memory->io_ports[addr - 0xFF00] = value;
-//		if (addr == 0xff41u)
-//			printf("writing lcd stat %x\n", value);
+	else if (addr >= 0xFF00 && addr < 0xFF4C)
 		io_ctrl(memory, memory->timer, addr);
-	} else if (addr >= 0xFF4C && addr < 0xFF80) {
-		memory->empty_usable_for_io_2[addr - 0xFF4C] = value;
-	} else if (addr >= 0xFF80 && addr < 0xFFFF) {
-		memory->hram[addr - 0xFF80] = value;
-	} else if (addr == 0xFFFF) {
-//		printf("%s interEnable = %"PRIu8"\n", __func__, value);
-		memory->interrupt_enable = value;
-	}
+	memory->raw[addr] = value;
 }
 
 void push(struct memory *memory, uint16_t *sp, uint16_t value)
