@@ -13,11 +13,11 @@ int config_init(struct config *config)
 	int ret;
 
 	snprintf(config->dir, PATH_MAX, "%s/" CONFIG_DIR, getenv("HOME"));
-	ret = mkdir(config->dir
-#ifndef _WIN32
-			, 0755
+#ifdef _WIN32
+	ret = mkdir(config->dir);
+#else
+	ret = mkdir(config->dir, 0755);
 #endif
-			);
 	if (ret < 0 && errno != EEXIST) {
 		fprintf(stderr, "mkdir: %m\n");
 		return -ENOMEM;
@@ -25,6 +25,7 @@ int config_init(struct config *config)
 	ret = asprintf(&config->file, "%s/config", config->dir);
 	if (ret == -1) {
 		fprintf(stderr, "asprintf: %s\n", strerror(ENOMEM));
+		config->file = NULL;
 		return -ENOMEM;
 	}
 

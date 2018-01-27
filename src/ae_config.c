@@ -15,6 +15,12 @@
 #include "ae_config.h"
 #include "utils.h"
 
+static int ae_config_add(struct ae_config *conf, const char *key,
+		const char *value)
+{
+	return -envz_add(&conf->argz, &conf->len, key, value);
+}
+
 int ae_config_read(struct ae_config *conf, const char *path)
 {
 	char cleanup(cleanup_string)*string = NULL;
@@ -95,11 +101,6 @@ err:
 	snprintf(def_str, 50, "%d", def);
 	ae_config_add(conf, key, def_str);
 	return def;
-}
-
-int ae_config_add(struct ae_config *conf, const char *key, const char *value)
-{
-	return -envz_add(&conf->argz, &conf->len, key, value);
 }
 
 int ae_config_add_int(struct ae_config *conf, const char *key, int value)

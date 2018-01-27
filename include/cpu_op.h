@@ -6,12 +6,12 @@ struct gb;
 typedef unsigned (*cpufunc)(struct gb *);
 
 struct cpu_op {
-	unsigned char opcode;
+	uint8_t opcode;
 	char *value;
 	cpufunc func;
 	uint8_t size;
 	uint8_t real_size;
-	char *doc;
+	const char *doc;
 	unsigned cycles;
 	unsigned cycles_cond;
 };

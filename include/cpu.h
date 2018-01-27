@@ -3,16 +3,12 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#include "cpu_op.h"
-
-#pragma pack(push, 1)
 struct cpu {
-	unsigned int total_tick;
+	unsigned total_tick;
 	int last_tick;
 	bool stopped;
 	bool halted;
-} __attribute__((__packed__));
-#pragma pack(pop)
+};
 
 void cpu_init(struct cpu *cpu);
 
