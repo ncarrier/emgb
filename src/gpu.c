@@ -400,7 +400,10 @@ void gpu_update(struct gpu *gpu)
 void gpu_cleanup(struct gpu *gpu)
 {
 	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
+	SDL_DestroyTexture(gpu->texture);
+	SDL_DestroyRenderer(gpu->renderer);
 	SDL_DestroyWindow(gpu->window);
+	SDL_Quit();
 	/* free(s_gb->gb_gpu.pixels_d); */
 	free(gpu->pixels);
 }

@@ -76,6 +76,7 @@ static void gb_loop(const char *fileName)
 		SDL_WaitThread(thr, NULL);
 	}
 #endif
+	console_debugger_cleanup(&debugger);
 	gb_cleanup(gb);
 }
 

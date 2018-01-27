@@ -65,10 +65,11 @@ struct console_debugger {
 	} terminal;
 };
 
-void console_debugger_print_registers(const struct registers *registers);
 int console_debugger_init(struct console_debugger *debugger,
 		struct registers *registers, struct memory *memory,
 		struct ae_config *config);
+void console_debugger_print_registers(const struct registers *registers);
 int console_debugger_update(struct console_debugger *debugger);
+void console_debugger_cleanup(struct console_debugger *debugger);
 
 #endif /* CONSOLE_DEBUGGER_H */

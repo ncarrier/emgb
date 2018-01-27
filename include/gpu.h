@@ -33,11 +33,13 @@ struct gpu {
 	SDL_Renderer *renderer;
 	unsigned int *pixels;
 
+	/*
 	SDL_Window *window_d;
 	SDL_Surface *surface_d;
 	SDL_Texture *texture_d;
 	SDL_Renderer *renderer_d;
 	unsigned int *pixels_d;
+	*/
 
 	enum gpu_mode mode;
 	int color_0;

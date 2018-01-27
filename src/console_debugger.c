@@ -1135,5 +1135,13 @@ int console_debugger_update(struct console_debugger *debugger)
 	return 0;
 }
 
+void console_debugger_cleanup(struct console_debugger *debugger)
+{
+	tok_end(debugger->tokenizer);
+	history_end(debugger->history);
+	el_end(debugger->editline);
+	memset(debugger, 0, sizeof(*debugger));
+}
+
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
