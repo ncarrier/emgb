@@ -14,7 +14,6 @@
 #define TOTAL_MEMORY (BIGGEST_ROM_SIZE + MEMORY_ADDRESS_SPACE - ROM_BANK_SIZE)
 #define EXTRA_ROM_BANKS_SIZE (TOTAL_MEMORY - MEMORY_ADDRESS_SPACE)
 
-struct joypad;
 struct timer;
 
 /* memory mapping extracted from GBCPUman.pdf 2.5.1 */
@@ -22,7 +21,6 @@ struct timer;
 struct memory {
 	uint8_t mbc_rom_bank;
 	bool rom_banking_flag;
-	struct joypad *joypad;
 	struct timer *timer;
 	union {
 		struct {
@@ -79,8 +77,7 @@ struct memory {
 } __attribute__((__packed__));
 #pragma pack(pop)
 
-void memory_init(struct memory *memory, struct joypad *joypad,
-		struct timer *timer, long rom_size);
+void memory_init(struct memory *memory, struct timer *timer, long rom_size);
 void write16bit(struct memory *memory, uint16_t addr, uint16_t value);
 uint16_t read16bit(struct memory *memory, uint16_t addr);
 uint8_t read8bit(struct memory *memory, uint16_t addr);

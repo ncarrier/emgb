@@ -300,6 +300,8 @@ void joypad_handle_event(struct joypad *joypad)
 	uint32_t width;
 	uint32_t height;
 
+	joypad->spec_reg->p1 = joypad_get_state(joypad, joypad->spec_reg->p1);
+
 	event = &joypad->event;
 	if (SDL_PollEvent(event) == 0)
 		return;

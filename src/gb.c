@@ -20,7 +20,7 @@ struct gb *gb_init(const char *file)
 		ERR("get_file_size_from_path: %s", strerror(-rom_size));
 
 	config_init(&gb->config);
-	memory_init(&gb->memory, &gb->joypad, &gb->timer, rom_size);
+	memory_init(&gb->memory, &gb->timer, rom_size);
 	rom_init(&gb->memory.rom_bank_0_rom,
 			&gb->memory.switchable_rom_bank_rom,
 			gb->memory.extra_rom_banks, file);

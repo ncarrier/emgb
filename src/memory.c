@@ -42,12 +42,10 @@ static void mcb_handle_banking(struct memory *memory, uint16_t addr,
 }
 
 /* TODO allocate memory at the right size */
-void memory_init(struct memory *memory, struct joypad *joypad,
-		struct timer *timer, long rom_size)
+void memory_init(struct memory *memory, struct timer *timer, long rom_size)
 {
 	memset(memory, 0, sizeof(*memory));
 	memory->mbc_rom_bank = 1;
-	memory->joypad = joypad;
 	memory->timer = timer;
 
 	write8bit(memory, 0xFF05, 0x00);
@@ -101,10 +99,7 @@ uint16_t read16bit(struct memory *memory, uint16_t addr)
 
 static void refresh_memory(struct memory *mem, uint16_t addr)
 {
-	if (addr == SPECIAL_REGISTER_P1)
-		mem->spec_reg.p1 = joypad_get_state(mem->joypad,
-				mem->spec_reg.p1);
-	else if (addr == SPECIAL_REGISTER_DIV)
+	if (addr == SPECIAL_REGISTER_DIV)
 		/* TODO, doesn't correspond to the documentation */
 		mem->spec_reg.div = rand();
 }
