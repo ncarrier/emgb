@@ -32,7 +32,6 @@ struct gpu {
 	SDL_Texture *texture;
 	SDL_Renderer *renderer;
 	unsigned int *pixels;
-	bool mouse_visible;
 
 	SDL_Window *window_d;
 	SDL_Surface *surface_d;

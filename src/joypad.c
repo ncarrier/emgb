@@ -41,17 +41,40 @@ static void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
 		*sym = default_sym;
 }
 
-void joypad_init(struct joypad *pad, struct config *config,
-		struct spec_reg *spec_reg)
+/* TODO factor with gpu */
+static bool is_window_fullscreen(int width, int height)
 {
+	int ret;
+	SDL_DisplayMode dm;
+
+	ret = SDL_GetCurrentDisplayMode(0, &dm);
+	if (ret != 0)
+		return false;
+
+	return dm.w <= width && dm.h <= height;
+}
+
+void joypad_init(struct joypad *pad, struct config *config,
+		struct spec_reg *spec_reg,
+		struct joystick_config *joystick_config)
+{
+	int width;
+	int height;
 	struct ae_config *aec;
 
 	aec = &config->config;
 	pad->config = config;
 	pad->spec_reg = spec_reg;
+	pad->joystick_config = joystick_config;
 	pad->running = true;
 	pad->button_key = 0x0f;
 	pad->button_dir = 0x0f;
+
+	width = ae_config_get_int(aec, CONFIG_WINDOW_WIDTH,
+			CONFIG_WINDOW_WIDTH_DEFAULT);
+	height = ae_config_get_int(aec, CONFIG_WINDOW_HEIGHT,
+			CONFIG_WINDOW_HEIGHT_DEFAULT);
+	pad->mouse_visible = !is_window_fullscreen(width, height);
 
 	get_pad_key_from_config(&pad->sym_right, aec, CONFIG_JOYPAD_0_RIGHT,
 			CONFIG_JOYPAD_0_RIGHT_DEFAULT);
@@ -71,41 +94,39 @@ void joypad_init(struct joypad *pad, struct config *config,
 			CONFIG_JOYPAD_0_START_DEFAULT);
 }
 
-static void key_down(struct gb *gb)
+static void key_down(struct joypad *joypad)
 {
-	struct joypad *pad;
 	SDL_Keycode sym;
 	struct spec_reg *spec_reg;
 
-	pad = &gb->joypad;
-	spec_reg = pad->spec_reg;
-	sym = pad->event.key.keysym.sym;
+	spec_reg = joypad->spec_reg;
+	sym = joypad->event.key.keysym.sym;
 	if (sym == SDLK_ESCAPE) {
-		pad->running = false;
-	} else if (sym == pad->sym_a) {
+		joypad->running = false;
+	} else if (sym == joypad->sym_a) {
 		spec_reg->ifl |= INT_JOYPAD;
-		pad->button_key &= ~BUTTON_A_FLAG;
-	} else if (sym == pad->sym_b) {
+		joypad->button_key &= ~BUTTON_A_FLAG;
+	} else if (sym == joypad->sym_b) {
 		spec_reg->ifl |= INT_JOYPAD;
-		pad->button_key &= ~BUTTON_B_FLAG;
-	} else if (sym == pad->sym_select) {
+		joypad->button_key &= ~BUTTON_B_FLAG;
+	} else if (sym == joypad->sym_select) {
 		spec_reg->ifl |= INT_JOYPAD;
-		pad->button_key &= ~BUTTON_SELECT_FLAG;
-	} else if (sym == pad->sym_start) {
+		joypad->button_key &= ~BUTTON_SELECT_FLAG;
+	} else if (sym == joypad->sym_start) {
 		spec_reg->ifl |= INT_JOYPAD;
-		pad->button_key &= ~BUTTON_START_FLAG;
-	} else if (sym == pad->sym_down) {
+		joypad->button_key &= ~BUTTON_START_FLAG;
+	} else if (sym == joypad->sym_down) {
 		spec_reg->ifl |= INT_JOYPAD;
-		pad->button_dir &= ~BUTTON_DOWN_FLAG;
-	} else if (sym == pad->sym_up) {
+		joypad->button_dir &= ~BUTTON_DOWN_FLAG;
+	} else if (sym == joypad->sym_up) {
 		spec_reg->ifl |= INT_JOYPAD;
-		pad->button_dir &= ~BUTTON_UP_FLAG;
-	} else if (sym == pad->sym_left) {
+		joypad->button_dir &= ~BUTTON_UP_FLAG;
+	} else if (sym == joypad->sym_left) {
 		spec_reg->ifl |= INT_JOYPAD;
-		pad->button_dir &= ~BUTTON_LEFT_FLAG;
-	} else if (sym == pad->sym_right) {
+		joypad->button_dir &= ~BUTTON_LEFT_FLAG;
+	} else if (sym == joypad->sym_right) {
 		spec_reg->ifl |= INT_JOYPAD;
-		pad->button_dir &= ~BUTTON_RIGHT_FLAG;
+		joypad->button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
 }
 
@@ -135,13 +156,13 @@ static void key_up(struct joypad *joypad)
 	}
 }
 
-static void joy_device_added(struct gb *gb, uint32_t index)
+static void joy_device_added(struct joypad *joypad, uint32_t index)
 {
 	int ret;
 	const char *joystick_name;
 	struct joystick_config *joystick_config;
 
-	joystick_config = &gb->joystick_config;
+	joystick_config = joypad->joystick_config;
 	joystick_name = SDL_JoystickNameForIndex(index);
 	printf("Joystick %s (index = %"PRIi32") detected.\n",
 			joystick_name, index);
@@ -150,7 +171,7 @@ static void joy_device_added(struct gb *gb, uint32_t index)
 				joystick_config->joystick.name);
 		return;
 	}
-	ret = init_joystick_config(joystick_config, index, gb->config.dir);
+	ret = init_joystick_config(joystick_config, index, joypad->config->dir);
 	if (ret < 0) {
 		printf("No mapping for %s, create one with joypad_mapping\n",
 				joystick_name);
@@ -158,11 +179,13 @@ static void joy_device_added(struct gb *gb, uint32_t index)
 	}
 }
 
-static void joy_device_removed(struct gb *gb, const union SDL_Event *event)
+static void joy_device_removed(struct joypad *joypad)
 {
+	const union SDL_Event *event;
 	struct joystick_config *joystick_config;
 
-	joystick_config = &gb->joystick_config;
+	event = &joypad->event;
+	joystick_config = joypad->joystick_config;
 	printf("Joystick SDL_JoystickID = %"PRIi32" removed.%*s\n",
 			event->jdevice.which, 25, "");
 	if (!joystick_config->initialized ||
@@ -175,7 +198,7 @@ static void joy_device_removed(struct gb *gb, const union SDL_Event *event)
 
 	/* try to reconnect to another joystick if any */
 	if (SDL_NumJoysticks() != 0)
-		joy_device_added(gb, event->jdevice.which);
+		joy_device_added(joypad, event->jdevice.which);
 }
 
 static void button_down(struct joypad *joypad, enum gb_button button)
@@ -195,16 +218,14 @@ static void button_up(struct joypad *joypad, enum gb_button button)
 		joypad->button_dir |= BUTTON_TO_DIR(button);
 }
 
-static void joy_button_action(struct gb *gb, const union SDL_Event *event,
+static void joy_button_action(struct joypad *joypad,
 		void (*action)(struct joypad *, enum gb_button))
 {
 	struct joystick_config *joystick_config;
 	enum gb_button button;
 	struct control *control;
-	struct joypad *joypad;
 
-	joypad = &gb->joypad;
-	joystick_config = &gb->joystick_config;
+	joystick_config = joypad->joystick_config;
 	if (!joystick_config->initialized)
 		return;
 
@@ -213,30 +234,30 @@ static void joy_button_action(struct gb *gb, const union SDL_Event *event,
 		control = &joystick_config->mappings[button].control;
 		if (control->type != CONTROL_TYPE_BUTTON)
 			continue;
-		if (control->button.index == event->jbutton.button)
+		if (control->button.index == joypad->event.jbutton.button)
 			action(joypad, button);
 	}
 }
 
-static void joy_button_down(struct gb *gb, const union SDL_Event *event)
+static void joy_button_down(struct joypad *joypad)
 {
-	joy_button_action(gb, event, button_down);
+	joy_button_action(joypad, button_down);
 }
 
-static void joy_button_up(struct gb *gb, const union SDL_Event *event)
+static void joy_button_up(struct joypad *joypad)
 {
-	joy_button_action(gb, event, button_up);
+	joy_button_action(joypad, button_up);
 }
 
-static void joy_axis_motion(struct gb *gb, const union SDL_Event *event)
+static void joy_axis_motion(struct joypad *joypad)
 {
 	struct joystick_config *joystick_config;
 	enum gb_button button;
 	struct control *control;
-	struct joypad *joypad;
+	const union SDL_Event *event;
 
-	joypad = &gb->joypad;
-	joystick_config = &gb->joystick_config;
+	joystick_config = joypad->joystick_config;
+	event = &joypad->event;
 	if (!joystick_config->initialized)
 		return;
 
@@ -270,7 +291,7 @@ static bool is_fullscreen(const struct SDL_WindowEvent *we)
 	return dm.w == we->data1 && dm.h == we->data2;
 }
 
-void joypad_handle_event(struct gb *gb)
+void joypad_handle_event(struct joypad *joypad)
 {
 	union SDL_Event *event;
 	struct SDL_WindowEvent *we;
@@ -278,9 +299,7 @@ void joypad_handle_event(struct gb *gb)
 	struct config *config;
 	uint32_t width;
 	uint32_t height;
-	struct joypad *joypad;
 
-	joypad = &gb->joypad;
 	event = &joypad->event;
 	if (SDL_PollEvent(event) == 0)
 		return;
@@ -291,7 +310,7 @@ void joypad_handle_event(struct gb *gb)
 	case SDL_QUIT: {
 		printf("see u.\n");
 		joypad->running = false;
-		config_write(&gb->config);
+		config_write(joypad->config);
 		break;
 	}
 
@@ -300,14 +319,14 @@ void joypad_handle_event(struct gb *gb)
 		switch (we->event) {
 		case SDL_WINDOWEVENT_SIZE_CHANGED:
 			if (is_fullscreen(we)) {
-				if (gb->gpu.mouse_visible) {
+				if (joypad->mouse_visible) {
 					SDL_ShowCursor(SDL_DISABLE);
-					gb->gpu.mouse_visible = false;
+					joypad->mouse_visible = false;
 				}
 			} else {
-				if (!gb->gpu.mouse_visible) {
+				if (!joypad->mouse_visible) {
 					SDL_ShowCursor(SDL_ENABLE);
-					gb->gpu.mouse_visible = true;
+					joypad->mouse_visible = true;
 				}
 			}
 			/* TODO min and max */
@@ -332,27 +351,27 @@ void joypad_handle_event(struct gb *gb)
 		break;
 
 	case SDL_JOYDEVICEADDED:
-		joy_device_added(gb, event->jdevice.which);
+		joy_device_added(joypad, event->jdevice.which);
 		break;
 
 	case SDL_JOYDEVICEREMOVED:
-		joy_device_removed(gb, event);
+		joy_device_removed(joypad);
 		break;
 
 	case SDL_JOYBUTTONDOWN:
-		joy_button_down(gb, event);
+		joy_button_down(joypad);
 		break;
 
 	case SDL_JOYBUTTONUP:
-		joy_button_up(gb, event);
+		joy_button_up(joypad);
 		break;
 
 	case SDL_JOYAXISMOTION:
-		joy_axis_motion(gb, event);
+		joy_axis_motion(joypad);
 		break;
 
 	case SDL_KEYDOWN:
-		key_down(gb);
+		key_down(joypad);
 		break;
 	case SDL_KEYUP:
 		key_up(joypad);

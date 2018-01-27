@@ -7,12 +7,14 @@
 
 #include "config.h"
 #include "special_registers.h"
+#include "joystick_config.h"
 
-struct gb;
 struct joypad {
 	struct config *config;
 	struct spec_reg *spec_reg;
+	struct joystick_config *joystick_config;
 	bool running;
+	bool mouse_visible;
 	SDL_Event event;
 	uint8_t button_key; /* = 0x0f */
 	uint8_t button_dir; /* = 0x0f */
@@ -24,13 +26,15 @@ struct joypad {
 	SDL_Keycode sym_b;
 	SDL_Keycode sym_select;
 	SDL_Keycode sym_start;
+	// TODO joystick_config and mouse_visible
 };
 
 void joypad_init(struct joypad *joypad, struct config *config,
-		struct spec_reg *spec_reg);
+		struct spec_reg *spec_reg,
+		struct joystick_config *joystick_config);
 unsigned char joypad_get_state(const struct joypad *joypad,
 		uint8_t register_p1);
 #define joypad_is_running(joypad) ((joypad)->running)
-void joypad_handle_event(struct gb *gb);
+void joypad_handle_event(struct joypad *joypad);
 
 #endif

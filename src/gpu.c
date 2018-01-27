@@ -42,7 +42,6 @@ static void gpu_init_display(struct gpu *gpu, struct ae_config *conf)
 	height = ae_config_get_int(conf, CONFIG_WINDOW_HEIGHT,
 			CONFIG_WINDOW_HEIGHT_DEFAULT);
 	fullscreen = is_fullscreen(width, height);
-	gpu->mouse_visible = !fullscreen;
 	x = ae_config_get_int(conf, CONFIG_WINDOW_X, CONFIG_WINDOW_X_DEFAULT);
 	y = ae_config_get_int(conf, CONFIG_WINDOW_Y, CONFIG_WINDOW_Y_DEFAULT);
 	gpu->window = SDL_CreateWindow("GB", x, y, width, height,

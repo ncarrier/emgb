@@ -20,7 +20,6 @@ struct gb *gb_init(const char *file)
 		ERR("get_file_size_from_path: %s", strerror(-rom_size));
 
 	config_init(&gb->config);
-	joypad_init(&gb->joypad, &gb->config, &gb->memory.spec_reg);
 	memory_init(&gb->memory, &gb->joypad, &gb->timer, rom_size);
 	rom_init(&gb->memory.rom_bank_0_rom,
 			&gb->memory.switchable_rom_bank_rom,
@@ -34,6 +33,9 @@ struct gb *gb_init(const char *file)
 	timer_init(&gb->timer, &gb->memory, &gb->cpu);
 
 	reset_joystick_config(&gb->joystick_config);
+	joypad_init(&gb->joypad, &gb->config, &gb->memory.spec_reg,
+			&gb->joystick_config);
+
 	config_write(&gb->config);
 
 	return gb;

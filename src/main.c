@@ -56,7 +56,7 @@ static void gb_loop(const char *fileName)
 		if (ret < 0)
 			ERR("console_debugger_update: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
-		joypad_handle_event(gb);
+		joypad_handle_event(joypad);
 		if (!cpu->stopped) {
 			if (!cpu->halted) {
 				fopcode = read8bit(memory, registers->pc);
