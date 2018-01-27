@@ -15,7 +15,6 @@ struct gb *gb_init(const char *file)
 	gb = calloc(1, sizeof(*gb));
 	if (gb == NULL)
 		ERR("Cannot allocate gb");
-	gb->running = true;
 	rom_size = get_file_size_from_path(file);
 	if (rom_size < 0)
 		ERR("get_file_size_from_path: %s", strerror(-rom_size));

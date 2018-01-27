@@ -26,7 +26,6 @@ struct gb {
 	struct joystick_config joystick_config;
 	struct config config;
 	bool stopdbg;
-	bool running;
 };
 
 struct gb *gb_init(const char *file_name);

@@ -23,6 +23,7 @@ static void gb_loop(const char *fileName)
 	struct cpu *cpu;
 	struct registers *registers;
 	struct memory *memory;
+	struct joypad *joypad;
 #ifdef IMDBG
 	SDL_Thread *thr;
 #endif
@@ -35,6 +36,7 @@ static void gb_loop(const char *fileName)
 	memory = &gb->memory;
 	cpu = &gb->cpu;
 	registers = &gb->registers;
+	joypad = &gb->joypad;
 #if EMGB_CONSOLE_DEBUGGER
 	ret = console_debugger_init(&debugger, registers, memory,
 			&gb->config.config);
@@ -48,13 +50,13 @@ static void gb_loop(const char *fileName)
 	if (thr == NULL)
 		printf("cannot start imGui dbg\n");
 #endif
-	while (gb->running) {
+	while (joypad_is_running(joypad)) {
 #if EMGB_CONSOLE_DEBUGGER
 		ret = console_debugger_update(&debugger);
 		if (ret < 0)
 			ERR("console_debugger_update: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
-		handleEvent(gb);
+		joypad_handle_event(gb);
 		if (!cpu->stopped) {
 			if (!cpu->halted) {
 				fopcode = read8bit(memory, registers->pc);

@@ -40,7 +40,6 @@ struct gpu {
 	SDL_Renderer *renderer_d;
 	unsigned int *pixels_d;
 
-	SDL_Event event;
 	enum gpu_mode mode;
 	int color_0;
 	int color_1;

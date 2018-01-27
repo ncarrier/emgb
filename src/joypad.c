@@ -1,5 +1,10 @@
 #include <unistd.h>
 
+#ifdef _WIN32
+#define SDL_MAIN_HANDLED
+#endif
+#include <SDL2/SDL.h>
+
 #include "memory.h"
 #include "joypad.h"
 
@@ -40,6 +45,7 @@ void joypad_init(struct joypad *pad, struct ae_config *config)
 {
 	pad->button_key = 0x0f;
 	pad->button_dir = 0x0f;
+	pad->running = true;
 
 	get_pad_key_from_config(&pad->sym_right, config, CONFIG_JOYPAD_0_RIGHT,
 			CONFIG_JOYPAD_0_RIGHT_DEFAULT);
@@ -59,67 +65,70 @@ void joypad_init(struct joypad *pad, struct ae_config *config)
 			CONFIG_JOYPAD_0_START_DEFAULT);
 }
 
-void keyDown(struct gb *gb_s)
+static void key_down(struct gb *gb)
 {
 	struct joypad *pad;
 	SDL_Keycode sym;
-	struct memory *memory;
+	union SDL_Event *event;
+	struct spec_reg *spec_reg;
 
-	memory = &gb_s->memory;
-	pad = &gb_s->joypad;
-	sym = gb_s->gpu.event.key.keysym.sym;
+	spec_reg = &gb->memory.spec_reg;
+	pad = &gb->joypad;
+
+	event = &(gb->joypad.event);
+	sym = event->key.keysym.sym;
 	if (sym == SDLK_ESCAPE) {
-		gb_s->running = false;
+		pad->running = false;
 	} else if (sym == pad->sym_a) {
-		memory->spec_reg.ifl |= INT_JOYPAD;
-		gb_s->joypad.button_key &= ~BUTTON_A_FLAG;
+		spec_reg->ifl |= INT_JOYPAD;
+		pad->button_key &= ~BUTTON_A_FLAG;
 	} else if (sym == pad->sym_b) {
-		memory->spec_reg.ifl |= INT_JOYPAD;
-		gb_s->joypad.button_key &= ~BUTTON_B_FLAG;
+		spec_reg->ifl |= INT_JOYPAD;
+		pad->button_key &= ~BUTTON_B_FLAG;
 	} else if (sym == pad->sym_select) {
-		memory->spec_reg.ifl |= INT_JOYPAD;
-		gb_s->joypad.button_key &= ~BUTTON_SELECT_FLAG;
+		spec_reg->ifl |= INT_JOYPAD;
+		pad->button_key &= ~BUTTON_SELECT_FLAG;
 	} else if (sym == pad->sym_start) {
-		memory->spec_reg.ifl |= INT_JOYPAD;
-		gb_s->joypad.button_key &= ~BUTTON_START_FLAG;
+		spec_reg->ifl |= INT_JOYPAD;
+		pad->button_key &= ~BUTTON_START_FLAG;
 	} else if (sym == pad->sym_down) {
-		memory->spec_reg.ifl |= INT_JOYPAD;
-		gb_s->joypad.button_dir &= ~BUTTON_DOWN_FLAG;
+		spec_reg->ifl |= INT_JOYPAD;
+		pad->button_dir &= ~BUTTON_DOWN_FLAG;
 	} else if (sym == pad->sym_up) {
-		memory->spec_reg.ifl |= INT_JOYPAD;
-		gb_s->joypad.button_dir &= ~BUTTON_UP_FLAG;
+		spec_reg->ifl |= INT_JOYPAD;
+		pad->button_dir &= ~BUTTON_UP_FLAG;
 	} else if (sym == pad->sym_left) {
-		memory->spec_reg.ifl |= INT_JOYPAD;
-		gb_s->joypad.button_dir &= ~BUTTON_LEFT_FLAG;
+		spec_reg->ifl |= INT_JOYPAD;
+		pad->button_dir &= ~BUTTON_LEFT_FLAG;
 	} else if (sym == pad->sym_right) {
-		memory->spec_reg.ifl |= INT_JOYPAD;
-		gb_s->joypad.button_dir &= ~BUTTON_RIGHT_FLAG;
+		spec_reg->ifl |= INT_JOYPAD;
+		pad->button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
 }
 
-void keyUp(struct gb *gb_s)
+static void key_up(struct joypad *joypad)
 {
-	struct joypad *pad;
 	SDL_Keycode sym;
+	union SDL_Event *event;
 
-	pad = &gb_s->joypad;
-	sym = gb_s->gpu.event.key.keysym.sym;
-	if (sym == pad->sym_a) {
-		gb_s->joypad.button_key |= BUTTON_A_FLAG;
-	} else if (sym == pad->sym_b) {
-		gb_s->joypad.button_key |= BUTTON_B_FLAG;
-	} else if (sym == pad->sym_select) {
-		gb_s->joypad.button_key |= BUTTON_SELECT_FLAG;
-	} else if (sym == pad->sym_start) {
-		gb_s->joypad.button_key |= BUTTON_START_FLAG;
-	} else if (sym == pad->sym_down) {
-		gb_s->joypad.button_dir |= BUTTON_DOWN_FLAG;
-	} else if (sym == pad->sym_up) {
-		gb_s->joypad.button_dir |= BUTTON_UP_FLAG;
-	} else if (sym == pad->sym_left) {
-		gb_s->joypad.button_dir |= BUTTON_LEFT_FLAG;
-	} else if (sym == pad->sym_right) {
-		gb_s->joypad.button_dir |= BUTTON_RIGHT_FLAG;
+	event = &joypad->event;
+	sym = event->key.keysym.sym;
+	if (sym == joypad->sym_a) {
+		joypad->button_key |= BUTTON_A_FLAG;
+	} else if (sym == joypad->sym_b) {
+		joypad->button_key |= BUTTON_B_FLAG;
+	} else if (sym == joypad->sym_select) {
+		joypad->button_key |= BUTTON_SELECT_FLAG;
+	} else if (sym == joypad->sym_start) {
+		joypad->button_key |= BUTTON_START_FLAG;
+	} else if (sym == joypad->sym_down) {
+		joypad->button_dir |= BUTTON_DOWN_FLAG;
+	} else if (sym == joypad->sym_up) {
+		joypad->button_dir |= BUTTON_UP_FLAG;
+	} else if (sym == joypad->sym_left) {
+		joypad->button_dir |= BUTTON_LEFT_FLAG;
+	} else if (sym == joypad->sym_right) {
+		joypad->button_dir |= BUTTON_RIGHT_FLAG;
 	}
 }
 
@@ -257,40 +266,42 @@ static bool is_fullscreen(const struct SDL_WindowEvent *we)
 	return dm.w == we->data1 && dm.h == we->data2;
 }
 
-void handleEvent(struct gb *gb_s)
+void joypad_handle_event(struct gb *gb)
 {
 	union SDL_Event *event;
 	struct SDL_WindowEvent *we;
 	struct ae_config *conf;
 	uint32_t width;
 	uint32_t height;
+	struct joypad *joypad;
 
-	event = &(gb_s->gpu.event);
+	joypad = &gb->joypad;
+	event = &joypad->event;
 	if (SDL_PollEvent(event) == 0)
 		return;
 
-	conf = &gb_s->config.config;
-	switch (gb_s->gpu.event.type) {
+	conf = &gb->config.config;
+	switch (event->type) {
 	case SDL_QUIT: {
 		printf("see u.\n");
-		gb_s->running = false;
-		config_write(&gb_s->config);
+		joypad->running = false;
+		config_write(&gb->config);
 		break;
 	}
 
 	case SDL_WINDOWEVENT:
-		we = &gb_s->gpu.event.window;
+		we = &event->window;
 		switch (we->event) {
 		case SDL_WINDOWEVENT_SIZE_CHANGED:
 			if (is_fullscreen(we)) {
-				if (gb_s->gpu.mouse_visible) {
+				if (gb->gpu.mouse_visible) {
 					SDL_ShowCursor(SDL_DISABLE);
-					gb_s->gpu.mouse_visible = false;
+					gb->gpu.mouse_visible = false;
 				}
 			} else {
-				if (!gb_s->gpu.mouse_visible) {
+				if (!gb->gpu.mouse_visible) {
 					SDL_ShowCursor(SDL_ENABLE);
-					gb_s->gpu.mouse_visible = true;
+					gb->gpu.mouse_visible = true;
 				}
 			}
 			/* TODO min and max */
@@ -302,43 +313,43 @@ void handleEvent(struct gb *gb_s)
 				width = GB_W;
 			ae_config_add_int(conf, "window_width", width);
 			ae_config_add_int(conf, "window_height", height);
-			config_write(&gb_s->config);
+			config_write(&gb->config);
 
 			break;
 		case SDL_WINDOWEVENT_MOVED:
 			ae_config_add_int(conf, "window_x", we->data1);
 			ae_config_add_int(conf, "window_y", we->data2);
-			config_write(&gb_s->config);
+			config_write(&gb->config);
 
 			break;
 		}
 		break;
 
 	case SDL_JOYDEVICEADDED:
-		joy_device_added(gb_s, event->jdevice.which);
+		joy_device_added(gb, event->jdevice.which);
 		break;
 
 	case SDL_JOYDEVICEREMOVED:
-		joy_device_removed(gb_s, event);
+		joy_device_removed(gb, event);
 		break;
 
 	case SDL_JOYBUTTONDOWN:
-		joy_button_down(gb_s, event);
+		joy_button_down(gb, event);
 		break;
 
 	case SDL_JOYBUTTONUP:
-		joy_button_up(gb_s, event);
+		joy_button_up(gb, event);
 		break;
 
 	case SDL_JOYAXISMOTION:
-		joy_axis_motion(gb_s, event);
+		joy_axis_motion(gb, event);
 		break;
 
 	case SDL_KEYDOWN:
-		keyDown(gb_s);
+		key_down(gb);
 		break;
 	case SDL_KEYUP:
-		keyUp(gb_s);
+		key_up(joypad);
 		break;
 	}
 }
