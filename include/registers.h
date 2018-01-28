@@ -4,7 +4,6 @@
 #include <inttypes.h>
 
 #pragma pack(push, 1)
-
 struct registers {
 	struct {
 		union {
@@ -54,7 +53,6 @@ struct registers {
 	uint16_t pc;
 	uint16_t sp;
 } __attribute__((__packed__));
-
 #pragma pack(pop)
 
 void registers_init(struct registers *registers);

@@ -11,9 +11,7 @@ struct cpu;
 struct timer {
 	struct cpu *cpu;
 	struct memory *memory;
-	unsigned int freq;
-	unsigned char ctrl;
-	unsigned char modulator;
+	unsigned freq;
 	int timer_count;
 };
 

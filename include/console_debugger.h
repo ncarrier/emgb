@@ -4,11 +4,9 @@
 
 #include <histedit.h>
 
-#include "cpu.h"
-#include "registers.h"
 #include "utils.h"
-#include "ae_config.h"
 #include "config.h"
+#include "registers.h"
 
 #define EMGB_CONSOLE_DEBUGGER_PROMPT "egd > "
 #define EMGB_CONSOLE_DEBUGGER_PROMPT2 "... > "
@@ -36,6 +34,8 @@ struct breakpoint {
 	enum breakpoint_status status;
 };
 
+struct cpu;
+struct memory;
 struct console_debugger {
 	char path[EMGB_CONSOLE_DEBUGGER_PATH_MAX];
 	bool active;

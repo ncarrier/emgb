@@ -3,8 +3,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
+#include <SDL2/SDL_joystick.h>
 
 #define MAX_JOYSTICKS 10
 #define MAPPINGS_SIZE 8

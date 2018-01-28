@@ -1,4 +1,7 @@
 #include "gpu.h"
+#include "cpu.h"
+#include "memory.h"
+#include "ae_config.h"
 #include "io.h"
 #include "log.h"
 #include "config.h"

@@ -1,15 +1,11 @@
 #include <unistd.h>
 
-#ifdef _WIN32
-#define SDL_MAIN_HANDLED
-#endif
-#include <SDL2/SDL.h>
-
 #include "joypad.h"
-#include "video_common.h"
+#include "special_registers.h"
+#include "joystick_config.h"
 #include "memory.h"
 #include "interrupt.h"
-
+#include "video_common.h"
 #include "utils.h"
 #include "ae_config.h"
 #include "config.h"

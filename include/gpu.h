@@ -7,10 +7,6 @@
 #endif
 #include <SDL2/SDL.h>
 
-#include "cpu.h"
-#include "memory.h"
-#include "ae_config.h"
-
 #define R 0x00ff0000
 #define G 0x0000ff00
 #define B 0x000000ff
@@ -22,6 +18,8 @@ enum gpu_mode {
 	VRAM = 3,
 };
 
+struct cpu;
+struct memory;
 struct gpu {
 	struct cpu *cpu;
 	struct memory *memory;
@@ -48,6 +46,7 @@ struct gpu {
 	int color_3;
 };
 
+struct ae_config;
 void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
 		struct ae_config *conf);
 void gpu_update(struct gpu *gpu);

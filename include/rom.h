@@ -2,13 +2,12 @@
 #define INCLUDE_ROM_H_
 #include <inttypes.h>
 
-#pragma pack(push, 1)
-
 #define HEADER_OFFSET_S 0x0100
 #define ROM_BANK_SIZE 0x4000
 #define LOGO_LENGTH 48
 #define MAX_TITLE_LENGTH 16
 
+#pragma pack(push, 1)
 struct rom_header {
 	uint32_t entry_point;
 	uint8_t logo[LOGO_LENGTH];
@@ -34,7 +33,6 @@ struct rom {
 		};
 	};
 } __attribute__((__packed__));
-
 #pragma pack(pop)
 
 int rom_init(struct rom *rom, struct rom *switchable_rom_bank,

@@ -1,4 +1,6 @@
 #include "io.h"
+#include "memory.h"
+#include "timer.h"
 
 static void oam_transfert(struct memory *memory)
 {

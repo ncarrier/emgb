@@ -5,10 +5,9 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_events.h>
 
-#include "config.h"
-#include "special_registers.h"
-#include "joystick_config.h"
-
+struct config;
+struct spec_reg;
+struct joystick_config;
 struct joypad {
 	struct config *config;
 	struct spec_reg *spec_reg;

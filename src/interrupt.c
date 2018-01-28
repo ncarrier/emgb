@@ -2,6 +2,9 @@
 #include <stdio.h>
 
 #include "interrupt.h"
+#include "memory.h"
+#include "cpu.h"
+#include "registers.h"
 
 #define IT_VBLANK 0x40
 #define IT_LCD 0x48

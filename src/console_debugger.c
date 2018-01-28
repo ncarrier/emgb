@@ -20,6 +20,8 @@
 #include "log.h"
 #include "memory.h"
 #include "special_registers.h"
+#include "cpu.h"
+#include "ae_config.h"
 
 /* codecheck_ignore[VOLATILE] */
 static volatile sig_atomic_t signal_received;

@@ -2,9 +2,8 @@
 #define IO_HH
 #include <inttypes.h>
 
-#include "memory.h"
-#include "timer.h"
-
+struct memory;
+struct timer;
 void io_ctrl(struct memory *memory, struct timer *timer, uint16_t addr);
 
 #endif
