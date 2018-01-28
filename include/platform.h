@@ -2,6 +2,7 @@
 #define INCLUDE_PLATFORM_H_
 
 #ifdef _WIN32
+/* codecheck_ignore[NEW_TYPEDEFS] */
 typedef int error_t;
 void error(int status, int errnum, const char *format, ...);
 error_t argz_create_sep(const char *str, int sep, char **argz,

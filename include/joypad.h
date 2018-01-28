@@ -25,7 +25,6 @@ struct joypad {
 	SDL_Keycode sym_b;
 	SDL_Keycode sym_select;
 	SDL_Keycode sym_start;
-	// TODO joystick_config and mouse_visible
 };
 
 void joypad_init(struct joypad *joypad, struct config *config,

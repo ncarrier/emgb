@@ -17,8 +17,10 @@ static void mcb_handle_banking(struct memory *memory, uint16_t addr,
 		if (memory->rom_bank_0_rom.rom_header.cartridge_type == 1) {
 			memory->mbc_rom_bank &= 0xe0;
 			memory->mbc_rom_bank |= low5;
-//			printf("Lo BANK change. value => %x\n",
-//					memory->mcb_rom_banking);
+			/*
+			 * printf("Lo BANK change. value => %x\n",
+			 *		memory->mcb_rom_banking);
+			*/
 		}
 	} else if (addr >= 0x4000 && addr < 0x6000) {
 		/* hiRom bank change */

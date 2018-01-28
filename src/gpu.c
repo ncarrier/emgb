@@ -117,7 +117,7 @@ void displayAll(struct gb *gb)
 */
 
 /* never called ? to remove ? TODO */
-__attribute((unused)) static void gpu_render_window(struct gpu *gpu,
+static __attribute((unused)) void gpu_render_window(struct gpu *gpu,
 		struct memory *memory)
 {
 	int y;
@@ -187,7 +187,8 @@ static void gpu_render_sprite(struct gpu *gpu, struct memory *memory)
 	int index;
 	unsigned sprite_size;
 
-	sprite_size = memory->spec_reg.lcdc.sprite_size == SPRITE_SIZE_8X8 ? 8 : 16;
+	sprite_size = memory->spec_reg.lcdc.sprite_size;
+	sprite_size = sprite_size == SPRITE_SIZE_8X8 ? 8 : 16;
 	for (index = 0xFE00; index < limit; index += 4) {
 		posy = memory->oam[index - 0xFE00] - 16;
 		posx = memory->oam[index + 1 - 0xFE00] - 8;
@@ -254,9 +255,11 @@ static void gpu_render_bg(struct gpu *gpu, struct memory *memory)
 	int index;
 	int tile_addr;
 	int pixel_index;
+	struct spec_reg *spec_reg;
 
+	spec_reg = &memory->spec_reg;
 	baseaddr = bg_window_tile_data_select_to_addr(
-			memory->spec_reg.lcdc.bg_window_tile_data_select);
+			spec_reg->lcdc.bg_window_tile_data_select);
 	data_offset = gpu_get_real_position(gpu, memory);
 	posx = 0;
 	for (index = 0; index < 20; index++) {
@@ -269,14 +272,13 @@ static void gpu_render_bg(struct gpu *gpu, struct memory *memory)
 			tile_addr = baseaddr + tileindex * 16;
 		}
 		dec = 15;
-		line = read16bit(memory,
-				tile_addr + (memory->spec_reg.ly % 8) * 2);
+		line = read16bit(memory, tile_addr + (spec_reg->ly % 8) * 2);
 		for (x = 0; x < 8; x++) {
 			color = (line >> dec) & 0x01;
 			if ((line >> (dec - 8)) & 0x01)
 				color += 2;
 			color = color_index_to_value(gpu, color);
-			pixel_index = 160 * memory->spec_reg.ly + posx + x;
+			pixel_index = 160 * spec_reg->ly + posx + x;
 			if (pixel_index < (160 * 144))
 				gpu->pixels[pixel_index] = color;
 			dec--;
@@ -349,8 +351,10 @@ void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
 void gpu_update(struct gpu *gpu)
 {
 	struct memory *memory;
+	struct spec_reg *spec_reg;
 
 	memory = gpu->memory;
+	spec_reg = &memory->spec_reg;
 	gpu->tick += gpu->cpu->total_tick - gpu->last_tick;
 	gpu->last_tick = gpu->cpu->total_tick;
 
@@ -359,11 +363,11 @@ void gpu_update(struct gpu *gpu)
 		if (gpu->tick < 204)
 			break;
 
-		if (memory->spec_reg.lcdc.enable_lcd && memory->spec_reg.ly < GB_H)
+		if (spec_reg->lcdc.enable_lcd && spec_reg->ly < GB_H)
 			gpu_rendering(gpu, memory);
-		memory->spec_reg.ly++;
-		if (memory->spec_reg.ly >= GB_H) {
-			memory->spec_reg.ifl |= INT_VBLANK;
+		spec_reg->ly++;
+		if (spec_reg->ly >= GB_H) {
+			spec_reg->ifl |= INT_VBLANK;
 			gpu->mode = VBLANK;
 		}
 
@@ -373,20 +377,20 @@ void gpu_update(struct gpu *gpu)
 		if (gpu->tick < 456)
 			break;
 
-		memory->spec_reg.ly++;
-		if (memory->spec_reg.ly >= 153) {
-			memory->spec_reg.ly = 0;
+		spec_reg->ly++;
+		if (spec_reg->ly >= 153) {
+			spec_reg->ly = 0;
 			gpu->mode = OAM;
 		}
 		gpu->tick -= 456;
-		if (memory->spec_reg.lcdc.enable_lcd && memory->spec_reg.ly == GB_H + 1)
+		if (spec_reg->lcdc.enable_lcd && spec_reg->ly == GB_H + 1)
 			gpu_display(gpu);
 		break;
 	case OAM:
 		if (gpu->tick < 80)
 			break;
 
-		memory->spec_reg.ly = 0;
+		spec_reg->ly = 0;
 		gpu->mode = VRAM;
 		gpu->tick -= 80;
 		break;

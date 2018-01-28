@@ -121,23 +121,22 @@ static void key_up(struct joypad *joypad)
 
 	event = &joypad->event;
 	sym = event->key.keysym.sym;
-	if (sym == joypad->sym_a) {
+	if (sym == joypad->sym_a)
 		joypad->button_key |= BUTTON_A_FLAG;
-	} else if (sym == joypad->sym_b) {
+	else if (sym == joypad->sym_b)
 		joypad->button_key |= BUTTON_B_FLAG;
-	} else if (sym == joypad->sym_select) {
+	else if (sym == joypad->sym_select)
 		joypad->button_key |= BUTTON_SELECT_FLAG;
-	} else if (sym == joypad->sym_start) {
+	else if (sym == joypad->sym_start)
 		joypad->button_key |= BUTTON_START_FLAG;
-	} else if (sym == joypad->sym_down) {
+	else if (sym == joypad->sym_down)
 		joypad->button_dir |= BUTTON_DOWN_FLAG;
-	} else if (sym == joypad->sym_up) {
+	else if (sym == joypad->sym_up)
 		joypad->button_dir |= BUTTON_UP_FLAG;
-	} else if (sym == joypad->sym_left) {
+	else if (sym == joypad->sym_left)
 		joypad->button_dir |= BUTTON_LEFT_FLAG;
-	} else if (sym == joypad->sym_right) {
+	else if (sym == joypad->sym_right)
 		joypad->button_dir |= BUTTON_RIGHT_FLAG;
-	}
 }
 
 static void joy_device_added(struct joypad *joypad, uint32_t index)
