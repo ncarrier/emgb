@@ -22,7 +22,10 @@ struct gb {
 	struct cpu cpu;
 	struct joystick_config joystick_config;
 	struct config config;
+	char *file;
 	bool stopdbg;
+	struct key_op save;
+	struct key_op restore;
 };
 
 struct gb *gb_init(const char *file_name);

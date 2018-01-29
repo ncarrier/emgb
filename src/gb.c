@@ -1,3 +1,6 @@
+#define _GNU_SOURCE
+#include <stdio.h>
+
 #include "gb.h"
 #include "io.h"
 #include "utils.h"
@@ -7,9 +10,27 @@
 #include "log.h"
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
+#define to_gb_from(p, ko) container_of((p), struct gb, ko)
 
 static void gb_save(const struct key_op *key_op)
 {
+	int ret;
+	struct gb *gb;
+	FILE cleanup(cleanup_file)*f = NULL;
+	char cleanup(cleanup_string)*path = NULL;
+
+	gb = to_gb_from(key_op, save);
+	ret = asprintf(&path, "%s.sav", gb->file);
+	if (ret == -1) {
+		path = NULL;
+		ERR("asprintf");
+	}
+	f = fopen(path, "wbe");
+	if (f == NULL) {
+		DBG("Save failed: fopen: %m");
+		return;
+	}
+
 	printf("save requested\n");
 };
 
@@ -18,20 +39,18 @@ static void gb_restore(const struct key_op *key_op)
 	printf("restore requested\n");
 };
 
-static const struct key_op save_key_op = {
-		.sym = SDLK_F1,
-		.action = gb_save,
-};
-
-static const struct key_op restore_key_op = {
-		.sym = SDLK_F2,
-		.action = gb_restore,
-};
-
 static void register_keys(struct gb *gb)
 {
-	joypad_register_key_op(&gb->joypad, &save_key_op);
-	joypad_register_key_op(&gb->joypad, &restore_key_op);
+	gb->save = (struct key_op) {
+		.sym = SDLK_F1,
+		.action = gb_save,
+	};
+	gb->restore = (struct key_op) {
+		.sym = SDLK_F2,
+		.action = gb_restore,
+	};
+	joypad_register_key_op(&gb->joypad, &gb->save);
+	joypad_register_key_op(&gb->joypad, &gb->restore);
 }
 
 struct gb *gb_init(const char *file)
@@ -42,6 +61,9 @@ struct gb *gb_init(const char *file)
 	gb = calloc(1, sizeof(*gb));
 	if (gb == NULL)
 		ERR("Cannot allocate gb");
+	gb->file = strdup(file);
+	if (gb->file == NULL)
+		ERR("strdup: %m");
 	rom_size = get_file_size_from_path(file);
 	if (rom_size < 0)
 		ERR("get_file_size_from_path: %s", strerror(-rom_size));
@@ -66,6 +88,7 @@ struct gb *gb_init(const char *file)
 	config_write(&gb->config);
 
 	register_keys(gb);
+
 	return gb;
 }
 
@@ -74,8 +97,8 @@ void gb_cleanup(struct gb *gb)
 	cleanup_joystick_config(&gb->joystick_config);
 	gpu_cleanup(&gb->gpu);
 	config_cleanup(&gb->config);
+	cleanup_string(&gb->file);
+	memset(gb, 0, sizeof(*gb));
 	free(gb);
-
-	SDL_Quit();
 }
 
