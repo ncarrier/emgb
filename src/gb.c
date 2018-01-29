@@ -41,6 +41,11 @@ static void gb_save(const struct key_op *key_op)
 		DBG("Save failed writing registers");
 		return;
 	}
+	ret = gpu_save(&gb->gpu, f);
+	if (ret == -1) {
+		DBG("Save failed writing gpu");
+		return;
+	}
 
 	printf("save requested\n");
 };

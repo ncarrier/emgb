@@ -24,13 +24,10 @@ struct memory;
 struct gpu {
 	struct cpu *cpu;
 	struct memory *memory;
-	uint32_t last_tick;
-	uint32_t tick;
 	SDL_Window *window;
 	SDL_Surface *surface;
 	SDL_Texture *texture;
 	SDL_Renderer *renderer;
-	uint32_t *pixels;
 
 	/*
 	SDL_Window *window_d;
@@ -40,6 +37,10 @@ struct gpu {
 	unsigned int *pixels_d;
 	*/
 
+	/* serialized fields */
+	uint32_t last_tick;
+	uint32_t tick;
+	uint32_t *pixels;
 	enum gpu_mode mode;
 	uint32_t color_0;
 	uint32_t color_1;
@@ -51,6 +52,7 @@ struct ae_config;
 void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
 		struct ae_config *conf);
 void gpu_update(struct gpu *gpu);
+int gpu_save(struct gpu *gpu, FILE *f);
 void gpu_cleanup(struct gpu *gpu);
 
 #endif
