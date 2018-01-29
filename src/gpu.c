@@ -404,7 +404,7 @@ void gpu_update(struct gpu *gpu)
 	}
 }
 
-int gpu_save(struct gpu *gpu, FILE *f)
+int gpu_save(const struct gpu *gpu, FILE *f)
 {
 	size_t sret;
 	uint8_t mode;

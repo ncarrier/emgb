@@ -402,7 +402,7 @@ void joypad_handle_event(struct joypad *joypad)
 	}
 }
 
-int joypad_save(struct joypad *joypad, FILE *f)
+int joypad_save(const struct joypad *joypad, FILE *f)
 {
 	size_t sret;
 	uint8_t bool_value;

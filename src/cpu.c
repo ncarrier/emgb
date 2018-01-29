@@ -9,7 +9,7 @@ void cpu_init(struct cpu *cpu)
 	cpu->total_tick = 0;
 }
 
-int cpu_save(struct cpu *cpu, FILE *f)
+int cpu_save(const struct cpu *cpu, FILE *f)
 {
 	size_t sret;
 	uint8_t bool_value;

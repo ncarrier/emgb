@@ -39,7 +39,7 @@ void registers_init(struct registers *registers)
 	}
 }
 
-int registers_save(struct registers *registers, FILE *f)
+int registers_save(const struct registers *registers, FILE *f)
 {
 	size_t sret;
 

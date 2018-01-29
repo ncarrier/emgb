@@ -12,6 +12,6 @@ struct cpu {
 };
 
 void cpu_init(struct cpu *cpu);
-int cpu_save(struct cpu *cpu, FILE *f);
+int cpu_save(const struct cpu *cpu, FILE *f);
 
 #endif

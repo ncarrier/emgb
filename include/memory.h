@@ -87,6 +87,6 @@ uint8_t read8bit(struct memory *memory, uint16_t addr);
 void write8bit(struct memory *memory, uint16_t addr, uint8_t value);
 void push(struct memory *memory, uint16_t *sp, uint16_t value);
 uint16_t pop(struct memory *memory, uint16_t *sp);
-int memory_save(struct memory *memory, FILE *f);
+int memory_save(const struct memory *memory, FILE *f);
 
 #endif

@@ -43,6 +43,6 @@ void joypad_init(struct joypad *joypad, struct config *config,
 int joypad_register_key_op(struct joypad *joypad, const struct key_op *key_op);
 #define joypad_is_running(joypad) ((joypad)->running)
 void joypad_handle_event(struct joypad *joypad);
-int joypad_save(struct joypad *joypad, FILE *f);
+int joypad_save(const struct joypad *joypad, FILE *f);
 
 #endif

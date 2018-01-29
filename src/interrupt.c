@@ -80,7 +80,7 @@ void interrupt_update(struct interrupts *interrupts)
 	}
 }
 
-int interrupt_save(struct interrupts *interrupts, FILE *f)
+int interrupt_save(const struct interrupts *interrupts, FILE *f)
 {
 	size_t sret;
 

@@ -146,7 +146,7 @@ uint16_t pop(struct memory *memory, uint16_t *sp)
 	return value;
 }
 
-int memory_save(struct memory *memory, FILE *f)
+int memory_save(const struct memory *memory, FILE *f)
 {
 	size_t sret;
 	uint8_t rom_banking_flag;
