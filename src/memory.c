@@ -145,3 +145,23 @@ uint16_t pop(struct memory *memory, uint16_t *sp)
 
 	return value;
 }
+
+int memory_save(struct memory *memory, FILE *f)
+{
+	size_t sret;
+	uint8_t rom_banking_flag;
+
+	sret = fwrite(&memory->mbc_rom_bank, sizeof(memory->mbc_rom_bank), 1,
+			f);
+	if (sret != 1)
+		return -1;
+	rom_banking_flag = memory->rom_banking_flag;
+	sret = fwrite(&rom_banking_flag, sizeof(rom_banking_flag), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(memory->raw, sizeof(memory->raw), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}

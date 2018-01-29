@@ -51,8 +51,13 @@ static void gb_save(const struct key_op *key_op)
 		DBG("Save failed writing interrupt");
 		return;
 	}
+	ret = memory_save(&gb->memory, f);
+	if (ret == -1) {
+		DBG("Save failed writing memory");
+		return;
+	}
 
-	printf("save requested\n");
+	printf("State saved to %s\n", path);
 };
 
 static void gb_restore(const struct key_op *key_op)

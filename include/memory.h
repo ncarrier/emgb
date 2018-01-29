@@ -1,6 +1,7 @@
 #ifndef __MEMORY__
 #define __MEMORY__
 #include <stdbool.h>
+#include <stdio.h>
 #include <inttypes.h>
 
 #include "rom.h"
@@ -19,9 +20,11 @@ struct timer;
 /* memory mapping extracted from GBCPUman.pdf 2.5.1 */
 #pragma pack(push, 1)
 struct memory {
+	struct timer *timer;
+
+	/* serialized fields */
 	uint8_t mbc_rom_bank;
 	bool rom_banking_flag;
-	struct timer *timer;
 	union {
 		struct {
 			/* TODO rename fields of the two first unions */
@@ -84,5 +87,6 @@ uint8_t read8bit(struct memory *memory, uint16_t addr);
 void write8bit(struct memory *memory, uint16_t addr, uint8_t value);
 void push(struct memory *memory, uint16_t *sp, uint16_t value);
 uint16_t pop(struct memory *memory, uint16_t *sp);
+int memory_save(struct memory *memory, FILE *f);
 
 #endif
