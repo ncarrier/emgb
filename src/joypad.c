@@ -274,6 +274,17 @@ static bool is_fullscreen(const struct SDL_WindowEvent *we)
 	return dm.w == we->data1 && dm.h == we->data2;
 }
 
+static unsigned char joypad_get_state(const struct joypad *pad,
+		uint8_t register_p1)
+{
+	if ((register_p1 & 0x20) == 0)
+		return 0xc0 | pad->button_key | 0x10;
+	else if ((register_p1 & 0x10) == 0)
+		return 0xc0 | pad->button_dir | 0x20;
+
+	return 0xff;
+}
+
 void joypad_handle_event(struct joypad *joypad)
 {
 	union SDL_Event *event;
@@ -360,14 +371,4 @@ void joypad_handle_event(struct joypad *joypad)
 		key_up(joypad);
 		break;
 	}
-}
-
-unsigned char joypad_get_state(const struct joypad *pad, uint8_t register_p1)
-{
-	if ((register_p1 & 0x20) == 0)
-		return 0xc0 | pad->button_key | 0x10;
-	else if ((register_p1 & 0x10) == 0)
-		return 0xc0 | pad->button_dir | 0x20;
-
-	return 0xff;
 }
