@@ -1,6 +1,7 @@
 #ifndef __TIMER__
 #define __TIMER__
 #include <inttypes.h>
+#include <stdio.h>
 
 #define CLOCKSPEED 4194304
 /* extract input clock select from TAC register */
@@ -20,5 +21,6 @@ struct timer {
 void timer_init(struct timer *timer, struct memory *memory, struct cpu *cpu);
 void timer_arm(struct timer *timer);
 void timer_update(struct timer *timer);
+int timer_save(const struct timer *timer, FILE *f);
 
 #endif

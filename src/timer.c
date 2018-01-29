@@ -66,3 +66,20 @@ void timer_update(struct timer *timer)
 				memory->spec_reg.tima + 1);
 	}
 }
+
+int timer_save(const struct timer *timer, FILE *f)
+{
+	size_t sret;
+
+	sret = fwrite(&timer->freq, sizeof(timer->freq), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(&timer->timer_count, sizeof(timer->timer_count), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(&timer->last_tick, sizeof(timer->last_tick), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}

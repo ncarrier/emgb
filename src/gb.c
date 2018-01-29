@@ -31,6 +31,13 @@ static void gb_save(const struct key_op *key_op)
 		return;
 	}
 
+	ret = timer_save(&gb->timer, f);
+	if (ret == -1) {
+		DBG("Save failed writing timer");
+		return;
+	}
+
+
 	printf("save requested\n");
 };
 
