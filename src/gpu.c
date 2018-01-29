@@ -422,18 +422,6 @@ int gpu_save(struct gpu *gpu, FILE *f)
 	sret = fwrite(&mode, sizeof(mode), 1, f);
 	if (sret != 1)
 		return -1;
-	sret = fwrite(&gpu->color_0, sizeof(gpu->color_0), 1, f);
-	if (sret != 1)
-		return -1;
-	sret = fwrite(&gpu->color_1, sizeof(gpu->color_1), 1, f);
-	if (sret != 1)
-		return -1;
-	sret = fwrite(&gpu->color_2, sizeof(gpu->color_2), 1, f);
-	if (sret != 1)
-		return -1;
-	sret = fwrite(&gpu->color_3, sizeof(gpu->color_3), 1, f);
-	if (sret != 1)
-		return -1;
 
 	return 0;
 }

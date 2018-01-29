@@ -28,6 +28,10 @@ struct gpu {
 	SDL_Surface *surface;
 	SDL_Texture *texture;
 	SDL_Renderer *renderer;
+	uint32_t color_0;
+	uint32_t color_1;
+	uint32_t color_2;
+	uint32_t color_3;
 
 	/*
 	SDL_Window *window_d;
@@ -42,10 +46,6 @@ struct gpu {
 	uint32_t tick;
 	uint32_t *pixels;
 	enum gpu_mode mode;
-	uint32_t color_0;
-	uint32_t color_1;
-	uint32_t color_2;
-	uint32_t color_3;
 };
 
 struct ae_config;
