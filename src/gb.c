@@ -7,6 +7,33 @@
 #include "log.h"
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
+
+static void gb_save(const struct key_op *key_op)
+{
+	printf("save requested\n");
+};
+
+static void gb_restore(const struct key_op *key_op)
+{
+	printf("restore requested\n");
+};
+
+static const struct key_op save_key_op = {
+		.sym = SDLK_F1,
+		.action = gb_save,
+};
+
+static const struct key_op restore_key_op = {
+		.sym = SDLK_F2,
+		.action = gb_restore,
+};
+
+static void register_keys(struct gb *gb)
+{
+	joypad_register_key_op(&gb->joypad, &save_key_op);
+	joypad_register_key_op(&gb->joypad, &restore_key_op);
+}
+
 struct gb *gb_init(const char *file)
 {
 	struct gb *gb = NULL;
@@ -38,6 +65,7 @@ struct gb *gb_init(const char *file)
 
 	config_write(&gb->config);
 
+	register_keys(gb);
 	return gb;
 }
 

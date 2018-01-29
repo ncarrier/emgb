@@ -5,6 +5,13 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_events.h>
 
+#define KEY_OP_MAX 2
+
+struct key_op {
+	SDL_Keycode sym;
+	void (*action)(const struct key_op *key_op);
+};
+
 struct config;
 struct spec_reg;
 struct joystick_config;
@@ -25,11 +32,13 @@ struct joypad {
 	SDL_Keycode sym_b;
 	SDL_Keycode sym_select;
 	SDL_Keycode sym_start;
+	const struct key_op *key_op[KEY_OP_MAX];
 };
 
 void joypad_init(struct joypad *joypad, struct config *config,
 		struct spec_reg *spec_reg,
 		struct joystick_config *joystick_config);
+int joypad_register_key_op(struct joypad *joypad, const struct key_op *key_op);
 #define joypad_is_running(joypad) ((joypad)->running)
 void joypad_handle_event(struct joypad *joypad);
 

@@ -1,5 +1,7 @@
 #include <unistd.h>
+#include <errno.h>
 
+#include "log.h"
 #include "joypad.h"
 #include "special_registers.h"
 #include "joystick_config.h"
@@ -78,6 +80,22 @@ void joypad_init(struct joypad *pad, struct config *config,
 			CONFIG_JOYPAD_0_START_DEFAULT);
 }
 
+int joypad_register_key_op(struct joypad *joypad, const struct key_op *key_op)
+{
+	unsigned i;
+
+	for (i = 0; i < KEY_OP_MAX; i++)
+		if (joypad->key_op[i] == NULL)
+			break;
+
+	if (i == KEY_OP_MAX)
+		ERR("No memory left for registering key op %s",
+				SDL_GetKeyName(key_op->sym));
+	joypad->key_op[i] = key_op;
+
+	return 0;
+}
+
 static void key_down(struct joypad *joypad)
 {
 	SDL_Keycode sym;
@@ -116,11 +134,22 @@ static void key_down(struct joypad *joypad)
 
 static void key_up(struct joypad *joypad)
 {
+	unsigned i;
 	SDL_Keycode sym;
 	union SDL_Event *event;
+	const struct key_op *key_op;
 
 	event = &joypad->event;
 	sym = event->key.keysym.sym;
+	for (i = 0; i < KEY_OP_MAX; i++) {
+		key_op = joypad->key_op[i];
+		if (key_op == NULL)
+			break;
+		if (key_op->sym == sym) {
+			key_op->action(key_op);
+			return;
+		}
+	}
 	if (sym == joypad->sym_a)
 		joypad->button_key |= BUTTON_A_FLAG;
 	else if (sym == joypad->sym_b)
