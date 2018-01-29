@@ -1,6 +1,7 @@
 #ifndef GB_GPU
 #define GB_GPU
 #include <stdbool.h>
+#include <inttypes.h>
 
 #ifdef _WIN32
 #define SDL_MAIN_HANDLED
@@ -23,13 +24,13 @@ struct memory;
 struct gpu {
 	struct cpu *cpu;
 	struct memory *memory;
-	unsigned last_tick;
-	unsigned int tick;
+	uint32_t last_tick;
+	uint32_t tick;
 	SDL_Window *window;
 	SDL_Surface *surface;
 	SDL_Texture *texture;
 	SDL_Renderer *renderer;
-	unsigned int *pixels;
+	uint32_t *pixels;
 
 	/*
 	SDL_Window *window_d;
@@ -40,10 +41,10 @@ struct gpu {
 	*/
 
 	enum gpu_mode mode;
-	int color_0;
-	int color_1;
-	int color_2;
-	int color_3;
+	uint32_t color_0;
+	uint32_t color_1;
+	uint32_t color_2;
+	uint32_t color_3;
 };
 
 struct ae_config;

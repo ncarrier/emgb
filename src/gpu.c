@@ -61,7 +61,7 @@ static void gpu_init_display(struct gpu *gpu, struct ae_config *conf)
 		ERR("cannot alloc pixels");
 }
 
-static int color_index_to_value(const struct gpu *gpu, int color)
+static uint32_t color_index_to_value(const struct gpu *gpu, uint32_t color)
 {
 	switch (color) {
 	case 3:
@@ -122,8 +122,8 @@ static __attribute((unused)) void gpu_render_window(struct gpu *gpu,
 {
 	int y;
 	int x;
-	unsigned short line;
-	int color;
+	uint16_t line;
+	uint32_t color;
 	int dec;
 	int posx;
 	int posy;
@@ -175,8 +175,8 @@ static void gpu_render_sprite(struct gpu *gpu, struct memory *memory)
 {
 	unsigned y;
 	int x;
-	unsigned short line;
-	int color;
+	uint16_t line;
+	uint32_t color;
 	int dec;
 	unsigned char posy;
 	unsigned char posx;
