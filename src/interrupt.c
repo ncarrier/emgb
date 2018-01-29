@@ -16,7 +16,7 @@ static void interrupt_handle(struct memory *memory,
 		struct interrupts *interrupts, struct registers *registers,
 		uint16_t address)
 {
-	interrupts->interMaster = 0;
+	interrupts->inter_master = 0;
 	registers->sp -= 2;
 	write16bit(memory, registers->sp, registers->pc);
 	registers->pc = address;
@@ -47,7 +47,7 @@ void interrupt_update(struct interrupts *interrupts)
 	if (spec_reg->ifl & INT_JOYPAD)
 		cpu->stopped = false;
 	cpu->halted = false;
-	if (!interrupts->interMaster || !memory->interrupt_enable
+	if (!interrupts->inter_master || !memory->interrupt_enable
 			|| !spec_reg->ifl)
 		return;
 	inter = memory->interrupt_enable & spec_reg->ifl;
@@ -78,4 +78,16 @@ void interrupt_update(struct interrupts *interrupts)
 		interrupt_handle(memory, interrupts, registers, IT_SERIAL);
 		spec_reg->ifl &= ~INT_SERIAL;
 	}
+}
+
+int interrupt_save(struct interrupts *interrupts, FILE *f)
+{
+	size_t sret;
+
+	sret = fwrite(&interrupts->inter_master,
+			sizeof(interrupts->inter_master), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
 }

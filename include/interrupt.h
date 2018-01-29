@@ -1,6 +1,7 @@
 #ifndef INTERRUPT
 #define INTERRUPT
 #include <inttypes.h>
+#include <stdio.h>
 
 #define INT_VBLANK (1 << 0)
 #define INT_LCDSTAT (1 << 1)
@@ -14,16 +15,19 @@ struct spec_reg;
 struct registers;
 
 struct interrupts {
-	uint8_t interMaster;
 	struct memory *memory;
 	struct cpu *cpu;
 	struct spec_reg *spec_reg;
 	struct registers *registers;
+
+	/* serialized fields */
+	uint8_t inter_master;
 };
 
 void interrupt_init(struct interrupts *interrupts, struct memory *memory,
 		struct cpu *cpu, struct spec_reg *spec_reg,
 		struct registers *registers);
 void interrupt_update(struct interrupts *interupts);
+int interrupt_save(struct interrupts *interrupts, FILE *f);
 
 #endif

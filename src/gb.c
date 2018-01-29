@@ -46,6 +46,11 @@ static void gb_save(const struct key_op *key_op)
 		DBG("Save failed writing gpu");
 		return;
 	}
+	ret = interrupt_save(&gb->interrupts, f);
+	if (ret == -1) {
+		DBG("Save failed writing interrupt");
+		return;
+	}
 
 	printf("save requested\n");
 };

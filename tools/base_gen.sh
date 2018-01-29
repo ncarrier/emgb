@@ -292,11 +292,11 @@ here_doc_delim
 }
 
 function generate_base_di_code() {
-	echo -e "\ts_gb->interrupts.interMaster = 0;"
+	echo -e "\ts_gb->interrupts.inter_master = 0;"
 }
 
 function generate_base_ei_code() {
-	echo -e "\ts_gb->interrupts.interMaster = 1;"
+	echo -e "\ts_gb->interrupts.inter_master = 1;"
 }
 
 function generate_base_halt_code() {
@@ -501,7 +501,7 @@ here_doc_delim
 function generate_base_reti_code() {
 	cat <<here_doc_delim
 	${regs}.pc = pop(&s_gb->memory, &${regs}.sp);
-	s_gb->interrupts.interMaster = 1;
+	s_gb->interrupts.inter_master = 1;
 here_doc_delim
 }
 
