@@ -5,6 +5,7 @@
 #include <inttypes.h>
 
 #pragma pack(push, 1)
+/* all fields are serialized */
 struct registers {
 	struct {
 		union {
