@@ -53,6 +53,7 @@ void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
 		struct ae_config *conf);
 void gpu_update(struct gpu *gpu);
 int gpu_save(const struct gpu *gpu, FILE *f);
+int gpu_restore(struct gpu *gpu, FILE *f);
 void gpu_cleanup(struct gpu *gpu);
 
 #endif

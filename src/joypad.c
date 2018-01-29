@@ -424,3 +424,26 @@ int joypad_save(const struct joypad *joypad, FILE *f)
 
 	return 0;
 }
+
+int joypad_restore(struct joypad *joypad, FILE *f)
+{
+	size_t sret;
+	uint8_t bool_value;
+
+	sret = fread(&bool_value, sizeof(bool_value), 1, f);
+	if (sret != 1)
+		return -1;
+	joypad->running = bool_value;
+	sret = fread(&bool_value, sizeof(bool_value), 1, f);
+	if (sret != 1)
+		return -1;
+	joypad->mouse_visible = bool_value;
+	sret = fread(&joypad->button_key, sizeof(joypad->button_key), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(&joypad->button_dir, sizeof(joypad->button_dir), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}

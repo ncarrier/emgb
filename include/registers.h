@@ -59,5 +59,6 @@ struct registers {
 
 void registers_init(struct registers *registers);
 int registers_save(const struct registers *registers, FILE *f);
+int registers_restore(struct registers *registers, FILE *f);
 
 #endif /* INCLUDE_REGISTERS_H_ */

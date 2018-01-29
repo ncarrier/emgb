@@ -165,3 +165,22 @@ int memory_save(const struct memory *memory, FILE *f)
 
 	return 0;
 }
+
+int memory_restore(struct memory *memory, FILE *f)
+{
+	size_t sret;
+	uint8_t bool_value;
+
+	sret = fread(&memory->mbc_rom_bank, sizeof(memory->mbc_rom_bank), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(&bool_value, sizeof(bool_value), 1, f);
+	if (sret != 1)
+		return -1;
+	memory->rom_banking_flag = bool_value;
+	sret = fread(memory->raw, sizeof(memory->raw), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}

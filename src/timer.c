@@ -83,3 +83,20 @@ int timer_save(const struct timer *timer, FILE *f)
 
 	return 0;
 }
+
+int timer_restore(struct timer *timer, FILE *f)
+{
+	size_t sret;
+
+	sret = fread(&timer->freq, sizeof(timer->freq), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(&timer->timer_count, sizeof(timer->timer_count), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(&timer->last_tick, sizeof(timer->last_tick), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}

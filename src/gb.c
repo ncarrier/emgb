@@ -72,7 +72,60 @@ static void gb_save(const struct key_op *key_op)
 
 static void gb_restore(const struct key_op *key_op)
 {
-	printf("restore requested\n");
+	int ret;
+	struct gb *gb;
+	FILE cleanup(cleanup_file)*f = NULL;
+	char cleanup(cleanup_string)*path = NULL;
+
+	gb = to_gb_from(key_op, restore);
+	ret = asprintf(&path, "%s.sav", gb->file);
+	if (ret == -1) {
+		path = NULL;
+		ERR("asprintf");
+	}
+	f = fopen(path, "rbe");
+	if (f == NULL) {
+		DBG("Restore failed: fopen: %m");
+		return;
+	}
+
+	ret = timer_restore(&gb->timer, f);
+	if (ret == -1) {
+		DBG("Restore failed reading back timer");
+		return;
+	}
+	ret = registers_restore(&gb->registers, f);
+	if (ret == -1) {
+		DBG("Restore failed reading back registers");
+		return;
+	}
+	ret = gpu_restore(&gb->gpu, f);
+	if (ret == -1) {
+		DBG("Restore failed reading back gpu");
+		return;
+	}
+	ret = interrupt_restore(&gb->interrupts, f);
+	if (ret == -1) {
+		DBG("Restore failed reading back interrupts");
+		return;
+	}
+	ret = memory_restore(&gb->memory, f);
+	if (ret == -1) {
+		DBG("Restore failed reading back memory");
+		return;
+	}
+	ret = joypad_restore(&gb->joypad, f);
+	if (ret == -1) {
+		DBG("Restore failed reading back joypad");
+		return;
+	}
+	ret = cpu_restore(&gb->cpu, f);
+	if (ret == -1) {
+		DBG("Restore failed reading back cpu");
+		return;
+	}
+
+	printf("Saved state restored from %s.\n", path);
 };
 
 static void register_keys(struct gb *gb)

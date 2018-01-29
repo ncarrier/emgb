@@ -29,5 +29,6 @@ void interrupt_init(struct interrupts *interrupts, struct memory *memory,
 		struct registers *registers);
 void interrupt_update(struct interrupts *interupts);
 int interrupt_save(const struct interrupts *interrupts, FILE *f);
+int interrupt_restore(struct interrupts *interrupts, FILE *f);
 
 #endif

@@ -24,5 +24,6 @@ void timer_init(struct timer *timer, struct memory *memory, struct cpu *cpu);
 void timer_arm(struct timer *timer);
 void timer_update(struct timer *timer);
 int timer_save(const struct timer *timer, FILE *f);
+int timer_restore(struct timer *timer, FILE *f);
 
 #endif
