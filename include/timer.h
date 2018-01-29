@@ -12,8 +12,8 @@ struct cpu;
 struct timer {
 	struct cpu *cpu;
 	struct memory *memory;
-	unsigned freq;
-	int timer_count;
+	uint32_t freq;
+	int32_t timer_count;
 	uint32_t last_tick;
 };
 

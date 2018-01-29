@@ -7,7 +7,7 @@
 #include "interrupt.h"
 #include "special_registers.h"
 
-static const unsigned frequencies_table[] = {
+static const uint32_t frequencies_table[] = {
 		[0] = 4096u,
 		[1] = 262144u,
 		[2] = 65536u,
