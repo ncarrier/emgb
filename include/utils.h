@@ -12,6 +12,11 @@
 
 #define cleanup(f) __attribute((cleanup(f)))
 #define have_same_sign(n1, n2) (((n1) * (n2)) >= 0)
+#ifndef _container_of
+#define container_of(ptr, type, member) ({ \
+	const typeof(((type *)0)->member)*__mptr = (ptr); \
+	(type *)((uintptr_t)__mptr - offsetof(type, member)); })
+#endif /* container_of */
 
 #define min(a, b) ({ \
 	typeof((a)) _a = (a); \
