@@ -56,6 +56,11 @@ static void gb_save(const struct key_op *key_op)
 		DBG("Save failed writing memory");
 		return;
 	}
+	ret = joypad_save(&gb->joypad, f);
+	if (ret == -1) {
+		DBG("Save failed writing joypad");
+		return;
+	}
 
 	printf("State saved to %s\n", path);
 };

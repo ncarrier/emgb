@@ -401,3 +401,26 @@ void joypad_handle_event(struct joypad *joypad)
 		break;
 	}
 }
+
+int joypad_save(struct joypad *joypad, FILE *f)
+{
+	size_t sret;
+	uint8_t bool_value;
+
+	bool_value = joypad->running;
+	sret = fwrite(&bool_value, sizeof(bool_value), 1, f);
+	if (sret != 1)
+		return -1;
+	bool_value = joypad->mouse_visible;
+	sret = fwrite(&bool_value, sizeof(bool_value), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(&joypad->button_key, sizeof(joypad->button_key), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(&joypad->button_dir, sizeof(joypad->button_dir), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}

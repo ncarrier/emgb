@@ -19,11 +19,7 @@ struct joypad {
 	struct config *config;
 	struct spec_reg *spec_reg;
 	struct joystick_config *joystick_config;
-	bool running;
-	bool mouse_visible;
 	SDL_Event event;
-	uint8_t button_key; /* = 0x0f */
-	uint8_t button_dir; /* = 0x0f */
 	SDL_Keycode sym_right;
 	SDL_Keycode sym_left;
 	SDL_Keycode sym_up;
@@ -33,6 +29,12 @@ struct joypad {
 	SDL_Keycode sym_select;
 	SDL_Keycode sym_start;
 	const struct key_op *key_op[KEY_OP_MAX];
+
+	/* serialized fields */
+	bool running;
+	bool mouse_visible;
+	uint8_t button_key; /* = 0x0f */
+	uint8_t button_dir; /* = 0x0f */
 };
 
 void joypad_init(struct joypad *joypad, struct config *config,
@@ -41,5 +43,6 @@ void joypad_init(struct joypad *joypad, struct config *config,
 int joypad_register_key_op(struct joypad *joypad, const struct key_op *key_op);
 #define joypad_is_running(joypad) ((joypad)->running)
 void joypad_handle_event(struct joypad *joypad);
+int joypad_save(struct joypad *joypad, FILE *f);
 
 #endif
