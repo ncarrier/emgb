@@ -18,6 +18,7 @@ void timer_init(struct timer *timer, struct memory *memory, struct cpu *cpu)
 {
 	timer->memory = memory;
 	timer->cpu = cpu;
+	timer->last_tick = 0;
 	timer_arm(timer);
 }
 
@@ -50,8 +51,8 @@ void timer_update(struct timer *timer)
 		return;
 
 	/* FOR TEST !!! - lastTick */
-	timer->timer_count -= cpu->total_tick - cpu->last_tick;
-	cpu->last_tick = cpu->total_tick;
+	timer->timer_count -= cpu->total_tick - timer->last_tick;
+	timer->last_tick = cpu->total_tick;
 
 	if (timer->timer_count > 0)
 		return;

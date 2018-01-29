@@ -5,7 +5,6 @@
 
 struct cpu {
 	unsigned total_tick;
-	int last_tick;
 	bool stopped;
 	bool halted;
 };
