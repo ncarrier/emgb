@@ -1,6 +1,7 @@
 #ifndef INCLUDE_REGISTERS_H_
 #define INCLUDE_REGISTERS_H_
 #include <stdbool.h>
+#include <stdio.h>
 #include <inttypes.h>
 
 #pragma pack(push, 1)
@@ -56,5 +57,6 @@ struct registers {
 #pragma pack(pop)
 
 void registers_init(struct registers *registers);
+int registers_save(struct registers *registers, FILE *f);
 
 #endif /* INCLUDE_REGISTERS_H_ */
