@@ -415,8 +415,8 @@ int gpu_save(const struct gpu *gpu, FILE *f)
 	sret = fwrite(&gpu->tick, sizeof(gpu->tick), 1, f);
 	if (sret != 1)
 		return -1;
-	sret = fwrite(gpu->pixels, sizeof(*gpu->pixels) * GB_SURF, 1, f);
-	if (sret != 1)
+	sret = fwrite(gpu->pixels, sizeof(*gpu->pixels), GB_SURF, f);
+	if (sret != GB_SURF)
 		return -1;
 	mode = gpu->mode;
 	sret = fwrite(&mode, sizeof(mode), 1, f);
@@ -437,8 +437,8 @@ int gpu_restore(struct gpu *gpu, FILE *f)
 	sret = fread(&gpu->tick, sizeof(gpu->tick), 1, f);
 	if (sret != 1)
 		return -1;
-	sret = fread(gpu->pixels, sizeof(*gpu->pixels) * GB_SURF, 1, f);
-	if (sret != 1)
+	sret = fread(gpu->pixels, sizeof(*gpu->pixels), GB_SURF, f);
+	if (sret != GB_SURF)
 		return -1;
 	sret = fread(&mode, sizeof(mode), 1, f);
 	if (sret != 1)
