@@ -4,70 +4,44 @@
 #include <errno.h>
 
 #include "rom.h"
+#include "utils.h"
 #include "log.h"
 
-static long get_file_size(FILE *f)
-{
-	int ret;
-	long size;
-
-	if (f == NULL)
-		return -EINVAL;
-
-	ret = fseek(f, 0, SEEK_END);
-	if (ret != 0)
-		ERR("fseek SEEK_END: %m");
-	size = ftell(f);
-	if (size == -1)
-		ERR("fopen: %m");
-	ret = fseek(f, 0, SEEK_SET);
-	if (ret != 0)
-		ERR("fseek SEEK_CUR: %m");
-
-	return size;
-}
-
-static int loadRom(struct s_rom *rom, const char *romfile)
+int rom_init(struct rom *rom, struct rom *switchable_rom_bank,
+		uint8_t *extra_rom_banks, const char *file)
 {
 	unsigned int nb_read;
-	FILE *f;
+	FILE cleanup(cleanup_file)*f = NULL;
+	long size;
+	long rom_bank_0_size;
 
-	f = fopen(romfile, "rb");
+	f = fopen(file, "rb");
 	if (f == NULL)
 		ERR("Cannot open rom file");
-	rom->size = get_file_size(f);
-	rom->rom = malloc(rom->size * sizeof(char));
-	if (rom->rom == NULL)
-		ERR("Cannot alloc s_rom");
-	nb_read = fread(rom->rom, sizeof(char), rom->size, f);
-	if (nb_read == rom->size)
-		return 0;
-	return -1;
-}
+	size = get_file_size(f);
+	if (size < 0)
+		ERR("get_file_size: %s", strerror(-size));
+	rom_bank_0_size = min(size, ROM_BANK_SIZE);
+	nb_read = fread(rom->data, sizeof(*rom->data), rom_bank_0_size, f);
+	if (nb_read != rom_bank_0_size)
+		ERR("fread rom bank 0 error");
+	if (switchable_rom_bank != NULL)
+		memcpy(switchable_rom_bank->data, rom->data, rom_bank_0_size);
+	if (extra_rom_banks != NULL) {
+		size -= rom_bank_0_size;
+		nb_read = fread(extra_rom_banks, sizeof(*extra_rom_banks), size,
+				f);
+		if (nb_read != size)
+			ERR("fread rom bank 0 error");
+	}
 
-static void loadHeader(struct s_rom *rom)
-{
-	size_t size;
-
-	size = HEADER_OFFSET_E - HEADER_OFFSET_S;
-	memcpy(&rom->romheader, rom->rom + 0x0100, size);
-}
-
-void displayHeader(struct s_romHeader *romheader)
-{
-	printf("rom name: %.*s\n", MAX_TITLE_LENGTH, romheader->title);
-	printf("cartridge type: %d\n", romheader->cartridgeType);
-	printf("rom size: %dKB\n", 32 << romheader->romSize);
-	printf("ram size: %d\n", romheader->ramSize << 2);
-}
-
-int initRom(struct s_rom *rom, const char *filename)
-{
-	assert(sizeof(struct s_romHeader) == 80 ||
-			"sizeof(s_romHeader) != 80" == NULL);
-
-	if (loadRom(rom, filename) != 0)
-		ERR("error loading rom");
-	loadHeader(rom);
 	return 0;
+}
+
+void rom_display_header(struct rom_header *rom_header)
+{
+	printf("rom name: %.*s\n", MAX_TITLE_LENGTH, rom_header->title);
+	printf("cartridge type: %d\n", rom_header->cartridge_type);
+	printf("rom size: %dKB\n", 32 << rom_header->rom_size);
+	printf("ram size: %d\n", rom_header->ram_size << 2);
 }

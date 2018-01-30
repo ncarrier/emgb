@@ -1,54 +1,102 @@
+#include <stdlib.h>
+#include <inttypes.h>
+
 #include "timer.h"
-#include "GB.h"
+#include "memory.h"
+#include "cpu.h"
+#include "interrupt.h"
 #include "special_registers.h"
 
-static const unsigned frequencies_table[] = {
+static const uint32_t frequencies_table[] = {
 		[0] = 4096u,
 		[1] = 262144u,
 		[2] = 65536u,
 		[3] = 16384u,
 };
 
-void initTimer(struct s_gb *s_gb)
+void timer_init(struct timer *timer, struct memory *memory, struct cpu *cpu)
 {
-	uint8_t tac;
-	uint8_t input_clock_select;
-
-	tac = read8bit(SPECIAL_REGISTER_TAC, s_gb);
-	printf("TAC value %d\n", tac);
-	input_clock_select = TAC_INPUT_CLOCK_SELECT(tac);
-
-	s_gb->gb_time.freq = frequencies_table[input_clock_select];
-	s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
+	timer->memory = memory;
+	timer->cpu = cpu;
+	timer->last_tick = 0;
+	timer_arm(timer);
 }
 
-void updateTimer(struct s_gb *s_gb)
+void timer_arm(struct timer *timer)
 {
-	struct s_cpu *cpu;
-	uint8_t tac;
-	uint8_t tima;
-	uint8_t tma;
+	uint8_t input_clock_sel;
 
-	tac = read8bit(SPECIAL_REGISTER_TAC, s_gb);
-	cpu = &s_gb->gb_cpu;
+	/*
+	 * when memory is initialized, timer will be armed because it's
+	 * registers are modified, but the timer itself is not initialized yet
+	 * because it is done AFTER memory has been initialized, thus this NULL
+	 * guard
+	 */
+	if (timer->memory == NULL)
+		return;
 
-	if (!TAC_TIMER_ENABLED(tac))
+	input_clock_sel = TAC_INPUT_CLOCK_SELECT(timer->memory->spec_reg.tac);
+	timer->freq = frequencies_table[input_clock_sel];
+	timer->timer_count = CLOCKSPEED / timer->freq;
+}
+
+void timer_update(struct timer *timer)
+{
+	struct cpu *cpu;
+	struct memory *memory;
+
+	cpu = timer->cpu;
+	memory = timer->memory;
+	if (!TAC_TIMER_ENABLED(memory->spec_reg.tac))
 		return;
 
 	/* FOR TEST !!! - lastTick */
-	s_gb->gb_time.timerCount -= cpu->totalTick - cpu->last_tick;
-	cpu->last_tick = cpu->totalTick;
+	timer->timer_count -= cpu->total_tick - timer->last_tick;
+	timer->last_tick = cpu->total_tick;
 
-	if (s_gb->gb_time.timerCount > 0)
+	if (timer->timer_count > 0)
 		return;
 
-	s_gb->gb_time.timerCount = CLOCKSPEED / s_gb->gb_time.freq;
-	tima = read8bit(SPECIAL_REGISTER_TIMA, s_gb);
-	if (tima == 0xffu) {
-		tma = read8bit(0xff06, s_gb);
-		write8bit(SPECIAL_REGISTER_TIMA, tma, s_gb);
-		s_gb->gb_interrupts.interFlag |= INT_TIMER;
+	timer->timer_count = CLOCKSPEED / timer->freq;
+	if (memory->spec_reg.tima == 0xffu) {
+		write8bit(memory, SPECIAL_REGISTER_TIMA, memory->spec_reg.tma);
+		memory->spec_reg.ifl |= INT_TIMER;
 	} else {
-		write8bit(SPECIAL_REGISTER_TIMA, tima + 1, s_gb);
+		write8bit(memory, SPECIAL_REGISTER_TIMA,
+				memory->spec_reg.tima + 1);
 	}
+}
+
+int timer_save(const struct timer *timer, FILE *f)
+{
+	size_t sret;
+
+	sret = fwrite(&timer->freq, sizeof(timer->freq), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(&timer->timer_count, sizeof(timer->timer_count), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(&timer->last_tick, sizeof(timer->last_tick), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}
+
+int timer_restore(struct timer *timer, FILE *f)
+{
+	size_t sret;
+
+	sret = fread(&timer->freq, sizeof(timer->freq), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(&timer->timer_count, sizeof(timer->timer_count), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(&timer->last_tick, sizeof(timer->last_tick), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
 }

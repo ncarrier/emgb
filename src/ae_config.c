@@ -15,29 +15,16 @@
 #include "ae_config.h"
 #include "utils.h"
 
-static void file_cleanup(FILE **f)
+static int ae_config_add(struct ae_config *conf, const char *key,
+		const char *value)
 {
-	if (f == NULL || *f == NULL)
-		return;
-
-	fclose(*f);
-	*f = NULL;
-}
-
-static void string_cleanup(char **s)
-{
-	if (s == NULL || *s == NULL)
-		return;
-
-	free(*s);
-	*s = NULL;
+	return -envz_add(&conf->argz, &conf->len, key, value);
 }
 
 int ae_config_read(struct ae_config *conf, const char *path)
 {
-	int ret;
-	char cleanup(string_cleanup)*string = NULL;
-	FILE cleanup(file_cleanup)*f = NULL;
+	char cleanup(cleanup_string)*string = NULL;
+	FILE cleanup(cleanup_file)*f = NULL;
 	long size;
 	size_t sret;
 
@@ -46,24 +33,18 @@ int ae_config_read(struct ae_config *conf, const char *path)
 		return -errno;
 
 	/* compute the size of the file */
-	ret = fseek(f, 0, SEEK_END);
-	if (ret == -1)
-		return -errno;
-	size = ftell(f);
-	if (ret == -1)
-		return -errno;
-	ret = fseek(f, 0, SEEK_SET);
-	if (ret == -1)
-		return -errno;
+	size = get_file_size(f);
+	if (size < 0)
+		return size;
 
 	/* read all */
-	string = calloc(size, 1);
+	string = calloc(size + 1, 1);
 	if (string == NULL)
 		return -errno;
 
 	sret = fread(string, 1, size, f);
 	if (sret < (size_t)size)
-		return feof(f) ? -EIO : ret;
+		return -EIO;
 
 	return ae_config_read_from_string(conf, string);
 }
@@ -120,11 +101,6 @@ err:
 	snprintf(def_str, 50, "%d", def);
 	ae_config_add(conf, key, def_str);
 	return def;
-}
-
-int ae_config_add(struct ae_config *conf, const char *key, const char *value)
-{
-	return -envz_add(&conf->argz, &conf->len, key, value);
 }
 
 int ae_config_add_int(struct ae_config *conf, const char *key, int value)

@@ -1,19 +1,25 @@
 #ifndef __JOYPAD__
 #define __JOYPAD__
+#include <stdbool.h>
 
 #include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_events.h>
 
-#include "ae_config.h"
+#define KEY_OP_MAX 2
 
-struct s_gb;
-void handleEvent(struct s_gb *gb_s);
-void keyUp(struct s_gb *gb_s);
-void keyDown(struct s_gb *gb_s);
+struct key_op {
+	SDL_Keycode sym;
+	void (*action)(const struct key_op *key_op);
+};
 
-struct s_joypad {
-	unsigned char key; /* = 0xff */
-	unsigned char button_key; /* = 0x0f */
-	unsigned char button_dir; /* = 0x0f */
+struct config;
+struct spec_reg;
+struct joystick_config;
+struct joypad {
+	struct config *config;
+	struct spec_reg *spec_reg;
+	struct joystick_config *joystick_config;
+	SDL_Event event;
 	SDL_Keycode sym_right;
 	SDL_Keycode sym_left;
 	SDL_Keycode sym_up;
@@ -22,8 +28,22 @@ struct s_joypad {
 	SDL_Keycode sym_b;
 	SDL_Keycode sym_select;
 	SDL_Keycode sym_start;
+	const struct key_op *key_op[KEY_OP_MAX];
+
+	/* serialized fields */
+	bool running;
+	bool mouse_visible;
+	uint8_t button_key; /* = 0x0f */
+	uint8_t button_dir; /* = 0x0f */
 };
 
-void init_joypad(struct s_joypad *pad, struct ae_config *config);
+void joypad_init(struct joypad *joypad, struct config *config,
+		struct spec_reg *spec_reg,
+		struct joystick_config *joystick_config);
+int joypad_register_key_op(struct joypad *joypad, const struct key_op *key_op);
+#define joypad_is_running(joypad) ((joypad)->running)
+void joypad_handle_event(struct joypad *joypad);
+int joypad_save(const struct joypad *joypad, FILE *f);
+int joypad_restore(struct joypad *joypad, FILE *f);
 
 #endif

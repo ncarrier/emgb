@@ -1,87 +1,105 @@
+#include <stdbool.h>
+#include <stdio.h>
+
 #include "interrupt.h"
+#include "memory.h"
+#include "cpu.h"
+#include "registers.h"
 
-#include "GB.h"
+#define IT_VBLANK 0x40
+#define IT_LCD 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
 
-void vblank(struct s_gb *gb_s)
+static void interrupt_handle(struct memory *memory,
+		struct interrupts *interrupts, struct registers *registers,
+		uint16_t address)
 {
-	gb_s->gb_interrupts.interMaster = 0;
-	gb_s->gb_register.sp -= 2;
-	write16bitToAddr(gb_s->gb_register.sp, gb_s->gb_register.pc, gb_s);
-	gb_s->gb_register.pc = 0x40;
-
+	interrupts->inter_master = 0;
+	registers->sp -= 2;
+	write16bit(memory, registers->sp, registers->pc);
+	registers->pc = address;
 }
 
-void lcd(struct s_gb *gb_s)
+void interrupt_init(struct interrupts *interrupts, struct memory *memory,
+		struct cpu *cpu, struct spec_reg *spec_reg,
+		struct registers *registers)
 {
-	gb_s->gb_interrupts.interMaster = 0;
-	printf("doing lcdc !\n");
-	gb_s->gb_register.sp -= 2;
-	write16bitToAddr(gb_s->gb_register.sp, gb_s->gb_register.pc, gb_s);
-	gb_s->gb_register.pc = 0x48;
+	interrupts->memory = memory;
+	interrupts->cpu = cpu;
+	interrupts->spec_reg = spec_reg;
+	interrupts->registers = registers;
 }
 
-void joypad(struct s_gb *gb_s)
-{
-	gb_s->gb_interrupts.interMaster = 0;
-	gb_s->gb_register.sp -= 2;
-	write16bitToAddr(gb_s->gb_register.sp, gb_s->gb_register.pc, gb_s);
-	gb_s->gb_register.pc = 0x60;
-}
-
-void serial(struct s_gb *gb_s)
-{
-	gb_s->gb_interrupts.interMaster = 0;
-	gb_s->gb_register.sp -= 2;
-	write16bitToAddr(gb_s->gb_register.sp, gb_s->gb_register.pc, gb_s);
-	gb_s->gb_register.pc = 0x58;
-}
-
-void timer(struct s_gb *gb_s)
-{
-	debug(gb_s);
-	gb_s->gb_interrupts.interMaster = 0;
-	gb_s->gb_register.sp -= 2;
-	write16bitToAddr(gb_s->gb_register.sp, gb_s->gb_register.pc, gb_s);
-	gb_s->gb_register.pc = 0x50;
-}
-
-void doInterupt(struct s_gb *gb_s)
+void interrupt_update(struct interrupts *interrupts)
 {
 	unsigned char inter;
+	struct memory *memory;
+	struct cpu *cpu;
+	struct spec_reg *spec_reg;
+	struct registers *registers;
 
-	if (gb_s->gb_interrupts.interFlag & INT_JOYPAD)
-		gb_s->gb_cpu.stopped = false;
-	gb_s->gb_cpu.halted = false;
-	if (gb_s->gb_interrupts.interMaster && gb_s->gb_interrupts.interEnable
-			&& gb_s->gb_interrupts.interFlag) {
-		inter = gb_s->gb_interrupts.interEnable
-				& gb_s->gb_interrupts.interFlag;
-		if (inter != 0)
-			gb_s->gb_cpu.halted = false;
-		if (inter & INT_VBLANK) {
-			gb_s->gb_interrupts.interFlag &= ~(INT_VBLANK);
-			vblank(gb_s);
-		}
-		if (inter & INT_LCDSTAT) {
-			printf("LCD interrupt\n");
-			gb_s->gb_interrupts.interFlag &= ~(INT_LCDSTAT);
-			lcd(gb_s);
-		}
-		if (inter & INT_TIMER) {
-			timer(gb_s);
-/*			printf("TIMER interrupt\n"); */
-			gb_s->gb_interrupts.interFlag &= ~(INT_TIMER);
-		}
-		if (inter & INT_JOYPAD) {
-			gb_s->gb_cpu.stopped = false;
-			printf("JOYPAD interrupt\n");
-			joypad(gb_s);
-			gb_s->gb_interrupts.interFlag &= ~(INT_JOYPAD);
-		}
-		if (inter & INT_SERIAL) {
-			printf("serial interrupt\n");
-			serial(gb_s);
-			gb_s->gb_interrupts.interFlag &= ~(INT_SERIAL);
-		}
+	memory = interrupts->memory;
+	cpu = interrupts->cpu;
+	spec_reg = interrupts->spec_reg;
+	registers = interrupts->registers;
+	if (spec_reg->ifl & INT_JOYPAD)
+		cpu->stopped = false;
+	cpu->halted = false;
+	if (!interrupts->inter_master || !memory->interrupt_enable
+			|| !spec_reg->ifl)
+		return;
+	inter = memory->interrupt_enable & spec_reg->ifl;
+	if (inter != 0)
+		cpu->halted = false;
+	if (inter & INT_VBLANK) {
+		spec_reg->ifl &= ~INT_VBLANK;
+		interrupt_handle(memory, interrupts, registers, IT_VBLANK);
 	}
+	if (inter & INT_LCDSTAT) {
+		printf("LCD interrupt\n");
+		spec_reg->ifl &= ~INT_LCDSTAT;
+		interrupt_handle(memory, interrupts, registers, IT_LCD);
+	}
+	if (inter & INT_TIMER) {
+		interrupt_handle(memory, interrupts, registers, IT_TIMER);
+		/*			printf("TIMER interrupt\n"); */
+		spec_reg->ifl &= ~INT_TIMER;
+	}
+	if (inter & INT_JOYPAD) {
+		cpu->stopped = false;
+		printf("JOYPAD interrupt\n");
+		interrupt_handle(memory, interrupts, registers, IT_JOYPAD);
+		spec_reg->ifl &= ~INT_JOYPAD;
+	}
+	if (inter & INT_SERIAL) {
+		printf("serial interrupt\n");
+		interrupt_handle(memory, interrupts, registers, IT_SERIAL);
+		spec_reg->ifl &= ~INT_SERIAL;
+	}
+}
+
+int interrupt_save(const struct interrupts *interrupts, FILE *f)
+{
+	size_t sret;
+
+	sret = fwrite(&interrupts->inter_master,
+			sizeof(interrupts->inter_master), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}
+
+int interrupt_restore(struct interrupts *interrupts, FILE *f)
+{
+	size_t sret;
+
+	sret = fread(&interrupts->inter_master,
+			sizeof(interrupts->inter_master), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
 }

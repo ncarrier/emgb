@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#include "rom.h"
+#include "memory.h"
 
 static const char *hexdump(const uint8_t *in, char *out, size_t size)
 {
@@ -32,9 +32,9 @@ static void usage(int status)
 int main(int argc, char *argv[])
 {
 	int ret;
-	struct s_rom rom;
+	struct rom rom;
 	const char *filename;
-	struct s_romHeader *header = &rom.romheader;
+	struct rom_header *header = &rom.rom_header;
 	size_t size = sizeof(*header);
 	char out[3 * sizeof(*header)];
 	bool dump = false;
@@ -52,13 +52,13 @@ int main(int argc, char *argv[])
 	}
 
 	filename = argv[1];
-	ret = initRom(&rom, filename);
+	ret = rom_init(&rom, NULL, NULL, filename);
 	if (ret != 0) {
 		fprintf(stderr, "initRom failed\n");
 		return EXIT_FAILURE;
 	}
 
-	displayHeader(&rom.romheader);
+	rom_display_header(&rom.rom_header);
 	if (dump)
 		printf("rom header content:\n%s\n",
 				hexdump((uint8_t *)header, out, size));

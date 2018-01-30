@@ -189,7 +189,7 @@ function definition_body_gen() {
 
 	flags=( "${9:0:1}" "${9:1:1}" "${9:2:1}" "${9:3:1}" )
 	echo "/* ${text} [${opcode}] : ${doc} */"
-	echo "static unsigned ${func}(struct s_gb *s_gb)"
+	echo "static unsigned ${func}(struct gb *s_gb)"
 	echo "{"
 	if [ "${title}" = "CB" ]; then
 		generate_cb_opcode "${text}" ${opcode}
@@ -206,11 +206,11 @@ function definition_body_gen() {
 			;;
 		"1")
 			echo "	/* ${f} set */"
-			echo "	s_gb->gb_register.${f} = true;"
+			echo "	s_gb->registers.${f} = true;"
 			;;
 		"0")
 			echo "	/* ${f} reset */"
-			echo "	s_gb->gb_register.${f} = false;"
+			echo "	s_gb->registers.${f} = false;"
 			;;
 		"*")
 			echo "	/* ${f} exceptional */"
@@ -233,7 +233,7 @@ function struct_header_gen() {
 	if [ -z "${title}" ]; then
 		title=base
 	fi
-	echo "const struct s_cpu_z80 instructions_${title,,}[] = {"
+	echo "const struct cpu_op instructions_${title,,}[] = {"
 }
 
 function struct_body_gen() {
@@ -276,9 +276,8 @@ cat <<here_doc_delim
  * DON'T EDIT BY HAND !
  */
 
-#include "cpu.h"
+#include "gb.h"
 #include "utils.h"
-#include "GB.h"
 #include "instructions.h"
 
 /* base instruction set */

@@ -1,58 +1,59 @@
 #ifndef GB_GPU
 #define GB_GPU
-
 #include <stdbool.h>
+#include <inttypes.h>
 
-#include "io.h"
-#include "GB.h"
+#ifdef _WIN32
+#define SDL_MAIN_HANDLED
+#endif
+#include <SDL2/SDL.h>
 
 #define R 0x00ff0000
 #define G 0x0000ff00
 #define B 0x000000ff
 
-void rendering(struct s_gb *gb);
-void initGpu(struct s_gb *gb);
-char lcdIsEnable(unsigned char lcdc);
-void setLcdStatus(struct s_gb *gb);
-void updateGpu(struct s_gb *gb);
-void initDisplay(struct s_gb *gb);
-void renderingBg(struct s_gb *s_gb);
-void displayAll(struct s_gb *gb);
-void renderingWindow(struct s_gb *gb);
-void renderingSprite(struct s_gb *gb);
-
-enum gpuMode {
+enum gpu_mode {
 	HBLANK = 0,
 	VBLANK = 1,
 	OAM = 2,
 	VRAM = 3,
 };
 
-struct s_gpu {
-	unsigned char scanline;
-	unsigned last_tick;
-	unsigned int tick;
+struct cpu;
+struct memory;
+struct gpu {
+	struct cpu *cpu;
+	struct memory *memory;
 	SDL_Window *window;
-	SDL_Surface *screenSurface;
+	SDL_Surface *surface;
 	SDL_Texture *texture;
 	SDL_Renderer *renderer;
-	unsigned int *pixels;
-	bool mouse_visible;
+	uint32_t color_0;
+	uint32_t color_1;
+	uint32_t color_2;
+	uint32_t color_3;
 
+	/*
 	SDL_Window *window_d;
-	SDL_Surface *screenSurface_d;
+	SDL_Surface *surface_d;
 	SDL_Texture *texture_d;
 	SDL_Renderer *renderer_d;
 	unsigned int *pixels_d;
+	*/
 
-	SDL_Event event;
-	enum gpuMode gpuMode;
-	int color_0;
-	int color_1;
-	int color_2;
-	int color_3;
+	/* serialized fields */
+	uint32_t last_tick;
+	uint32_t tick;
+	uint32_t *pixels;
+	enum gpu_mode mode;
 };
 
-int color_index_to_value(const struct s_gpu *gpu, int color);
+struct ae_config;
+void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
+		struct ae_config *conf);
+void gpu_update(struct gpu *gpu);
+int gpu_save(const struct gpu *gpu, FILE *f);
+int gpu_restore(struct gpu *gpu, FILE *f);
+void gpu_cleanup(struct gpu *gpu);
 
 #endif

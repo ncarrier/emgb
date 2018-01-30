@@ -1,9 +1,11 @@
-#include "GB.h"
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
 #include <stdio.h>
+
 #include <SDL.h>
 #include <SDL_opengl.h>
+
+#include "gb.h"
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
 
 
 extern "C" {
@@ -12,7 +14,7 @@ extern "C" {
 
 int IMGUI_debugger(void *p_s_gb)
 {
-	struct s_gb		*s_gb = (struct s_gb *)p_s_gb;
+	struct gb		*s_gb = (struct gb *)p_s_gb;
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -45,7 +47,7 @@ int IMGUI_debugger(void *p_s_gb)
 
 	// Main loop
 	bool done = false;
-	while (s_gb->stopdbg != 1)
+	while (!s_gb->stopdbg)
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -58,11 +60,11 @@ int IMGUI_debugger(void *p_s_gb)
 		{
 			ImGui::Begin("CPU register state");
 			ImGui::Text("emgb debug window");
-			ImGui::Text("a %x f %x af %x", s_gb->gb_register.a, s_gb->gb_register.f, s_gb->gb_register.af);
-			ImGui::Text("b %x c %x bc %x", s_gb->gb_register.b, s_gb->gb_register.c, s_gb->gb_register.bc);
-			ImGui::Text("d %x e %x de %x", s_gb->gb_register.d, s_gb->gb_register.e, s_gb->gb_register.de);
-			ImGui::Text("h %x l %x hl %x", s_gb->gb_register.h, s_gb->gb_register.l, s_gb->gb_register.hl);
-			ImGui::Text("pc %x sp %x", s_gb->gb_register.pc, s_gb->gb_register.sp);
+			ImGui::Text("a %x f %x af %x", s_gb->registers.a, s_gb->registers.f, s_gb->registers.af);
+			ImGui::Text("b %x c %x bc %x", s_gb->registers.b, s_gb->registers.c, s_gb->registers.bc);
+			ImGui::Text("d %x e %x de %x", s_gb->registers.d, s_gb->registers.e, s_gb->registers.de);
+			ImGui::Text("h %x l %x hl %x", s_gb->registers.h, s_gb->registers.l, s_gb->registers.hl);
+			ImGui::Text("pc %x sp %x", s_gb->registers.pc, s_gb->registers.sp);
 			ImGui::End();
 		}
 		{

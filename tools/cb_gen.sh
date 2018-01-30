@@ -1,4 +1,4 @@
-regs="s_gb->gb_register"
+regs="s_gb->registers"
 
 function generate_cb_bit_code() {
 	local operands
@@ -7,7 +7,7 @@ function generate_cb_bit_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[1]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[1]}"
 	fi
@@ -23,7 +23,7 @@ function generate_cb_res_code() {
 	local mask="~(1 << ${operands[0]})"
 
 	if [ "${operands[1]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, read8bit(${regs}.hl, s_gb) & ${mask}, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, read8bit(&s_gb->memory, ${regs}.hl) & ${mask});"
 	else
 		echo -e "\t${regs}.${operands[1]} &= ${mask};"
 	fi
@@ -35,7 +35,7 @@ function generate_cb_rl_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[0]}"
 	fi
@@ -53,7 +53,7 @@ function generate_cb_rl_code() {
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi
@@ -65,7 +65,7 @@ function generate_cb_rlc_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[0]}"
 	fi
@@ -83,7 +83,7 @@ function generate_cb_rlc_code() {
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi
@@ -95,7 +95,7 @@ function generate_cb_rr_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[0]}"
 	fi
@@ -113,7 +113,7 @@ function generate_cb_rr_code() {
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi
@@ -125,7 +125,7 @@ function generate_cb_rrc_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[0]}"
 	fi
@@ -143,7 +143,7 @@ function generate_cb_rrc_code() {
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi
@@ -154,7 +154,7 @@ function generate_cb_set_code() {
 	local mask="(1 << ${operands[0]})"
 
 	if [ "${operands[1]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, read8bit(${regs}.hl, s_gb) | ${mask}, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, read8bit(&s_gb->memory, ${regs}.hl) | ${mask});"
 	else
 		echo -e "\t${regs}.${operands[1]} |= ${mask};"
 	fi
@@ -166,7 +166,7 @@ function generate_cb_sla_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[0]}"
 	fi
@@ -181,7 +181,7 @@ function generate_cb_sla_code() {
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi
@@ -193,7 +193,7 @@ function generate_cb_swap_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[0]}"
 	fi
@@ -207,7 +207,7 @@ function generate_cb_swap_code() {
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi
@@ -219,7 +219,7 @@ function generate_cb_sra_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[0]}"
 	fi
@@ -240,7 +240,7 @@ function generate_cb_sra_code() {
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi
@@ -252,7 +252,7 @@ function generate_cb_srl_code() {
 	OLDIFS=$IFS; IFS=, operands=( $1 ); IFS=$OLDIFS
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		value="read8bit(${regs}.hl, s_gb)"
+		value="read8bit(&s_gb->memory, ${regs}.hl)"
 	else
 		value="${regs}.${operands[0]}"
 	fi
@@ -268,7 +268,7 @@ function generate_cb_srl_code() {
 here_doc_delim
 
 	if [ "${operands[0]}" = "(hl)" ]; then
-		echo -e "\twrite8bit(${regs}.hl, value, s_gb);"
+		echo -e "\twrite8bit(&s_gb->memory, ${regs}.hl, value);"
 	else
 		echo -e "\t${regs}.${operands[0]} = value;"
 	fi

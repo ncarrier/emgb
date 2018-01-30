@@ -1038,7 +1038,7 @@ void ld_ff_c_a(struct s_gb *s_gb)
 	write8bit(0xff00 + s_gb->gb_register.c, s_gb->gb_register.a, s_gb);
 }
 
-const struct s_cpu_z80 instructions[256] = {
+const struct cpu_op instructions[256] = {
 	{ .opcode = 0x00, .value = "NOP", .func = nop, .size = 0 },
 	{ 0x01, "ld bc value", ld_bc_val_16, 2 },
 	{ 0x02, "save a to (bc) addr", ld_bc_addr_a, 0 },

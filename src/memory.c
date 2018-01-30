@@ -1,89 +1,33 @@
-#include "GB.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include "memory.h"
+#include "joypad.h"
 #include "special_registers.h"
+#include "rom.h"
+#include "io.h"
 
-static unsigned char MCB_romBanking = 1;
-static unsigned char romBankingFlag;
-
-void write16bitToAddr(unsigned short addr, unsigned short value,
-		struct s_gb *s_gb)
-{
-	write8bit(addr, (unsigned char)value & 0x00ff, s_gb);
-	write8bit(addr + 1, (unsigned char)((value & 0xff00) >> 8), s_gb);
-}
-
-unsigned short read16bit(unsigned short addr, struct s_gb *s_gb)
-{
-	unsigned short res = 0;
-
-	res |= read8bit(addr, s_gb);
-	res |= read8bit(addr + 1, s_gb) << 8;
-
-	return res;
-}
-
-unsigned char read8bit(unsigned short addr, struct s_gb *s_gb)
-{
-
-	if (addr == 0xff44) {
-		return s_gb->gb_gpu.scanline;
-	} else if (addr < 0x4000) {
-		return s_gb->gb_rom.rom[addr];
-	} else if (addr >= 0x4000 && addr < 0x8000) {
-		/* printf("MCB_romBanking value = %x\n", MCB_romBanking); */
-		return s_gb->gb_rom.rom[(addr - 0x4000)
-				+ (MCB_romBanking * 0x4000)];
-	} else if (addr >= 0x8000 && addr < 0xA000) {
-		return s_gb->gb_mem.vram[addr - 0x8000];
-	} else if (addr >= 0xA000 && addr < 0xC000) {
-		return  s_gb->gb_mem.sram[addr - 0xA000];
-	} else if (addr >= 0xC000 && addr < 0xE000) {
-		if (addr == 0xc0b7)
-			printf("read from ram 0xc0b7 %x\n",
-					s_gb->gb_mem.ram[addr - 0xC000]);
-		return  s_gb->gb_mem.ram[addr - 0xC000];
-	} else if (addr >= 0xE000 && addr < 0xFE00) {
-		return  s_gb->gb_mem.ram[addr - 0xE000];
-	} else if (addr >= 0xFE00 && addr < 0xFF00) {
-		return  s_gb->gb_mem.oam[addr - 0xFE00];
-	} else if (addr >= 0xFF00 && addr < 0xFF80) {
-		if (addr == 0xff00)
-			return padState(s_gb);
-		if (addr == 0xff04)
-			return (unsigned char)rand();
-		if (addr == 0xff0f)
-			return s_gb->gb_interrupts.interFlag;
-		if (addr == 0xff41)
-			printf("reading lcd stat\n");
-		return  s_gb->gb_mem.io_ports[addr - 0xFF00];
-	} else if (addr >= 0xFF80 && addr < 0xFFFF) {
-		return  s_gb->gb_mem.hram[addr - 0xFF80];
-	} else if (addr == 0xffff) {
-		return s_gb->gb_interrupts.interEnable;
-	}
-	printf("read error : addr %x\n", addr);
-	exit(-2);
-}
-
-void mcbHandleBanking(unsigned short addr, unsigned char value,
-		struct s_gb *s_gb)
+static void mcb_handle_banking(struct memory *memory, uint16_t addr,
+		uint8_t value)
 {
 	char low5;
 
 	low5 = value & 0x1f;
-
 	if (addr >= 0x2000 && addr < 0x4000) {
-		if (s_gb->gb_rom.romheader.cartridgeType == 1) {
-			MCB_romBanking &= 0xe0;
-			MCB_romBanking |= low5;
-			printf("Lo BANK change. value => %x\n", MCB_romBanking);
-			}
+		if (memory->rom_bank_0_rom.rom_header.cartridge_type == 1) {
+			memory->mbc_rom_bank &= 0xe0;
+			memory->mbc_rom_bank |= low5;
+			/*
+			 * printf("Lo BANK change. value => %x\n",
+			 *		memory->mcb_rom_banking);
+			*/
+		}
 	} else if (addr >= 0x4000 && addr < 0x6000) {
 		/* hiRom bank change */
-		if (romBankingFlag > 0) {
-			MCB_romBanking &= 0x1f;
+		if (memory->rom_banking_flag) {
+			memory->mbc_rom_bank &= 0x1f;
 			value &= 0xe0;
-			MCB_romBanking |= value;
+			memory->mbc_rom_bank |= value;
 			/*
 			 * printf("Hi BANK change. value => %x\n",
 			 *		MCB_romBanking);
@@ -92,69 +36,151 @@ void mcbHandleBanking(unsigned short addr, unsigned char value,
 		}
 	} else if (addr >= 0x6000 && addr < 0x8000) {
 		/* change rom/ram bank */
-		romBankingFlag = ((value & 0x01) == 0) ? 1 : 0;
+		memory->rom_banking_flag = !(value & 0x01);
 
 	}
-	if (MCB_romBanking == 0)
-		MCB_romBanking = 1;
+	if (memory->mbc_rom_bank == 0)
+		memory->mbc_rom_bank = 1;
 }
 
-int write8bit(uint16_t addr, uint8_t value, struct s_gb *s_gb)
+/* TODO allocate memory at the right size */
+void memory_init(struct memory *memory, struct timer *timer, long rom_size)
 {
-	if (addr == 0xffffu)
-		puts("IE");
-	if (addr < 0x8000) {
-		mcbHandleBanking(addr, value, s_gb);
-		return 0;
-	} else if (addr >= 0x8000 && addr < 0xA000) {
-		s_gb->gb_mem.vram[addr - 0x8000] = value;
-		return 0;
-	} else if (addr >= 0xA000 && addr < 0xC000) {
-		s_gb->gb_mem.sram[addr - 0xA000] = value;
-		return 0;
-	} else if (addr >= 0xC000 && addr < 0xE000) {
-		s_gb->gb_mem.ram[addr - 0xC000] = value;
-		return 0;
-	} else if (addr >= 0xE000 && addr < 0xFE00) {
-		s_gb->gb_mem.ram[addr - 0xE000] = value;
-		return 0;
-	} else if (addr >= 0xFE00 && addr < SPECIAL_REGISTER_FIRST) {
-		s_gb->gb_mem.oam[addr - 0xFE00] = value;
-		return 0;
-	} else if (addr >= SPECIAL_REGISTER_FIRST
-			&& addr < SPECIAL_REGISTER_HIGH_RAM_START) {
-		s_gb->gb_mem.io_ports[addr - SPECIAL_REGISTER_FIRST] = value;
-		if (addr == SPECIAL_REGISTER_STAT)
-			printf("writing lcd stat %x\n", value);
-		ctrlIo(addr, (unsigned char *) s_gb->gb_mem.io_ports, s_gb);
-		return 0;
-	} else if (addr >= SPECIAL_REGISTER_HIGH_RAM_START
-			&& addr < SPECIAL_REGISTER_HIGH_RAM_END) {
-		/* TODO replace the above test by an in_hram function */
-		s_gb->gb_mem.hram[addr - SPECIAL_REGISTER_HIGH_RAM_START] =
-				value;
-		return 0;
-	} else if (addr == SPECIAL_REGISTER_IE) {
-		printf("%s interEnable = %"PRIu8"\n", __func__, value);
-		s_gb->gb_interrupts.interEnable = value;
-		return 0;
-	}
-	/* never reached */
-	return -1;
+	memset(memory, 0, sizeof(*memory));
+	memory->mbc_rom_bank = 1;
+	memory->timer = timer;
+
+	write8bit(memory, 0xFF05, 0x00);
+	write8bit(memory, 0xFF06, 0x00);
+	write8bit(memory, 0xFF07, 0x08);
+	write8bit(memory, 0xFF10, 0x80);
+	write8bit(memory, 0xFF11, 0xBF);
+	write8bit(memory, 0xFF12, 0xF3);
+	write8bit(memory, 0xFF14, 0xBF);
+	write8bit(memory, 0xFF16, 0x3F);
+	write8bit(memory, 0xFF17, 0x00);
+	write8bit(memory, 0xFF19, 0xBF);
+	write8bit(memory, 0xFF1A, 0x7F);
+	write8bit(memory, 0xFF1B, 0xFF);
+	write8bit(memory, 0xFF1C, 0x9F);
+	write8bit(memory, 0xFF1E, 0xBF);
+	write8bit(memory, 0xFF20, 0xFF);
+	write8bit(memory, 0xFF21, 0x00);
+	write8bit(memory, 0xFF22, 0x00);
+	write8bit(memory, 0xFF23, 0xBF);
+	write8bit(memory, 0xFF24, 0x77);
+	write8bit(memory, 0xFF25, 0xF3);
+	write8bit(memory, 0xFF26, 0xF1);
+	write8bit(memory, 0xFF40, 0x91);
+	write8bit(memory, 0xFF42, 0x00);
+	write8bit(memory, 0xFF43, 0x00);
+	write8bit(memory, 0xFF45, 0x00);
+	write8bit(memory, 0xFF47, 0xFC);
+	write8bit(memory, 0xFF48, 0xFF);
+	write8bit(memory, 0xFF49, 0xFF);
+	write8bit(memory, 0xFF4A, 0x00);
+	write8bit(memory, 0xFF4B, 0x00);
+	write8bit(memory, 0xFFFF, 0x00);
 }
 
-void push(uint16_t value, struct s_gb *s_gb)
+void write16bit(struct memory *memory, uint16_t addr, uint16_t value)
 {
-	s_gb->gb_register.sp -= 2;
-	write16bitToAddr(s_gb->gb_register.sp, value, s_gb);
+	write8bit(memory, addr, value & 0x00ffu);
+	write8bit(memory, addr + 1, (value & 0xff00u) >> 8);
 }
 
-uint16_t pop(struct s_gb *s_gb)
+uint16_t read16bit(struct memory *memory, uint16_t addr)
+{
+	uint16_t res;
+
+	res = read8bit(memory, addr);
+	res |= read8bit(memory, addr + 1) << 8;
+
+	return res;
+}
+
+static void refresh_memory(struct memory *mem, uint16_t addr)
+{
+	if (addr == SPECIAL_REGISTER_DIV)
+		/* TODO, doesn't correspond to the documentation */
+		mem->spec_reg.div = rand();
+}
+
+static bool in_switchable_rom_bank(uint16_t addr)
+{
+	return addr >= 0x4000 && addr < 0x8000;
+}
+
+uint8_t read8bit(struct memory *mem, uint16_t addr)
+{
+	refresh_memory(mem, addr);
+	if (in_switchable_rom_bank(addr) && mem->mbc_rom_bank != 0)
+		return mem->extra_rom_banks[(mem->mbc_rom_bank - 2)
+				* ROM_BANK_SIZE + addr];
+
+	return mem->raw[addr];
+}
+
+void write8bit(struct memory *memory, uint16_t addr, uint8_t value)
+{
+	if (addr < 0x8000)
+		mcb_handle_banking(memory, addr, value);
+	else if (addr >= 0xFF00 && addr < 0xFF4C)
+		io_ctrl(memory, memory->timer, addr);
+	memory->raw[addr] = value;
+}
+
+void push(struct memory *memory, uint16_t *sp, uint16_t value)
+{
+	*sp -= 2;
+	write16bit(memory, *sp, value);
+}
+
+uint16_t pop(struct memory *memory, uint16_t *sp)
 {
 	uint16_t value;
 
-	value = read16bit(s_gb->gb_register.sp, s_gb);
-	s_gb->gb_register.sp += 2;
+	value = read16bit(memory, *sp);
+	*sp += 2;
 
 	return value;
+}
+
+int memory_save(const struct memory *memory, FILE *f)
+{
+	size_t sret;
+	uint8_t rom_banking_flag;
+
+	sret = fwrite(&memory->mbc_rom_bank, sizeof(memory->mbc_rom_bank), 1,
+			f);
+	if (sret != 1)
+		return -1;
+	rom_banking_flag = memory->rom_banking_flag;
+	sret = fwrite(&rom_banking_flag, sizeof(rom_banking_flag), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(memory->raw, sizeof(memory->raw), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}
+
+int memory_restore(struct memory *memory, FILE *f)
+{
+	size_t sret;
+	uint8_t bool_value;
+
+	sret = fread(&memory->mbc_rom_bank, sizeof(memory->mbc_rom_bank), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(&bool_value, sizeof(bool_value), 1, f);
+	if (sret != 1)
+		return -1;
+	memory->rom_banking_flag = bool_value;
+	sret = fread(memory->raw, sizeof(memory->raw), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
 }

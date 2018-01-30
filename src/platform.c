@@ -32,6 +32,7 @@ error_t argz_create_sep(const char *str, int sep, char **argz,
 	unsigned i;
 
 	if (str == NULL || argz == NULL || argz_len == NULL)
+		/* codecheck_ignore[USE_NEGATIVE_ERRNO] */
 		return EINVAL;
 
 	*argz = strdup(str);

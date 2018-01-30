@@ -1,38 +1,42 @@
-#ifndef __ROM__
-#define __ROM__
+#ifndef INCLUDE_ROM_H_
+#define INCLUDE_ROM_H_
+#include <inttypes.h>
 
-#define MAX_TITLE_LENGTH 16
-#define LOGO_LENGTH 48
 #define HEADER_OFFSET_S 0x0100
-#define HEADER_OFFSET_E 0x014F
+#define ROM_BANK_SIZE 0x4000
+#define LOGO_LENGTH 48
+#define MAX_TITLE_LENGTH 16
 
 #pragma pack(push, 1)
-
-struct s_romHeader {
-	int entrypoint;
-	char nlogo[LOGO_LENGTH];
+struct rom_header {
+	uint32_t entry_point;
+	uint8_t logo[LOGO_LENGTH];
 	char title[MAX_TITLE_LENGTH];
-	unsigned short manufacturerCode;
-	unsigned char cgbFlag;
-	unsigned char cartridgeType;
-	unsigned char romSize;
-	unsigned char ramSize;
-	unsigned char destCode; /* 00 JPN 01 N-JPN */
-	unsigned char oldLicenseeCode;
-	unsigned char gameVersion;
-	unsigned char headerCheckSum;
-	unsigned short glbCheckSum;
+	uint16_t manufacturer_mode;
+	uint8_t cgb_flag;
+	uint8_t cartridge_type;
+	uint8_t rom_size;
+	uint8_t ram_size;
+	uint8_t dest_code; /* 00 JPN 01 N-JPN */
+	uint8_t old_licensee_code;
+	uint8_t game_version;
+	uint8_t header_checksum;
+	uint16_t glb_checksum;
 } __attribute__((__packed__));
 
-struct s_rom {
-	unsigned int size;
-	unsigned char *rom;
-	struct s_romHeader romheader;
+struct rom {
+	union {
+		uint8_t data[ROM_BANK_SIZE];
+		struct {
+			uint8_t padding[HEADER_OFFSET_S];
+			struct rom_header rom_header;
+		};
+	};
 } __attribute__((__packed__));
-
 #pragma pack(pop)
 
-int initRom(struct s_rom *rom, const char *filename);
-void displayHeader(struct s_romHeader *romheader);
+int rom_init(struct rom *rom, struct rom *switchable_rom_bank,
+		uint8_t *extra_rom_banks, const char *filename);
+void rom_display_header(struct rom_header *rom_header);
 
-#endif
+#endif /* INCLUDE_ROM_H_ */

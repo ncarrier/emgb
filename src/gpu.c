@@ -1,6 +1,12 @@
-#include "io.h"
-#include "GB.h"
+#include "gpu.h"
+#include "cpu.h"
+#include "memory.h"
 #include "ae_config.h"
+#include "io.h"
+#include "log.h"
+#include "config.h"
+#include "video_common.h"
+#include "interrupt.h"
 
 #define GB_SURF (GB_W * GB_H)
 #define COLOR_0 0x00000000
@@ -8,29 +14,14 @@
 #define COLOR_2 0x00aaaaaa
 #define COLOR_3 0x00ffffff
 
-static bool is_fullscreen(int width, int height)
+static void gpu_init_display(struct gpu *gpu, struct ae_config *conf)
 {
-	int ret;
-	SDL_DisplayMode dm;
-	ret = SDL_GetCurrentDisplayMode(0, &dm);
-	if (ret != 0)
-		return false;
-
-	return dm.w <= width && dm.h <= height;
-}
-
-void initDisplay(struct s_gb *gb)
-{
-	struct s_gpu *gpu;
 	bool fullscreen;
 	int width;
 	int height;
 	int x;
 	int y;
-	struct ae_config *conf;
 
-	conf = &gb->config.config;
-	gpu = &gb->gb_gpu;
 #ifdef EMGB_CONSOLE_DEBUGGER
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif /* EMGB_CONSOLE_DEBUGGER */
@@ -43,8 +34,7 @@ void initDisplay(struct s_gb *gb)
 			CONFIG_WINDOW_WIDTH_DEFAULT);
 	height = ae_config_get_int(conf, CONFIG_WINDOW_HEIGHT,
 			CONFIG_WINDOW_HEIGHT_DEFAULT);
-	fullscreen = is_fullscreen(width, height);
-	gpu->mouse_visible = !fullscreen;
+	fullscreen = is_window_fullscreen(width, height);
 	x = ae_config_get_int(conf, CONFIG_WINDOW_X, CONFIG_WINDOW_X_DEFAULT);
 	y = ae_config_get_int(conf, CONFIG_WINDOW_Y, CONFIG_WINDOW_Y_DEFAULT);
 	gpu->window = SDL_CreateWindow("GB", x, y, width, height,
@@ -66,12 +56,12 @@ void initDisplay(struct s_gb *gb)
 			GB_W, GB_H);
 	if (gpu->texture == NULL)
 		ERR("cannot create SDL texture");
-	gpu->pixels = malloc(sizeof(Uint32) * GB_SURF);
+	gpu->pixels = calloc(GB_SURF, sizeof(*gpu->pixels));
 	if (gpu->pixels == NULL)
 		ERR("cannot alloc pixels");
 }
 
-int color_index_to_value(const struct s_gpu *gpu, int color)
+static uint32_t color_index_to_value(const struct gpu *gpu, uint32_t color)
 {
 	switch (color) {
 	case 3:
@@ -88,7 +78,7 @@ int color_index_to_value(const struct s_gpu *gpu, int color)
 }
 
 /*
-void displayAll(struct s_gb *gb)
+void displayAll(struct gb *gb)
 {
 	int index;
 	int y, x;
@@ -104,7 +94,7 @@ void displayAll(struct s_gb *gb)
 		int tmpaddr = index;
 		for (y = 0; y < 8; y++) {
 			dec = 15;
-			line = read16bit(tmpaddr, gb);
+			line = read16bit(memory, tmpaddr);
 			for (x = 0; x < 8; x++) {
 				color = (line >> dec) & 0x01;
 				if ((line >> (dec - 8)) & 0x01)
@@ -126,12 +116,14 @@ void displayAll(struct s_gb *gb)
 }
 */
 
-void renderingWindow(struct s_gb *gb)
+/* never called ? to remove ? TODO */
+static __attribute((unused)) void gpu_render_window(struct gpu *gpu,
+		struct memory *memory)
 {
 	int y;
 	int x;
-	unsigned short line;
-	int color;
+	uint16_t line;
+	uint32_t color;
 	int dec;
 	int posx;
 	int posy;
@@ -140,31 +132,31 @@ void renderingWindow(struct s_gb *gb)
 	int i;
 	unsigned char tileindex;
 	int tmpaddr;
-	struct s_io *io;
-	struct lcd *lcd;
+	enum tile_map_display_select tile_map_sel;
+	uint16_t tile_map;
 
-	io = &gb->gb_io;
-	lcd = &io->lcd;
-	limit = lcd->WindowTileMapSelect + 0x400;
-	baseaddr = lcd->BgWindowTileData;
+	tile_map_sel = memory->spec_reg.lcdc.window_tile_map_display_select;
+	tile_map = tile_map_display_select_to_addr(tile_map_sel);
+	limit = tile_map + 0x400;
+	baseaddr = bg_window_tile_data_select_to_addr(
+			memory->spec_reg.lcdc.bg_window_tile_data_select);
 	posx = 0;
 	posy = 0;
-	for (i = lcd->WindowTileMapSelect; i < limit; i++) {
-		tileindex = read8bit(i, gb);
+	for (i = tile_map; i < limit; i++) {
+		tileindex = read8bit(memory, i);
 		tmpaddr = baseaddr + tileindex * 16;
 		for (y = 0; y < 8; y++) {
 			dec = 15;
-			line = read16bit(tmpaddr, gb);
+			line = read16bit(memory, tmpaddr);
 			for (x = 0; x < 8; x++) {
 				color = ((line >> dec) & 0x01)
 						+ ((line >> (dec - 8)) & 0x01);
 				if (color != 0) {
-					gb->gb_gpu.pixels[256
-							* (io->scrollY + posy
-									+ y)
-							+ io->scrollX + posx
-									+ x] =
-							(color * 0xff) | B;
+					gpu->pixels[256 * (memory->spec_reg.scy
+							+ posy + y)
+							+ memory->spec_reg.scx
+							+ posx + x] = (color
+							* 0xff) | B;
 				}
 				dec--;
 			}
@@ -179,12 +171,12 @@ void renderingWindow(struct s_gb *gb)
 	}
 }
 
-void renderingSprite(struct s_gb *gb)
+static void gpu_render_sprite(struct gpu *gpu, struct memory *memory)
 {
-	int y;
+	unsigned y;
 	int x;
-	unsigned short line;
-	int color;
+	uint16_t line;
+	uint32_t color;
 	int dec;
 	unsigned char posy;
 	unsigned char posx;
@@ -193,27 +185,29 @@ void renderingSprite(struct s_gb *gb)
 	int baseaddr = 0x8000;
 	int tmpaddr;
 	int index;
+	unsigned sprite_size;
 
+	sprite_size = memory->spec_reg.lcdc.sprite_size;
+	sprite_size = sprite_size == SPRITE_SIZE_8X8 ? 8 : 16;
 	for (index = 0xFE00; index < limit; index += 4) {
-		posy = gb->gb_mem.oam[index - 0xFE00] - 16;
-		posx = gb->gb_mem.oam[index + 1 - 0xFE00] - 8;
-		tileindex = gb->gb_mem.oam[index + 2 - 0xFE00];
+		posy = memory->oam[index - 0xFE00] - 16;
+		posx = memory->oam[index + 1 - 0xFE00] - 8;
+		tileindex = memory->oam[index + 2 - 0xFE00];
 		tmpaddr = baseaddr + (tileindex * 16);
-		for (y = 0; tileindex && y < gb->gb_io.lcd.SpriteSize; y++) {
+		for (y = 0; tileindex && y < sprite_size; y++) {
 			dec = 15;
-			line = read16bit(tmpaddr, gb);
+			line = read16bit(memory, tmpaddr);
 			for (x = 0; x < 8; x++) {
 				color = ((line >> dec) & 0x01);
 				if ((line >> (dec - 8)) & 0x01)
 					color += 2;
-				color = color_index_to_value(&gb->gb_gpu,
-						color);
+				color = color_index_to_value(gpu, color);
 				/*
 				 * check mem corruption error -> need to
 				 * refactor this
 				 */
 				if (GB_W * (posy + y) + posx + x < GB_SURF)
-					gb->gb_gpu.pixels[GB_W * (posy + y)
+					gpu->pixels[GB_W * (posy + y)
 							+ (posx + x)] = color;
 				dec--;
 
@@ -223,27 +217,97 @@ void renderingSprite(struct s_gb *gb)
 	}
 }
 
-void rendering(struct s_gb *gb)
+static int gpu_get_real_position(struct gpu *gpu, struct memory *memory)
 {
-	if (gb->gb_io.lcd.BgWindowDisplay == 1)
-		renderingBg(gb);
-	if (gb->gb_io.lcd.SpriteIsOn == 1)
-		renderingSprite(gb);
+	int y;
+	int y_data_line;
+	int line_offset;
+	int data_offset;
+	struct lcdc *lcdc;
+	int tile_map;
+
+	lcdc = &memory->spec_reg.lcdc;
+	tile_map = tile_map_display_select_to_addr(
+			lcdc->bg_tile_map_display_select);
+	y = memory->spec_reg.scy + memory->spec_reg.ly;
+	y_data_line = y / 8;
+	/* 0x20 * 8 == 0x100 == 256 (a line) */
+	/* TODO shouldn't this be %= 0x20 ? */
+	if (y_data_line > 0x1f)
+		y_data_line -= 0x20;
+	line_offset = y_data_line * 0x20;
+	data_offset = tile_map + line_offset + memory->spec_reg.scx;
+
+	return data_offset;
 }
 
-static void display(struct s_gb *gb)
+static void gpu_render_bg(struct gpu *gpu, struct memory *memory)
+{
+	unsigned short line;
+	int color;
+	int dec;
+	int posx;
+	int x;
+	unsigned char tileindex;
+	signed char stileindex;
+	int baseaddr;
+	int data_offset;
+	int index;
+	int tile_addr;
+	int pixel_index;
+	struct spec_reg *spec_reg;
+
+	spec_reg = &memory->spec_reg;
+	baseaddr = bg_window_tile_data_select_to_addr(
+			spec_reg->lcdc.bg_window_tile_data_select);
+	data_offset = gpu_get_real_position(gpu, memory);
+	posx = 0;
+	for (index = 0; index < 20; index++) {
+		if (baseaddr == 0x8800) {
+			stileindex = (signed) (read8bit(memory,
+					index + data_offset));
+			tile_addr = baseaddr + (stileindex + 128) * 16;
+		} else {
+			tileindex = read8bit(memory, index + data_offset);
+			tile_addr = baseaddr + tileindex * 16;
+		}
+		dec = 15;
+		line = read16bit(memory, tile_addr + (spec_reg->ly % 8) * 2);
+		for (x = 0; x < 8; x++) {
+			color = (line >> dec) & 0x01;
+			if ((line >> (dec - 8)) & 0x01)
+				color += 2;
+			color = color_index_to_value(gpu, color);
+			pixel_index = 160 * spec_reg->ly + posx + x;
+			if (pixel_index < (160 * 144))
+				gpu->pixels[pixel_index] = color;
+			dec--;
+		}
+		posx += 8;
+	}
+}
+
+static void gpu_rendering(struct gpu *gpu, struct memory *memory)
+{
+	if (memory->spec_reg.lcdc.enable_bg_window_display)
+		gpu_render_bg(gpu, memory);
+	if (memory->spec_reg.lcdc.enable_sprite_display)
+		gpu_render_sprite(gpu, memory);
+}
+
+static void gpu_display(struct gpu *gpu)
 {
 	int pitch = 0;
 	void *pixels;
 
 	pitch = 0;
-	SDL_RenderClear(gb->gb_gpu.renderer);
-	SDL_LockTexture(gb->gb_gpu.texture, NULL, &pixels, &pitch);
-	memcpy(pixels, gb->gb_gpu.pixels, GB_SURF * 4);
-	SDL_UnlockTexture(gb->gb_gpu.texture);
+	SDL_RenderClear(gpu->renderer);
+	SDL_LockTexture(gpu->texture, NULL, &pixels, &pitch);
+	memcpy(pixels, gpu->pixels, GB_SURF * 4);
+	SDL_UnlockTexture(gpu->texture);
 
-	SDL_RenderCopy(gb->gb_gpu.renderer, gb->gb_gpu.texture, NULL, NULL);
-	SDL_RenderPresent(gb->gb_gpu.renderer);
+	SDL_RenderCopy(gpu->renderer, gpu->texture, NULL, NULL);
+	SDL_RenderPresent(gpu->renderer);
 
 	/* step 2 debug */
 
@@ -264,14 +328,14 @@ static void display(struct s_gb *gb)
 	/* SDL_RenderPresent(s_gb->gb_gpu.renderer_d); */
 }
 
-void initGpu(struct s_gb *gb)
+void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
+		struct ae_config *conf)
 {
-	struct s_gpu *gpu;
-	struct ae_config *conf;
+	gpu_init_display(gpu, conf);
 
-	gpu = &gb->gb_gpu;
-	conf = &gb->config.config;
-	gpu->scanline = 0;
+	gpu->cpu = cpu;
+	gpu->memory = memory;
+	gpu->mode = HBLANK;
 	gpu->tick = 0;
 	gpu->last_tick = 0;
 	gpu->color_0 = ae_config_get_int(conf, CONFIG_COLOR_0,
@@ -284,40 +348,27 @@ void initGpu(struct s_gb *gb)
 			CONFIG_COLOR_3_DEFAULT);
 }
 
-char lcdIsEnable(unsigned char lcdc)
+void gpu_update(struct gpu *gpu)
 {
-	return (lcdc & 0x01) == 0 ? 0 : 1;
-}
+	struct memory *memory;
+	struct spec_reg *spec_reg;
 
-void setLcdStatus(struct s_gb *gb)
-{
-	if (lcdIsEnable(read8bit(0xff40, gb) >> 7) != 0)
-		return;
-	gb->gb_gpu.scanline = 0;
-	printf("reset scanline & s_gb->gb_cpu.totalTick\n");
+	memory = gpu->memory;
+	spec_reg = &memory->spec_reg;
+	gpu->tick += gpu->cpu->total_tick - gpu->last_tick;
+	gpu->last_tick = gpu->cpu->total_tick;
 
-	write8bit(0xff41, 253, gb);
-}
-
-void updateGpu(struct s_gb *gb)
-{
-	struct s_gpu *gpu;
-
-	gpu = &gb->gb_gpu;
-	gpu->tick += gb->gb_cpu.totalTick - gpu->last_tick;
-	gpu->last_tick = gb->gb_cpu.totalTick;
-
-	switch (gpu->gpuMode) {
+	switch (gpu->mode) {
 	case HBLANK:
 		if (gpu->tick < 204)
 			break;
 
-		if (gb->gb_io.lcd.LcdIsOn == 1 && gpu->scanline < GB_H)
-			rendering(gb);
-		gpu->scanline++;
-		if (gpu->scanline >= GB_H) {
-			gb->gb_interrupts.interFlag |= INT_VBLANK;
-			gpu->gpuMode = VBLANK;
+		if (spec_reg->lcdc.enable_lcd && spec_reg->ly < GB_H)
+			gpu_rendering(gpu, memory);
+		spec_reg->ly++;
+		if (spec_reg->ly >= GB_H) {
+			spec_reg->ifl |= INT_VBLANK;
+			gpu->mode = VBLANK;
 		}
 
 		gpu->tick -= 204;
@@ -326,29 +377,84 @@ void updateGpu(struct s_gb *gb)
 		if (gpu->tick < 456)
 			break;
 
-		gpu->scanline++;
-		if (gpu->scanline >= 153) {
-			gpu->scanline = 0;
-			gpu->gpuMode = OAM;
+		spec_reg->ly++;
+		if (spec_reg->ly >= 153) {
+			spec_reg->ly = 0;
+			gpu->mode = OAM;
 		}
 		gpu->tick -= 456;
-		if (gb->gb_io.lcd.LcdIsOn == 1 && gpu->scanline == GB_H + 1)
-			display(gb);
+		if (spec_reg->lcdc.enable_lcd && spec_reg->ly == GB_H + 1)
+			gpu_display(gpu);
 		break;
 	case OAM:
 		if (gpu->tick < 80)
 			break;
 
-		gpu->scanline = 0;
-		gpu->gpuMode = VRAM;
+		spec_reg->ly = 0;
+		gpu->mode = VRAM;
 		gpu->tick -= 80;
 		break;
 	case VRAM:
 		if (gpu->tick < 172)
 			break;
 
-		gpu->gpuMode = HBLANK;
+		gpu->mode = HBLANK;
 		gpu->tick -= 172;
 		break;
 	}
+}
+
+int gpu_save(const struct gpu *gpu, FILE *f)
+{
+	size_t sret;
+	uint8_t mode;
+
+	sret = fwrite(&gpu->last_tick, sizeof(gpu->last_tick), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(&gpu->tick, sizeof(gpu->tick), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fwrite(gpu->pixels, sizeof(*gpu->pixels), GB_SURF, f);
+	if (sret != GB_SURF)
+		return -1;
+	mode = gpu->mode;
+	sret = fwrite(&mode, sizeof(mode), 1, f);
+	if (sret != 1)
+		return -1;
+
+	return 0;
+}
+
+int gpu_restore(struct gpu *gpu, FILE *f)
+{
+	size_t sret;
+	uint8_t mode;
+
+	sret = fread(&gpu->last_tick, sizeof(gpu->last_tick), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(&gpu->tick, sizeof(gpu->tick), 1, f);
+	if (sret != 1)
+		return -1;
+	sret = fread(gpu->pixels, sizeof(*gpu->pixels), GB_SURF, f);
+	if (sret != GB_SURF)
+		return -1;
+	sret = fread(&mode, sizeof(mode), 1, f);
+	if (sret != 1)
+		return -1;
+	gpu->mode = mode;
+
+	return 0;
+}
+
+void gpu_cleanup(struct gpu *gpu)
+{
+	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
+	SDL_DestroyTexture(gpu->texture);
+	SDL_DestroyRenderer(gpu->renderer);
+	SDL_DestroyWindow(gpu->window);
+	SDL_Quit();
+	/* free(s_gb->gb_gpu.pixels_d); */
+	free(gpu->pixels);
 }

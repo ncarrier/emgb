@@ -17,7 +17,7 @@ file(GLOB_RECURSE SOURCES_CXX ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
 set_source_files_properties(${GENERATED_INSTRUCTIONS} PROPERTIES GENERATED TRUE)
 
-set(SOURCE_FILES ${GENERATED_INSTRUCTIONS} ${SOURCES_C} ${SOURCES_CXX})
+set(SOURCE_FILES ${GENERATED_INSTRUCTIONS} ${SOURCES_C})
 
 add_custom_command(OUTPUT ${GENERATED_INSTRUCTIONS}
 	DEPENDS
@@ -32,12 +32,22 @@ add_custom_command(OUTPUT ${GENERATED_INSTRUCTIONS}
 		${GENERATED_INSTRUCTIONS})
 
 if (UNIX)
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
+add_definitions("
+    -Wall
+    -Wextra
+    -Wformat=2
+    -Wunused-variable
+    -Wold-style-definition
+    -Wstrict-prototypes
+    -Wno-unused-parameter
+    -Wmissing-declarations
+    -Wmissing-prototypes
+    -Wpointer-arith")
 endif (UNIX)
 
 
 add_executable(gb ${SOURCE_FILES})
-add_executable(rom_info tools/rom_info/rom_info.c src/rom.c)
+add_executable(rom_info tools/rom_info/rom_info.c src/rom.c src/utils.c)
 add_executable(joypad_mapping tools/joypad_mapping/joypad_mapping.c
 	src/ae_config.c src/joystick_config.c src/utils.c)
 

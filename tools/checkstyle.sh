@@ -7,7 +7,7 @@ my_dir=$(dirname ${me})/
 
 checkpatch=${my_dir}checkpatch2.pl
 
-sources="$(find -name '*.c' -o -name '*.h')"
+sources="$(find -name '*.c' -o -name '*.h' | grep -v '/misc/')"
 
 exclude="./include/imconfig.h
 	./tools/joypad_mapping/joypad_mapping.c

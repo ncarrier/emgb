@@ -20,6 +20,8 @@
 #include "log.h"
 #include "memory.h"
 #include "special_registers.h"
+#include "cpu.h"
+#include "ae_config.h"
 
 /* codecheck_ignore[VOLATILE] */
 static volatile sig_atomic_t signal_received;
@@ -124,9 +126,11 @@ static void console_debugger_assembler(struct console_debugger *debugger)
 	uint16_t i;
 	uint16_t pc;
 	uint8_t opcode;
-	const struct s_cpu_z80 *instruction;
+	const struct cpu_op *instruction;
 	unsigned cur;
+	struct memory *memory;
 
+	memory = debugger->memory;
 	start_str = debugger->command.argv[1];
 	stop_str = debugger->command.argv[2];
 
@@ -149,13 +153,13 @@ static void console_debugger_assembler(struct console_debugger *debugger)
 	}
 	printf("%s = 0x%04"PRIx16"\n", start_str, start);
 	for (pc = start; pc <= stop; ) {
-		opcode = read8bit(pc, debugger->gb);
+		opcode = read8bit(memory, pc);
 		instruction = instructions_base + opcode;
 		printf("[0x%04"PRIx16"] (0x%02"PRIx8") %s", pc, opcode,
 				instruction->value);
 		printf("\033[%dG", 53);
 		for (cur = instruction->real_size - 1; cur >= 1; cur--)
-			printf(" %02"PRIx8, read8bit(pc + cur, debugger->gb));
+			printf(" %02"PRIx8, read8bit(memory, pc + cur));
 		puts("");
 		pc += instruction->real_size;
 	}
@@ -234,7 +238,7 @@ static void console_debugger_disable_enable(struct console_debugger *debugger,
 			enable ? "En" : "Dis", id, breakpoint->pc);
 }
 
-static void doc_instruction(const struct s_cpu_z80 *instruction, bool cb)
+static void doc_instruction(const struct cpu_op *instruction, bool cb)
 {
 	printf("[0x%s%"PRIx8"] %s : %s\n", cb ? "cb" : "", instruction->opcode,
 			instruction->value, instruction->doc);
@@ -250,7 +254,7 @@ static void console_debugger_doc(struct console_debugger *debugger)
 	const char *op_str;
 	uint8_t upper_byte;
 	int i;
-	const struct s_cpu_z80 *instr;
+	const struct cpu_op *instr;
 	bool cb;
 
 	command = &debugger->command;
@@ -393,7 +397,7 @@ static void console_debugger_memory(struct console_debugger *debugger)
 		if (i == stop)
 			printf(" %s = 0x%04"PRIx16, stop_str, stop);
 		printf("\033[%dG%04"PRIx16"\n", 40,
-				read16bit(i, debugger->gb));
+				read16bit(debugger->memory, i));
 	}
 }
 
@@ -461,7 +465,7 @@ static void console_debugger_next(struct console_debugger *debugger)
 	debugger->next = true;
 }
 
-void console_debugger_print_registers(const struct s_register *registers)
+void console_debugger_print_registers(const struct registers *registers)
 {
 	printf("af = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->a, registers->f);
 	printf("bc = 0x%.02"PRIx8" %.02"PRIx8"\t", registers->b, registers->c);
@@ -479,11 +483,13 @@ void console_debugger_print_registers(const struct s_register *registers)
 static void console_debugger_print(struct console_debugger *debugger)
 {
 	const char *expression;
-	struct s_register *registers;
+	struct registers *registers;
 	uint16_t f;
 	uint16_t address;
 	enum special_register reg;
+	struct memory *memory;
 
+	memory = debugger->memory;
 	registers = debugger->registers;
 	expression = debugger->command.argv[1];
 	reg = special_register_from_string(expression);
@@ -521,7 +527,7 @@ static void console_debugger_print(struct console_debugger *debugger)
 		console_debugger_print_registers(registers);
 	} else if (reg != 0) {
 		printf("%s (%#.04"PRIx16") = %#.04"PRIx16"\n", expression, reg,
-				read8bit(reg, debugger->gb));
+				read8bit(memory, reg));
 	} else {
 		if (*expression != '*' ||
 				!compute_expression(debugger, expression + 1,
@@ -529,8 +535,7 @@ static void console_debugger_print(struct console_debugger *debugger)
 			printf("Unable to print \"%s\".\n", expression);
 		else
 			printf("%s[%#.04x] = %#.02"PRIx16"\n", expression,
-					address,
-					read8bit(address, debugger->gb));
+					address, read8bit(memory, address));
 	}
 }
 
@@ -642,7 +647,7 @@ static char *console_debugger_prompt(struct editline *el)
 static void init_registers_map(struct console_debugger *debugger)
 {
 	unsigned index;
-	struct s_register *registers;
+	struct registers *registers;
 
 	registers = debugger->registers;
 	index = 0;
@@ -731,14 +736,14 @@ static int console_debugger_get_terminal_size(struct console_debugger *debugger)
 }
 
 int console_debugger_init(struct console_debugger *debugger,
-		struct s_register *registers, struct s_gb *gb,
+		struct registers *registers, struct memory *memory,
 		struct ae_config *config)
 {
 	struct editline *el = debugger->editline;
 
 	memset(debugger, 0, sizeof(*debugger));
 	debugger->registers = registers;
-	debugger->gb = gb;
+	debugger->memory = memory;
 	signal(SIGINT, console_debugger_init_signal_handler);
 	signal(SIGWINCH, console_debugger_init_signal_handler);
 	debugger->editline = el = el_init("emgb", stdin, stdout, stderr);
@@ -929,18 +934,18 @@ static void display_disassembly(struct console_debugger *debugger)
 	unsigned cur;
 	unsigned j;
 	uint8_t opcode;
-	const struct s_cpu_z80 *instruction;
+	const struct cpu_op *instruction;
 	uint16_t pc;
 	const char *value;
-	struct s_gb *gb;
+	struct memory *memory;
 
-	gb = debugger->gb;
+	memory = debugger->memory;
 	cursor_save_pos();
 
 	cursor_move_to(1, 1);
 	pc = debugger->registers->pc;
 	for (i = 0; i < debugger->terminal.rows / 2; i++) {
-		opcode = read8bit(pc, gb);
+		opcode = read8bit(memory, pc);
 		instruction = instructions_base + opcode;
 		if (i == 0)
 			bold_color();
@@ -950,15 +955,15 @@ static void display_disassembly(struct console_debugger *debugger)
 			putchar(value[j]);
 		if (value[j] == '*') {
 			if (opcode == 0xcb) {
-				opcode = read8bit(pc + 1, gb);
+				opcode = read8bit(memory, pc + 1);
 				printf("%.02"PRIx8":%s", opcode,
 						instructions_cb[opcode].value);
 			} else {
 				printf("0x");
 				for (cur = instruction->real_size - 1; cur >= 1;
 						cur--)
-					printf("%02"PRIx8,
-							read8bit(pc + cur, gb));
+					printf("%02"PRIx8, read8bit(memory,
+							pc + cur));
 				for (; value[j] == '*'; j++)
 					;
 				printf("%s", value + j);
@@ -1019,7 +1024,7 @@ int printf_inverted(bool inverted, const char *fmt, ...)
 
 static void display_registers(struct console_debugger *debugger)
 {
-	struct s_register *registers;
+	struct registers *registers;
 	int x;
 	int y;
 
@@ -1076,7 +1081,7 @@ static void display_stack(struct console_debugger *debugger)
 			mem >= 0; mem -= 2, line++) {
 		cursor_move_to(x, line);
 		printf_bold(mem / 2 == sp / 2, "%.04"PRIx16":%.04"PRIx16, mem,
-				read16bit(mem, debugger->gb));
+				read16bit(debugger->memory, mem));
 	}
 
 	cursor_restore_pos();
@@ -1086,17 +1091,17 @@ static void display_pre_prompt(struct console_debugger *debugger)
 {
 	uint16_t pc;
 	uint8_t opcode;
-	const struct s_cpu_z80 *instruction;
+	const struct cpu_op *instruction;
 	uint16_t cur;
 
 	pc = debugger->registers->pc;
-	opcode = read8bit(pc, debugger->gb);
+	opcode = read8bit(debugger->memory, pc);
 	instruction = instructions_base + opcode;
 
 	printf("pc = %#.04"PRIx16" %s", debugger->registers->pc,
 			instruction->value);
 	for (cur = instruction->real_size - 1; cur >= 1; cur--)
-		printf(" %02"PRIx8, read8bit(pc + cur, debugger->gb));
+		printf(" %02"PRIx8, read8bit(debugger->memory, pc + cur));
 	puts("");
 	if (debugger->hud) {
 		erase_upper_screen_half(debugger);
@@ -1130,6 +1135,14 @@ int console_debugger_update(struct console_debugger *debugger)
 	}
 
 	return 0;
+}
+
+void console_debugger_cleanup(struct console_debugger *debugger)
+{
+	tok_end(debugger->tokenizer);
+	history_end(debugger->history);
+	el_end(debugger->editline);
+	memset(debugger, 0, sizeof(*debugger));
 }
 
 #endif /* EMGB_CONSOLE_DEBUGGER */

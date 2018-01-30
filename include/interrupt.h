@@ -1,13 +1,7 @@
 #ifndef INTERRUPT
 #define INTERRUPT
-
-struct s_gb;
-void doInterupt(struct s_gb *gb_s);
-void timer(struct s_gb *gb_s);
-void serial(struct s_gb *gb_s);
-void joypad(struct s_gb *gb_s);
-void lcd(struct s_gb *gb_s);
-void vblank(struct s_gb *gb_s);
+#include <inttypes.h>
+#include <stdio.h>
 
 #define INT_VBLANK (1 << 0)
 #define INT_LCDSTAT (1 << 1)
@@ -15,10 +9,26 @@ void vblank(struct s_gb *gb_s);
 #define INT_SERIAL (1 << 3)
 #define INT_JOYPAD (1 << 4)
 
-struct s_interupt {
-	unsigned char interMaster;
-	unsigned char interFlag;
-	unsigned char interEnable;
+struct memory;
+struct cpu;
+struct spec_reg;
+struct registers;
+
+struct interrupts {
+	struct memory *memory;
+	struct cpu *cpu;
+	struct spec_reg *spec_reg;
+	struct registers *registers;
+
+	/* serialized fields */
+	uint8_t inter_master;
 };
+
+void interrupt_init(struct interrupts *interrupts, struct memory *memory,
+		struct cpu *cpu, struct spec_reg *spec_reg,
+		struct registers *registers);
+void interrupt_update(struct interrupts *interupts);
+int interrupt_save(const struct interrupts *interrupts, FILE *f);
+int interrupt_restore(struct interrupts *interrupts, FILE *f);
 
 #endif
