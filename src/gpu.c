@@ -8,7 +8,6 @@
 #include "video_common.h"
 #include "interrupt.h"
 
-#define GB_SURF (GB_W * GB_H)
 #define COLOR_0 0x00000000
 #define COLOR_1 0x00444444
 #define COLOR_2 0x00aaaaaa
@@ -56,9 +55,6 @@ static void gpu_init_display(struct gpu *gpu, struct ae_config *conf)
 			GB_W, GB_H);
 	if (gpu->texture == NULL)
 		ERR("cannot create SDL texture");
-	gpu->pixels = calloc(GB_SURF, sizeof(*gpu->pixels));
-	if (gpu->pixels == NULL)
-		ERR("cannot alloc pixels");
 }
 
 static uint32_t color_index_to_value(const struct gpu *gpu, uint32_t color)
@@ -456,5 +452,4 @@ void gpu_cleanup(struct gpu *gpu)
 	SDL_DestroyWindow(gpu->window);
 	SDL_Quit();
 	/* free(s_gb->gb_gpu.pixels_d); */
-	free(gpu->pixels);
 }

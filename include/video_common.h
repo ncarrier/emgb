@@ -4,6 +4,7 @@
 
 #define GB_W 160
 #define GB_H 144
+#define GB_SURF (GB_W * GB_H)
 
 bool is_window_fullscreen(int width, int height);
 

@@ -8,6 +8,8 @@
 #endif
 #include <SDL2/SDL.h>
 
+#include "video_common.h"
+
 #define R 0x00ff0000
 #define G 0x0000ff00
 #define B 0x000000ff
@@ -44,7 +46,7 @@ struct gpu {
 	/* serialized fields */
 	uint32_t last_tick;
 	uint32_t tick;
-	uint32_t *pixels;
+	uint32_t pixels[GB_SURF];
 	enum gpu_mode mode;
 };
 
