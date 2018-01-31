@@ -5,12 +5,12 @@ C project, rendering through SDL.
 ## Current status
 
 Most of Game Boy games will **NOT** work.
-The current rendering is too slow for games to run smoothly.
 Known to be playable games, with glitches are: Tetris, Dr.Mario.
 
 ## Features
 
 * Simple joypad support
+* Simple save/restore function
 * Embedded simple command-line debugger
 
 ![Tetris - title screen](resources/images/tetris_title.png) ![Tetris - in game](resources/images/tetris_in_game.png) ![Dr. Mario - in game](resources/images/dr_mario_in_game.png)
@@ -30,7 +30,6 @@ Known to be playable games, with glitches are: Tetris, Dr.Mario.
   * Background rendering is still messy, need optimization and code clearing
   * Sprite rendering is basic => need to implement sprite tile options
   * Troobleshoot scrolling issues
-* Full screen mode
 * Sound support
 * Serial link support
 
@@ -51,7 +50,7 @@ To enable the built-in debugger
     cmake ../emgb -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_CONSOLE_DEBUGGER=ON
     make
 
-Then type **\<Ctrl\>+C** to enter the debugger.
+Then type **\<Ctrl\>+C** to enter the debugger and then type **help** to get started.
 
 ### Usage
 
@@ -64,7 +63,22 @@ Keys used are:
  * **V**: A
  * **C**: C
  * **arrows** for D-pad
+ * **F1**: save game state
+ * **F2**: restore game state
 
+### Configuration
+
+Everything lies in the **~/.emgb/** directory.
+
+Editing the **config** file allows to change keybindings, colors...
+Most configuration entries should be self-explicit.
+
+Lines must have the form **key=value**, with whitespace characters **not stripped** and **no support for comments**.
+
+**Colors** can be given in hexadecimal value **0xRRGGBB**.
+
+**Key names** are those used by the SDL function **SDL_GetKeyName**. Most of the time, it's the character itself, in uppercase if relevant.
+Please see [the SDL source code here](http://hg.libsdl.org/SDL/file/4d52395a8dba/src/events/SDL_keyboard.c#l282) and [there](http://hg.libsdl.org/SDL/file/4d52395a8dba/src/events/SDL_keyboard.c#l943) for more information.
 ### Use a joypad
 
 Run
