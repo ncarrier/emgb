@@ -1,5 +1,9 @@
 #ifndef INCLUDE_PLATFORM_H_
 #define INCLUDE_PLATFORM_H_
+#include <stdbool.h>
+#include <assert.h>
+
+_Static_assert(sizeof(bool) == 1, "sizeof bool isn't 1, emgb won't work");
 
 #ifdef _WIN32
 /* codecheck_ignore[NEW_TYPEDEFS] */
