@@ -16,7 +16,7 @@ static void interrupt_handle(struct memory *memory,
 		struct interrupts *interrupts, struct registers *registers,
 		uint16_t address)
 {
-	interrupts->inter_master = 0;
+	interrupts->inter_master = false;
 	registers->sp -= 2;
 	write16bit(memory, registers->sp, registers->pc);
 	registers->pc = address;

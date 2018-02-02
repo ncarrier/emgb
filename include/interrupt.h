@@ -2,6 +2,7 @@
 #define INTERRUPT
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #define INT_VBLANK (1 << 0)
 #define INT_LCDSTAT (1 << 1)
@@ -21,7 +22,7 @@ struct interrupts {
 	struct registers *registers;
 
 	/* serialized fields */
-	uint8_t inter_master;
+	bool inter_master;
 };
 
 void interrupt_init(struct interrupts *interrupts, struct memory *memory,
