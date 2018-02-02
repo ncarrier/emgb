@@ -168,7 +168,7 @@ struct gb *gb_init(const char *file)
 	interrupt_init(&gb->interrupts, &gb->memory, &gb->cpu,
 			&gb->memory.spec_reg, &gb->registers);
 	gpu_init(&gb->gpu, &gb->cpu, &gb->memory, &gb->config.config);
-	timer_init(&gb->timer, &gb->memory, &gb->cpu);
+	timer_init(&gb->timer, &gb->memory);
 
 	reset_joystick_config(&gb->joystick_config);
 	joypad_init(&gb->joypad, &gb->config, &gb->memory.spec_reg,

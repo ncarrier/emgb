@@ -9,20 +9,17 @@
 #define TAC_TIMER_ENABLED(tac) ((tac) & 0x04)
 
 struct memory;
-struct cpu;
 struct timer {
-	struct cpu *cpu;
 	struct memory *memory;
 
 	/* serialized fields */
 	uint32_t freq;
 	int32_t timer_count;
-	uint32_t last_tick;
 };
 
-void timer_init(struct timer *timer, struct memory *memory, struct cpu *cpu);
+void timer_init(struct timer *timer, struct memory *memory);
 void timer_arm(struct timer *timer);
-void timer_update(struct timer *timer);
+void timer_update(struct timer *timer, unsigned cycles);
 int timer_save(const struct timer *timer, FILE *f);
 int timer_restore(struct timer *timer, FILE *f);
 

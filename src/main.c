@@ -24,6 +24,7 @@ static void gb_loop(const char *fileName)
 	struct registers *registers;
 	struct memory *memory;
 	struct joypad *joypad;
+	unsigned cycles = 0;
 #ifdef IMDBG
 	SDL_Thread *thr;
 #endif
@@ -61,13 +62,14 @@ static void gb_loop(const char *fileName)
 			if (!cpu->halted) {
 				fopcode = read8bit(memory, registers->pc);
 				instruction = instructions_base + fopcode;
-				cpu->total_tick += instruction->func(gb);
+				cycles = instruction->func(gb);
+				cpu->total_tick += cycles;
 				registers->pc += instruction->size;
 			}
 			gpu_update(&gb->gpu);
 		}
 		interrupt_update(&gb->interrupts);
-		timer_update(&gb->timer);
+		timer_update(&gb->timer, cycles);
 	}
 #ifdef IMDBG
 	if (thr != NULL) {

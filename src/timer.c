@@ -14,11 +14,9 @@ static const uint32_t frequencies_table[] = {
 		[3] = 16384u,
 };
 
-void timer_init(struct timer *timer, struct memory *memory, struct cpu *cpu)
+void timer_init(struct timer *timer, struct memory *memory)
 {
 	timer->memory = memory;
-	timer->cpu = cpu;
-	timer->last_tick = 0;
 	timer_arm(timer);
 }
 
@@ -40,19 +38,15 @@ void timer_arm(struct timer *timer)
 	timer->timer_count = CLOCKSPEED / timer->freq;
 }
 
-void timer_update(struct timer *timer)
+void timer_update(struct timer *timer, unsigned cycles)
 {
-	struct cpu *cpu;
 	struct memory *memory;
 
-	cpu = timer->cpu;
 	memory = timer->memory;
 	if (!TAC_TIMER_ENABLED(memory->spec_reg.tac))
 		return;
 
-	/* FOR TEST !!! - lastTick */
-	timer->timer_count -= cpu->total_tick - timer->last_tick;
-	timer->last_tick = cpu->total_tick;
+	timer->timer_count -= cycles;
 
 	if (timer->timer_count > 0)
 		return;
@@ -77,9 +71,6 @@ int timer_save(const struct timer *timer, FILE *f)
 	sret = fwrite(&timer->timer_count, sizeof(timer->timer_count), 1, f);
 	if (sret != 1)
 		return -1;
-	sret = fwrite(&timer->last_tick, sizeof(timer->last_tick), 1, f);
-	if (sret != 1)
-		return -1;
 
 	return 0;
 }
@@ -92,9 +83,6 @@ int timer_restore(struct timer *timer, FILE *f)
 	if (sret != 1)
 		return -1;
 	sret = fread(&timer->timer_count, sizeof(timer->timer_count), 1, f);
-	if (sret != 1)
-		return -1;
-	sret = fread(&timer->last_tick, sizeof(timer->last_tick), 1, f);
 	if (sret != 1)
 		return -1;
 
