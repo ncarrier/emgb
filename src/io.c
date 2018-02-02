@@ -19,9 +19,6 @@ static void oam_transfert(struct memory *memory)
 void io_ctrl(struct memory *memory, struct timer *timer, uint16_t addr)
 {
 	switch (addr) {
-	case 0xff07:
-		timer_arm(timer);
-		break;
 	case 0xff46:
 		oam_transfert(memory);
 		break;
