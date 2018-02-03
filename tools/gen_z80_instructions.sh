@@ -280,6 +280,11 @@ cat <<here_doc_delim
 #include "utils.h"
 #include "instructions.h"
 
+#define BIT0(v) ((v) & 1)
+#define BIT(i, v) BIT0((v) >> (i))
+#define SET_BIT(f, b) ((f) |= (1 << (b)))
+#define CLEAR_BIT(f, b) ((f) &= ~(1 << (b)))
+
 /* base instruction set */
 here_doc_delim
 # only CB and base instruction sets are present on the GB, plus some

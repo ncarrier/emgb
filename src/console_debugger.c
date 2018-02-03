@@ -499,8 +499,9 @@ static void console_debugger_print(struct console_debugger *debugger)
 		printf("a = %#.02"PRIx8"\n", registers->a);
 	} else if (str_matches(expression, "f")) {
 		f = registers->f;
-		printf("f = %#.02"PRIx8" (z = %d, n = %d, h = %d, c = %d)\n",
-				f, BIT(7, f), BIT(6, f), BIT(5, f), BIT(4, f));
+		printf("f = %#.02"PRIx8" (z = %d, n = %d, h = %d, c = %d)\n", f,
+				registers->zf, registers->nf, registers->hf,
+				registers->cf);
 	} else if (str_matches(expression, "bc")) {
 		printf("bc = %#.04"PRIx16"\n", registers->bc);
 	} else if (str_matches(expression, "b")) {
