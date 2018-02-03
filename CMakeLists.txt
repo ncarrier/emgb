@@ -7,9 +7,9 @@ include(FindOpenGL)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(SDL2 REQUIRED)
+find_package(BZip2)
 
-
-include_directories(${SDL2_INCLUDE_DIR}  ${OPENGL_INCLUDE_DIR} ./include)
+include_directories(${SDL2_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${BZIP2_INCLUDE_DIR} ./include)
 
 set(GENERATED_INSTRUCTIONS ${CMAKE_CURRENT_BINARY_DIR}/instructions.c)
 file(GLOB_RECURSE SOURCES_C ${CMAKE_SOURCE_DIR}/src/*.c)
@@ -63,7 +63,7 @@ if (USE_CONSOLE_DEBUGGER)
 endif (USE_CONSOLE_DEBUGGER)
 
 if (UNIX)  
-   target_link_libraries(gb ${SDL2_LIBRARY} ${OPENGL_LIBRARIES})
+   target_link_libraries(gb ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${BZIP2_LIBRARIES})
    target_link_libraries(rom_info ${SDL2_LIBRARY})
    target_link_libraries(joypad_mapping ${SDL2_LIBRARY})
 endif (UNIX)

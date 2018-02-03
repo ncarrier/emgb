@@ -10,6 +10,7 @@
 #endif /* EMGB_CONSOLE_DEBUGGER */
 #include "log.h"
 #include "save.h"
+#include "bzip2.h"
 
 #define to_gb_from(p, ko) container_of((p), struct gb, ko)
 
@@ -39,7 +40,7 @@ static void do_save_restore(struct gb *gb, save_action action,
 		ERR("asprintf");
 	}
 	printf("%s %s.\n", name, path);
-	f = fopen(path, opentype);
+	f = bzip2_fopen(path, opentype);
 	if (f == NULL) {
 		DBG("%s failed: fopen: %m", name);
 		return;
