@@ -4,6 +4,7 @@
 
 struct save_start {
 };
+
 struct save_end {
 };
 
@@ -13,9 +14,9 @@ struct save_chunk {
 	const char *name;
 };
 
-int save_write_chunk(FILE *f, struct save_start *start,
-		const struct save_end *end);
-int save_read_chunk(FILE *f, struct save_start *start,
-		const struct save_end *end);
+typedef void (*save_action)(struct save_chunk *chunk, FILE *f);
+
+void save_write_chunk(struct save_chunk *chunk, FILE *f);
+void save_read_chunk(struct save_chunk *chunk, FILE *f);
 
 #endif /* INCLUDE_SAVE_H_ */

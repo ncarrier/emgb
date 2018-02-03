@@ -13,9 +13,8 @@
 
 #define to_gb_from(p, ko) container_of((p), struct gb, ko)
 
-static void do_save_restore(struct gb *gb,
-		int (*action)(FILE *f, struct save_start *start,
-		const struct save_end *end), const char *opentype)
+static void do_save_restore(struct gb *gb, save_action action,
+		const char *opentype)
 {
 	unsigned i;
 	int ret;
@@ -29,47 +28,35 @@ static void do_save_restore(struct gb *gb,
 			MAKE_CHUNK(gb, joypad),
 			MAKE_CHUNK(gb, cpu),
 	};
+#undef MAKE_CHUNK
 	FILE cleanup(cleanup_file)*f = NULL;
 	char cleanup(cleanup_string)*path = NULL;
+	const char *name = action == save_write_chunk ? "Save" : "Restore";
 
 	ret = asprintf(&path, "%s.sav", gb->file);
 	if (ret == -1) {
 		path = NULL;
 		ERR("asprintf");
 	}
-	printf("Save path is %s\n", path);
+	printf("%s %s.\n", name, path);
 	f = fopen(path, opentype);
 	if (f == NULL) {
-		DBG("Save/restore failed: fopen: %m");
+		DBG("%s failed: fopen: %m", name);
 		return;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(chunks); i++) {
-		ret = action(f, chunks[i].start, chunks[i].end);
-		if (ret < 0) {
-			DBG("Save/restore failed on %s: %s", chunks[i].name,
-					strerror(-ret));
-			return;
-		}
-	}
+	for (i = 0; i < ARRAY_SIZE(chunks); i++)
+		action(chunks + i, f);
 };
 
 static void gb_save(const struct key_op *key_op)
 {
-	struct gb *gb = to_gb_from(key_op, save);
-
-	do_save_restore(gb, save_write_chunk, "wbe");
-
-	printf("State saved\n");
+	do_save_restore(to_gb_from(key_op, save), save_write_chunk, "wbe");
 };
 
 static void gb_restore(const struct key_op *key_op)
 {
-	struct gb *gb = to_gb_from(key_op, restore);
-
-	do_save_restore(gb, save_read_chunk, "rbe");
-
-	printf("State restored\n");
+	do_save_restore(to_gb_from(key_op, restore), save_read_chunk, "rbe");
 };
 
 static void register_keys(struct gb *gb)

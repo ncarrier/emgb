@@ -5,34 +5,28 @@
 #include "save.h"
 #include "log.h"
 
-int save_write_chunk(FILE *f, struct save_start *start,
-		const struct save_end *end)
+void save_write_chunk(struct save_chunk *chunk, FILE *f)
 {
 	size_t sret;
 	intptr_t len;
 
-	len = (uintptr_t)end - (uintptr_t)start;
+	len = (uintptr_t)chunk->end - (uintptr_t)chunk->start;
 	if (len < 0)
-		return -EINVAL;
-	sret = fwrite(start, len, 1, f);
+		ERR("Chunk end must be after chunck start.");
+	sret = fwrite(chunk->start, len, 1, f);
 	if (sret != 1)
-		return -EIO;
-
-	return 0;
+		DBG("Failed reading %s.", chunk->name);
 }
 
-int save_read_chunk(FILE *f, struct save_start *start,
-		const struct save_end *end)
+void save_read_chunk(struct save_chunk *chunk, FILE *f)
 {
 	size_t sret;
 	intptr_t len;
 
-	len = (uintptr_t)end - (uintptr_t)start;
+	len = (uintptr_t)chunk->end - (uintptr_t)chunk->start;
 	if (len < 0)
-		return -EINVAL;
-	sret = fread(start, len, 1, f);
+		ERR("Chunk end must be after chunck start.");
+	sret = fread(chunk->start, len, 1, f);
 	if (sret != 1)
-		return -EIO;
-
-	return 0;
+		DBG("Failed reading %s.", chunk->name);
 }
