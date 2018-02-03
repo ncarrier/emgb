@@ -25,6 +25,13 @@
 	_a < _b ? _a : b; \
 })
 
+#define STRINGIFY2(s) #s
+#define STRINGIFY(s) STRINGIFY2(s)
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(_A) (sizeof(_A) / sizeof((_A)[0]))
+#endif /* ARRAY_SIZE */
+
 static inline bool str_matches(const char *s1, const char *s2)
 {
 	return strcmp(s1, s2) == 0;
