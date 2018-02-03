@@ -50,7 +50,7 @@ int rom_init(struct rom *rom, struct rom *switchable_rom_bank,
 	long size;
 	unsigned long rom_bank_0_size;
 
-	if (str_matches(file, "-")) {
+	if (str_matches(file, "stdin")) {
 		f = stdin;
 	} else {
 		f_destroy = fopen(file, "rb");

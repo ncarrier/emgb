@@ -18,7 +18,6 @@ static void do_save_restore(struct gb *gb, save_action action,
 		const char *opentype)
 {
 	unsigned i;
-	int ret;
 #define MAKE_CHUNK(g, c) {&g->c.save_start, &g->c.save_end, STRINGIFY(c)}
 	struct save_chunk chunks[] = {
 			MAKE_CHUNK(gb, timer),
@@ -31,18 +30,10 @@ static void do_save_restore(struct gb *gb, save_action action,
 	};
 #undef MAKE_CHUNK
 	FILE cleanup(cleanup_file)*f = NULL;
-	char cleanup(cleanup_string)*path = NULL;
 	const char *name = action == save_write_chunk ? "Save" : "Restore";
-	const char *file;
 
-	file = str_matches(gb->file, "-") ? "stdin" : gb->file;
-	ret = asprintf(&path, "%s.sav", file);
-	if (ret == -1) {
-		path = NULL;
-		ERR("asprintf");
-	}
-	printf("%s %s.\n", name, path);
-	f = bzip2_fopen(path, opentype);
+	printf("%s %s.\n", name, gb->save_file);
+	f = bzip2_fopen(gb->save_file, opentype);
 	if (f == NULL) {
 		DBG("%s failed: fopen: %m", name);
 		return;
@@ -76,22 +67,52 @@ static void register_keys(struct gb *gb)
 	joypad_register_key_op(&gb->joypad, &gb->restore);
 }
 
+static int init_file_paths(struct gb *gb, const char *file)
+{
+	int ret;
+
+	if (str_matches_suffix(file, ".sav")) {
+		gb->rom_file = strdup(file);
+		if (gb->rom_file == NULL)
+			ERR("strdup: %m");
+		gb->rom_file[strlen(file) - 4] = '\0';
+	} else if (str_matches_suffix(file, ".gb")) {
+		gb->rom_file = strdup(file);
+		if (gb->rom_file == NULL)
+			ERR("strdup: %m");
+	} else if (str_matches(file, "-")) {
+		gb->rom_file = strdup("stdin");
+		if (gb->rom_file == NULL)
+			ERR("strdup: %m");
+	} else {
+		ERR("Unsupported extension, for file %s.", file);
+	}
+	ret = asprintf(&gb->save_file, "%s.sav", gb->rom_file);
+	if (ret == -1)
+		ERR("asprintf");
+
+	DBG("rom %s, save %s", gb->rom_file, gb->save_file);
+
+	return 0;
+}
+
 struct gb *gb_init(const char *file)
 {
 	struct gb *gb;
+	bool restore;
 
+	restore = str_matches_suffix(file, ".sav");
 	gb = calloc(1, sizeof(*gb));
 	if (gb == NULL)
 		ERR("Cannot allocate gb");
-	gb->file = strdup(file);
-	if (gb->file == NULL)
-		ERR("strdup: %m");
+	init_file_paths(gb, file);
 
 	config_init(&gb->config);
 	memory_init(&gb->memory, &gb->timer);
-	rom_init(&gb->memory.rom_bank_0_rom,
-			&gb->memory.switchable_rom_bank_rom,
-			gb->memory.extra_rom_banks, file);
+	if (!restore)
+		rom_init(&gb->memory.rom_bank_0_rom,
+				&gb->memory.switchable_rom_bank_rom,
+				gb->memory.extra_rom_banks, gb->rom_file);
 	rom_display_header(&gb->memory.rom_bank_0_rom.rom_header);
 	registers_init(&gb->registers);
 	cpu_init(&gb->cpu);
@@ -106,6 +127,9 @@ struct gb *gb_init(const char *file)
 
 	config_write(&gb->config);
 
+	if (restore)
+		do_save_restore(gb, save_read_chunk, "rbe");
+
 	register_keys(gb);
 
 	return gb;
@@ -116,7 +140,8 @@ void gb_cleanup(struct gb *gb)
 	cleanup_joystick_config(&gb->joystick_config);
 	gpu_cleanup(&gb->gpu);
 	config_cleanup(&gb->config);
-	cleanup_string(&gb->file);
+	cleanup_string(&gb->save_file);
+	cleanup_string(&gb->rom_file);
 	memset(gb, 0, sizeof(*gb));
 	free(gb);
 }

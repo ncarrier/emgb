@@ -36,6 +36,22 @@ static inline bool str_matches_prefix(const char *s, const char *prefix)
 	return strncmp(s, prefix, strlen(prefix)) == 0;
 }
 
+static inline bool str_matches_suffix(const char *s, const char *suffix)
+{
+	size_t suf_len;
+	size_t str_len;
+	size_t offset;
+
+	suf_len = strlen(suffix);
+	str_len = strlen(s);
+	if (str_len < suf_len)
+		return false;
+
+	offset = str_len - suf_len;
+
+	return strncmp(s + offset, suffix, suf_len) == 0;
+}
+
 /* returns an address inside string s1 */
 static inline char *str_diff_chr(const char *s1, const char *s2)
 {

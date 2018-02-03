@@ -22,7 +22,8 @@ struct gb {
 	struct cpu cpu;
 	struct joystick_config joystick_config;
 	struct config config;
-	char *file;
+	char *rom_file;
+	char *save_file;
 	bool stopdbg;
 	struct key_op save;
 	struct key_op restore;
