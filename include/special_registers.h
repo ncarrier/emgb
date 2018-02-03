@@ -73,7 +73,13 @@ struct spec_reg {
 	/* timer modulo */
 	uint8_t tma;
 	/* timer control */
-	uint8_t tac;
+	union {
+		uint8_t raw;
+		struct {
+			uint8_t ics:2;
+			bool enabled:1;
+		};
+	} tac;
 	uint8_t padding_ff08_0e[7];
 	uint8_t ifl; /*  0xff0fu */
 	uint8_t nr10; /*  0xff10u */

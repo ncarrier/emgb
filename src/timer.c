@@ -25,11 +25,11 @@ void timer_update(struct timer *timer, unsigned cycles)
 	uint8_t input_clock_sel;
 	uint32_t period;
 
-	if (!TAC_TIMER_ENABLED(timer->spec_reg->tac))
+	if (!timer->spec_reg->tac.enabled)
 		return;
 
 	timer->timer_count += cycles;
-	input_clock_sel = TAC_INPUT_CLOCK_SELECT(timer->spec_reg->tac);
+	input_clock_sel = timer->spec_reg->tac.ics;
 	period = periods_table[input_clock_sel];
 	if (timer->timer_count < period)
 		return;
