@@ -5,6 +5,8 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_events.h>
 
+#include "save.h"
+
 #define KEY_OP_MAX 2
 
 struct key_op {
@@ -30,11 +32,12 @@ struct joypad {
 	SDL_Keycode sym_start;
 	const struct key_op *key_op[KEY_OP_MAX];
 
-	/* serialized fields */
+	struct save_start save_start;
 	bool running;
 	bool mouse_visible;
 	uint8_t button_key; /* = 0x0f */
 	uint8_t button_dir; /* = 0x0f */
+	struct save_end save_end;
 };
 
 void joypad_init(struct joypad *joypad, struct config *config,
@@ -43,7 +46,5 @@ void joypad_init(struct joypad *joypad, struct config *config,
 int joypad_register_key_op(struct joypad *joypad, const struct key_op *key_op);
 #define joypad_is_running(joypad) ((joypad)->running)
 void joypad_handle_event(struct joypad *joypad);
-int joypad_save(const struct joypad *joypad, FILE *f);
-int joypad_restore(struct joypad *joypad, FILE *f);
 
 #endif

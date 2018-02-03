@@ -1,11 +1,12 @@
 #ifndef __MEMORY__
 #define __MEMORY__
 #include <stdbool.h>
-#include <stdio.h>
 #include <inttypes.h>
 
 #include "rom.h"
 #include "special_registers.h"
+#include "save.h"
+
 /*
  * biggest rom encountered so far is Pokemon Red-Blue 2-in-1.
  * increase this if no true.
@@ -22,7 +23,7 @@ struct timer;
 struct memory {
 	struct timer *timer;
 
-	/* serialized fields */
+	struct save_start save_start;
 	uint8_t mbc_rom_bank;
 	bool rom_banking_flag;
 	union {
@@ -77,6 +78,7 @@ struct memory {
 		};
 		uint8_t raw[TOTAL_MEMORY];
 	};
+	struct save_end save_end;
 } __attribute__((__packed__));
 #pragma pack(pop)
 
@@ -87,7 +89,5 @@ uint8_t read8bit(struct memory *memory, uint16_t addr);
 void write8bit(struct memory *memory, uint16_t addr, uint8_t value);
 void push(struct memory *memory, uint16_t *sp, uint16_t value);
 uint16_t pop(struct memory *memory, uint16_t *sp);
-int memory_save(const struct memory *memory, FILE *f);
-int memory_restore(struct memory *memory, FILE *f);
 
 #endif

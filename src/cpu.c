@@ -8,37 +8,3 @@ void cpu_init(struct cpu *cpu)
 	cpu->halted = false;
 	cpu->total_tick = 0;
 }
-
-int cpu_save(const struct cpu *cpu, FILE *f)
-{
-	size_t sret;
-
-	sret = fwrite(&cpu->total_tick, sizeof(cpu->total_tick), 1, f);
-	if (sret != 1)
-		return -1;
-	sret = fwrite(&cpu->stopped, sizeof(cpu->stopped), 1, f);
-	if (sret != 1)
-		return -1;
-	sret = fwrite(&cpu->halted, sizeof(cpu->halted), 1, f);
-	if (sret != 1)
-		return -1;
-
-	return 0;
-}
-
-int cpu_restore(struct cpu *cpu, FILE *f)
-{
-	size_t sret;
-
-	sret = fread(&cpu->total_tick, sizeof(cpu->total_tick), 1, f);
-	if (sret != 1)
-		return -1;
-	sret = fread(&cpu->stopped, sizeof(cpu->stopped), 1, f);
-	if (sret != 1)
-		return -1;
-	sret = fread(&cpu->halted, sizeof(cpu->halted), 1, f);
-	if (sret != 1)
-		return -1;
-
-	return 0;
-}

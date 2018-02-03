@@ -1,18 +1,18 @@
 #ifndef __CPU__
 #define __CPU__
 #include <stdbool.h>
-#include <stdio.h>
 #include <inttypes.h>
 
-/* all fields are serialized */
+#include "save.h"
+
 struct cpu {
+	struct save_start save_start;
 	unsigned total_tick;
 	bool stopped;
 	bool halted;
+	struct save_end save_end;
 };
 
 void cpu_init(struct cpu *cpu);
-int cpu_save(const struct cpu *cpu, FILE *f);
-int cpu_restore(struct cpu *cpu, FILE *f);
 
 #endif

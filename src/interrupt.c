@@ -79,27 +79,3 @@ void interrupt_update(struct interrupts *interrupts)
 		spec_reg->ifl &= ~INT_SERIAL;
 	}
 }
-
-int interrupt_save(const struct interrupts *interrupts, FILE *f)
-{
-	size_t sret;
-
-	sret = fwrite(&interrupts->inter_master,
-			sizeof(interrupts->inter_master), 1, f);
-	if (sret != 1)
-		return -1;
-
-	return 0;
-}
-
-int interrupt_restore(struct interrupts *interrupts, FILE *f)
-{
-	size_t sret;
-
-	sret = fread(&interrupts->inter_master,
-			sizeof(interrupts->inter_master), 1, f);
-	if (sret != 1)
-		return -1;
-
-	return 0;
-}

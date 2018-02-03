@@ -38,25 +38,3 @@ void registers_init(struct registers *registers)
 		exit(1);
 	}
 }
-
-int registers_save(const struct registers *registers, FILE *f)
-{
-	size_t sret;
-
-	sret = fwrite(registers, sizeof(*registers), 1, f);
-	if (sret != 1)
-		return -1;
-
-	return 0;
-}
-
-int registers_restore(struct registers *registers, FILE *f)
-{
-	size_t sret;
-
-	sret = fread(registers, sizeof(*registers), 1, f);
-	if (sret != 1)
-		return -1;
-
-	return 0;
-}

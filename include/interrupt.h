@@ -1,8 +1,9 @@
 #ifndef INTERRUPT
 #define INTERRUPT
 #include <inttypes.h>
-#include <stdio.h>
 #include <stdbool.h>
+
+#include "save.h"
 
 #define INT_VBLANK (1 << 0)
 #define INT_LCDSTAT (1 << 1)
@@ -21,15 +22,14 @@ struct interrupts {
 	struct spec_reg *spec_reg;
 	struct registers *registers;
 
-	/* serialized fields */
+	struct save_start save_start;
 	bool inter_master;
+	struct save_end save_end;
 };
 
 void interrupt_init(struct interrupts *interrupts, struct memory *memory,
 		struct cpu *cpu, struct spec_reg *spec_reg,
 		struct registers *registers);
 void interrupt_update(struct interrupts *interupts);
-int interrupt_save(const struct interrupts *interrupts, FILE *f);
-int interrupt_restore(struct interrupts *interrupts, FILE *f);
 
 #endif

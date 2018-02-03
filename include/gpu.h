@@ -8,6 +8,7 @@
 #endif
 #include <SDL2/SDL.h>
 
+#include "save.h"
 #include "video_common.h"
 
 #define R 0x00ff0000
@@ -43,19 +44,18 @@ struct gpu {
 	unsigned int *pixels_d;
 	*/
 
-	/* serialized fields */
+	struct save_start save_start;
 	uint32_t last_tick;
 	uint32_t tick;
 	uint32_t pixels[GB_SURF];
 	enum gpu_mode mode;
+	struct save_end save_end;
 };
 
 struct ae_config;
 void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
 		struct ae_config *conf);
 void gpu_update(struct gpu *gpu);
-int gpu_save(const struct gpu *gpu, FILE *f);
-int gpu_restore(struct gpu *gpu, FILE *f);
 void gpu_cleanup(struct gpu *gpu);
 
 #endif

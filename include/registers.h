@@ -1,12 +1,14 @@
 #ifndef INCLUDE_REGISTERS_H_
 #define INCLUDE_REGISTERS_H_
 #include <stdbool.h>
-#include <stdio.h>
 #include <inttypes.h>
+
+#include "save.h"
 
 #pragma pack(push, 1)
 /* all fields are serialized */
 struct registers {
+	struct save_start save_start;
 	struct {
 		union {
 			struct {
@@ -54,11 +56,10 @@ struct registers {
 	};
 	uint16_t pc;
 	uint16_t sp;
+	struct save_end save_end;
 } __attribute__((__packed__));
 #pragma pack(pop)
 
 void registers_init(struct registers *registers);
-int registers_save(const struct registers *registers, FILE *f);
-int registers_restore(struct registers *registers, FILE *f);
 
 #endif /* INCLUDE_REGISTERS_H_ */

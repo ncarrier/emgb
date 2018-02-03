@@ -7,125 +7,69 @@
 #include "log.h"
 #if EMGB_CONSOLE_DEBUGGER
 #include "console_debugger.h"
-#include "log.h"
 #endif /* EMGB_CONSOLE_DEBUGGER */
+#include "log.h"
+#include "save.h"
 
 #define to_gb_from(p, ko) container_of((p), struct gb, ko)
 
-static void gb_save(const struct key_op *key_op)
+static void do_save_restore(struct gb *gb,
+		int (*action)(FILE *f, struct save_start *start,
+		const struct save_end *end), const char *opentype)
 {
+	unsigned i;
 	int ret;
-	struct gb *gb;
+#define MAKE_CHUNK(g, c) {&g->c.save_start, &g->c.save_end, STRINGIFY(c)}
+	struct save_chunk chunks[] = {
+			MAKE_CHUNK(gb, timer),
+			MAKE_CHUNK(gb, registers),
+			MAKE_CHUNK(gb, gpu),
+			MAKE_CHUNK(gb, interrupts),
+			MAKE_CHUNK(gb, memory),
+			MAKE_CHUNK(gb, joypad),
+			MAKE_CHUNK(gb, cpu),
+	};
 	FILE cleanup(cleanup_file)*f = NULL;
 	char cleanup(cleanup_string)*path = NULL;
 
-	gb = to_gb_from(key_op, save);
 	ret = asprintf(&path, "%s.sav", gb->file);
 	if (ret == -1) {
 		path = NULL;
 		ERR("asprintf");
 	}
-	f = fopen(path, "wbe");
+	printf("Save path is %s\n", path);
+	f = fopen(path, opentype);
 	if (f == NULL) {
-		DBG("Save failed: fopen: %m");
+		DBG("Save/restore failed: fopen: %m");
 		return;
 	}
 
-	ret = timer_save(&gb->timer, f);
-	if (ret == -1) {
-		DBG("Save failed writing timer");
-		return;
+	for (i = 0; i < ARRAY_SIZE(chunks); i++) {
+		ret = action(f, chunks[i].start, chunks[i].end);
+		if (ret < 0) {
+			DBG("Save/restore failed on %s: %s", chunks[i].name,
+					strerror(-ret));
+			return;
+		}
 	}
-	ret = registers_save(&gb->registers, f);
-	if (ret == -1) {
-		DBG("Save failed writing registers");
-		return;
-	}
-	ret = gpu_save(&gb->gpu, f);
-	if (ret == -1) {
-		DBG("Save failed writing gpu");
-		return;
-	}
-	ret = interrupt_save(&gb->interrupts, f);
-	if (ret == -1) {
-		DBG("Save failed writing interrupt");
-		return;
-	}
-	ret = memory_save(&gb->memory, f);
-	if (ret == -1) {
-		DBG("Save failed writing memory");
-		return;
-	}
-	ret = joypad_save(&gb->joypad, f);
-	if (ret == -1) {
-		DBG("Save failed writing joypad");
-		return;
-	}
-	ret = cpu_save(&gb->cpu, f);
-	if (ret == -1) {
-		DBG("Save failed writing cpu");
-		return;
-	}
+};
 
-	printf("State saved to %s\n", path);
+static void gb_save(const struct key_op *key_op)
+{
+	struct gb *gb = to_gb_from(key_op, save);
+
+	do_save_restore(gb, save_write_chunk, "wbe");
+
+	printf("State saved\n");
 };
 
 static void gb_restore(const struct key_op *key_op)
 {
-	int ret;
-	struct gb *gb;
-	FILE cleanup(cleanup_file)*f = NULL;
-	char cleanup(cleanup_string)*path = NULL;
+	struct gb *gb = to_gb_from(key_op, restore);
 
-	gb = to_gb_from(key_op, restore);
-	ret = asprintf(&path, "%s.sav", gb->file);
-	if (ret == -1) {
-		path = NULL;
-		ERR("asprintf");
-	}
-	f = fopen(path, "rbe");
-	if (f == NULL) {
-		DBG("Restore failed: fopen: %m");
-		return;
-	}
+	do_save_restore(gb, save_read_chunk, "rbe");
 
-	ret = timer_restore(&gb->timer, f);
-	if (ret == -1) {
-		DBG("Restore failed reading back timer");
-		return;
-	}
-	ret = registers_restore(&gb->registers, f);
-	if (ret == -1) {
-		DBG("Restore failed reading back registers");
-		return;
-	}
-	ret = gpu_restore(&gb->gpu, f);
-	if (ret == -1) {
-		DBG("Restore failed reading back gpu");
-		return;
-	}
-	ret = interrupt_restore(&gb->interrupts, f);
-	if (ret == -1) {
-		DBG("Restore failed reading back interrupts");
-		return;
-	}
-	ret = memory_restore(&gb->memory, f);
-	if (ret == -1) {
-		DBG("Restore failed reading back memory");
-		return;
-	}
-	ret = joypad_restore(&gb->joypad, f);
-	if (ret == -1) {
-		DBG("Restore failed reading back joypad");
-		return;
-	}
-	ret = cpu_restore(&gb->cpu, f);
-	if (ret == -1) {
-		DBG("Restore failed reading back cpu");
-		return;
-	}
-
-	printf("Saved state restored from %s.\n", path);
+	printf("State restored\n");
 };
 
 static void register_keys(struct gb *gb)
