@@ -149,14 +149,13 @@ uint16_t pop(struct memory *memory, uint16_t *sp)
 int memory_save(const struct memory *memory, FILE *f)
 {
 	size_t sret;
-	uint8_t rom_banking_flag;
 
 	sret = fwrite(&memory->mbc_rom_bank, sizeof(memory->mbc_rom_bank), 1,
 			f);
 	if (sret != 1)
 		return -1;
-	rom_banking_flag = memory->rom_banking_flag;
-	sret = fwrite(&rom_banking_flag, sizeof(rom_banking_flag), 1, f);
+	sret = fwrite(&memory->rom_banking_flag,
+			sizeof(memory->rom_banking_flag), 1, f);
 	if (sret != 1)
 		return -1;
 	sret = fwrite(memory->raw, sizeof(memory->raw), 1, f);
@@ -169,15 +168,14 @@ int memory_save(const struct memory *memory, FILE *f)
 int memory_restore(struct memory *memory, FILE *f)
 {
 	size_t sret;
-	uint8_t bool_value;
 
 	sret = fread(&memory->mbc_rom_bank, sizeof(memory->mbc_rom_bank), 1, f);
 	if (sret != 1)
 		return -1;
-	sret = fread(&bool_value, sizeof(bool_value), 1, f);
+	sret = fread(&memory->rom_banking_flag,
+			sizeof(memory->rom_banking_flag), 1, f);
 	if (sret != 1)
 		return -1;
-	memory->rom_banking_flag = bool_value;
 	sret = fread(memory->raw, sizeof(memory->raw), 1, f);
 	if (sret != 1)
 		return -1;

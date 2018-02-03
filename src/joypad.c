@@ -405,14 +405,12 @@ void joypad_handle_event(struct joypad *joypad)
 int joypad_save(const struct joypad *joypad, FILE *f)
 {
 	size_t sret;
-	uint8_t bool_value;
 
-	bool_value = joypad->running;
-	sret = fwrite(&bool_value, sizeof(bool_value), 1, f);
+	sret = fwrite(&joypad->running, sizeof(joypad->running), 1, f);
 	if (sret != 1)
 		return -1;
-	bool_value = joypad->mouse_visible;
-	sret = fwrite(&bool_value, sizeof(bool_value), 1, f);
+	sret = fwrite(&joypad->mouse_visible, sizeof(joypad->mouse_visible), 1,
+			f);
 	if (sret != 1)
 		return -1;
 	sret = fwrite(&joypad->button_key, sizeof(joypad->button_key), 1, f);
@@ -428,16 +426,14 @@ int joypad_save(const struct joypad *joypad, FILE *f)
 int joypad_restore(struct joypad *joypad, FILE *f)
 {
 	size_t sret;
-	uint8_t bool_value;
 
-	sret = fread(&bool_value, sizeof(bool_value), 1, f);
+	sret = fread(&joypad->running, sizeof(joypad->running), 1, f);
 	if (sret != 1)
 		return -1;
-	joypad->running = bool_value;
-	sret = fread(&bool_value, sizeof(bool_value), 1, f);
+	sret = fread(&joypad->mouse_visible, sizeof(joypad->mouse_visible), 1,
+			f);
 	if (sret != 1)
 		return -1;
-	joypad->mouse_visible = bool_value;
 	sret = fread(&joypad->button_key, sizeof(joypad->button_key), 1, f);
 	if (sret != 1)
 		return -1;
