@@ -33,8 +33,10 @@ static void do_save_restore(struct gb *gb, save_action action,
 	FILE cleanup(cleanup_file)*f = NULL;
 	char cleanup(cleanup_string)*path = NULL;
 	const char *name = action == save_write_chunk ? "Save" : "Restore";
+	const char *file;
 
-	ret = asprintf(&path, "%s.sav", gb->file);
+	file = str_matches(gb->file, "-") ? "stdin" : gb->file;
+	ret = asprintf(&path, "%s.sav", file);
 	if (ret == -1) {
 		path = NULL;
 		ERR("asprintf");
@@ -76,8 +78,7 @@ static void register_keys(struct gb *gb)
 
 struct gb *gb_init(const char *file)
 {
-	struct gb *gb = NULL;
-	long rom_size;
+	struct gb *gb;
 
 	gb = calloc(1, sizeof(*gb));
 	if (gb == NULL)
@@ -85,12 +86,9 @@ struct gb *gb_init(const char *file)
 	gb->file = strdup(file);
 	if (gb->file == NULL)
 		ERR("strdup: %m");
-	rom_size = get_file_size_from_path(file);
-	if (rom_size < 0)
-		ERR("get_file_size_from_path: %s", strerror(-rom_size));
 
 	config_init(&gb->config);
-	memory_init(&gb->memory, &gb->timer, rom_size);
+	memory_init(&gb->memory, &gb->timer);
 	rom_init(&gb->memory.rom_bank_0_rom,
 			&gb->memory.switchable_rom_bank_rom,
 			gb->memory.extra_rom_banks, file);

@@ -43,8 +43,7 @@ static void mcb_handle_banking(struct memory *memory, uint16_t addr,
 		memory->mbc_rom_bank = 1;
 }
 
-/* TODO allocate memory at the right size */
-void memory_init(struct memory *memory, struct timer *timer, long rom_size)
+void memory_init(struct memory *memory, struct timer *timer)
 {
 	memset(memory, 0, sizeof(*memory));
 	memory->mbc_rom_bank = 1;

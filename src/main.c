@@ -6,8 +6,6 @@
 #include "console_debugger.h"
 #include "instructions.h"
 
-#define DEFAULT_ROMPATH "C:\\proj\\GB_test\\emgb\\roms\\Tetris.gb"
-
 /*
  *  main loop function
  * retrieve opcode & execute it. update gpu interrupt & timer
@@ -15,7 +13,7 @@
 
 /* int imgui(void *p_s_gb); */
 
-static void gb_loop(const char *fileName)
+static void gb_loop(const char *file_name)
 {
 	struct gb *gb;
 	uint8_t fopcode;
@@ -33,7 +31,7 @@ static void gb_loop(const char *fileName)
 	int ret;
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-	gb = gb_init(fileName);
+	gb = gb_init(file_name);
 	memory = &gb->memory;
 	cpu = &gb->cpu;
 	registers = &gb->registers;
@@ -90,7 +88,7 @@ int main(int ac, char **av)
 	puts("console debugger enabled");
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-	rompath = ac == 1 ? DEFAULT_ROMPATH : av[1];
+	rompath = ac == 1 ? "-" : av[1];
 
 	gb_loop(rompath);
 

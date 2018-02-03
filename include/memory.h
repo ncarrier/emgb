@@ -82,7 +82,7 @@ struct memory {
 } __attribute__((__packed__));
 #pragma pack(pop)
 
-void memory_init(struct memory *memory, struct timer *timer, long rom_size);
+void memory_init(struct memory *memory, struct timer *timer);
 void write16bit(struct memory *memory, uint16_t addr, uint16_t value);
 uint16_t read16bit(struct memory *memory, uint16_t addr);
 uint8_t read8bit(struct memory *memory, uint16_t addr);
