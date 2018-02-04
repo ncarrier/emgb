@@ -834,6 +834,11 @@ static void load_symbols(struct console_debugger *debugger,
 			state = SYMBOLS_PARSER_STATE_DEFINITIONS;
 		switch (state) {
 		case SYMBOLS_PARSER_STATE_LABELS:
+			if (debugger->nb_labels == MAX_LABELS) {
+				printf("No room for more than %d labels.\n",
+						MAX_LABELS);
+				continue;
+			}
 			label = debugger->labels + debugger->nb_labels;
 			ret = sscanf(line, "%02"SCNx8":%04"SCNx16" %s",
 					&label->bank, &label->address,
@@ -846,6 +851,11 @@ static void load_symbols(struct console_debugger *debugger,
 			break;
 		}
 	}
+
+	if (debugger->nb_labels != 0)
+		printf("%u symbols loaded.\n", debugger->nb_labels);
+	else
+		puts("No symbol loaded.");
 }
 
 int console_debugger_init(struct console_debugger *debugger,
