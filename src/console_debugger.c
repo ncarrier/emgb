@@ -541,6 +541,17 @@ static void console_debugger_print(struct console_debugger *debugger)
 	}
 }
 
+static void console_debugger_symbols(struct console_debugger *debugger)
+{
+	unsigned i;
+
+	for (i = 0; i < debugger->nb_labels; i++)
+		printf("\e[1m%s\e[0m: bank %"PRIx8", address %"PRIx16"\n",
+				debugger->labels[i].name,
+				debugger->labels[i].bank,
+				debugger->labels[i].address);
+}
+
 static struct debugger_command commands[] = {
 	{
 		.fn = console_debugger_assembler,
@@ -625,6 +636,12 @@ static struct debugger_command commands[] = {
 			"\t\t\texamples: print pc\n"
 			"\t\t\t          print *sp-0x02",
 		.argc = 2,
+	},
+	{
+		.fn = console_debugger_symbols,
+		.name = "symbols",
+		.help = "List available symbol names.",
+		.argc = 1,
 	},
 
 	{ .name = NULL } /* NULL guard */
@@ -819,12 +836,6 @@ static void load_symbols(struct console_debugger *debugger,
 			break;
 		}
 	}
-
-	for (i = 0; i < debugger->nb_labels; i++)
-		printf("label %u: bank %"PRIx8", address %"PRIx16", name %s\n",
-				i, debugger->labels[i].bank,
-				debugger->labels[i].address,
-				debugger->labels[i].name);
 }
 
 int console_debugger_init(struct console_debugger *debugger,
