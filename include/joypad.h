@@ -40,6 +40,7 @@ struct joypad {
 	struct save_end save_end;
 };
 
+void joypad_reset(struct joypad *joypad);
 void joypad_init(struct joypad *joypad, struct config *config,
 		struct spec_reg *spec_reg,
 		struct joystick_config *joystick_config);

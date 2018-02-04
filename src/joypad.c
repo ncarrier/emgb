@@ -40,6 +40,11 @@ static void get_pad_key_from_config(SDL_Keycode *sym, struct ae_config *config,
 		*sym = default_sym;
 }
 
+void joypad_reset(struct joypad *joypad)
+{
+	joypad->button_dir = joypad->button_key = 0x0f;
+}
+
 void joypad_init(struct joypad *pad, struct config *config,
 		struct spec_reg *spec_reg,
 		struct joystick_config *joystick_config)
@@ -53,8 +58,7 @@ void joypad_init(struct joypad *pad, struct config *config,
 	pad->spec_reg = spec_reg;
 	pad->joystick_config = joystick_config;
 	pad->running = true;
-	pad->button_key = 0x0f;
-	pad->button_dir = 0x0f;
+	joypad_reset(pad);
 
 	width = ae_config_get_int(aec, CONFIG_WINDOW_WIDTH,
 			CONFIG_WINDOW_WIDTH_DEFAULT);

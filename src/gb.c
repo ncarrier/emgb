@@ -50,7 +50,16 @@ static void gb_save(const struct key_op *key_op)
 
 static void gb_restore(const struct key_op *key_op)
 {
-	do_save_restore(to_gb_from(key_op, restore), save_read_chunk, "rbe");
+	struct gb *gb;
+
+	gb = to_gb_from(key_op, restore);
+	do_save_restore(gb, save_read_chunk, "rbe");
+
+	/*
+	 * if save was performed when a button was pressed, the button won't be
+	 * released when the restore occurs, hence the need for this reset
+	 */
+	joypad_reset(&gb->joypad);
 };
 
 static void register_keys(struct gb *gb)
