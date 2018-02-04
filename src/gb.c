@@ -91,8 +91,6 @@ static int init_file_paths(struct gb *gb, const char *file)
 	if (ret == -1)
 		ERR("asprintf");
 
-	DBG("rom %s, save %s", gb->rom_file, gb->save_file);
-
 	return 0;
 }
 

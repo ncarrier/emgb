@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	printf("file name: %s\n", filename);
 	rom_display_header(&rom.rom_header);
 	if (dump)
 		printf("rom header content:\n%s\n",
