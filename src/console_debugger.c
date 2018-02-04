@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include <string.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -736,12 +737,104 @@ static int console_debugger_get_terminal_size(struct console_debugger *debugger)
 	return 0;
 }
 
+static char *get_symbol_file(const char *file_name)
+{
+	char *res;
+	size_t len;
+
+	len = strlen(file_name);
+	/* + 1 because if ext is .gb, we need an extra char to fit in .sym */
+	res = calloc(len + 1, sizeof(*res));
+	if (res == NULL)
+		ERR("Cannot allocate symbol file name.");
+	/* 2 == .gb */
+	if (str_matches_suffix(file_name, ".sav"))
+		len -= 4;
+	snprintf(res, len + 2, "%.*ssym", (int)(len - 2), file_name);
+
+	return res;
+}
+
+enum symbols_parser_state {
+	SYMBOLS_PARSER_STATE_START,
+	SYMBOLS_PARSER_STATE_LABELS,
+	SYMBOLS_PARSER_STATE_SYMBOLS,
+	SYMBOLS_PARSER_STATE_BREAKPOINTS,
+	SYMBOLS_PARSER_STATE_DEFINITIONS,
+};
+
+static void load_symbols(struct console_debugger *debugger,
+		const char *symbol_file)
+{
+	FILE *cleanup(cleanup_file)file = NULL;
+	ssize_t nread;
+	size_t len;
+	char *cleanup(cleanup_string)line = NULL;
+	unsigned i;
+	enum symbols_parser_state state;
+	struct label *label;
+	int ret;
+
+	file = fopen(symbol_file, "rbe");
+	if (file == NULL) {
+		printf("Can't open symbol file %s: %m\n", symbol_file);
+		return;
+	}
+
+	debugger->nb_labels = 0;
+	state = SYMBOLS_PARSER_STATE_START;
+	while ((nread = getline(&line, &len, file)) != -1) {
+		/* right strip white spaces */
+		for (i = nread - 1; i > 0; i--) {
+			if (isspace(line[i]))
+				line[i] = '\0';
+			else
+				break;
+		}
+		nread = i;
+		/* strip comments */
+		for (i = 0; i < len; i++)
+			if (line[i] == ';')
+				line[i] = '\0';
+		len = i;
+		if (str_matches_prefix(line, "[labels]"))
+			state = SYMBOLS_PARSER_STATE_LABELS;
+		else if (str_matches_prefix(line, "[symbols]"))
+			state = SYMBOLS_PARSER_STATE_SYMBOLS;
+		else if (str_matches_prefix(line, "[breakpoints]"))
+			state = SYMBOLS_PARSER_STATE_BREAKPOINTS;
+		else if (str_matches_prefix(line, "[definitions]"))
+			state = SYMBOLS_PARSER_STATE_DEFINITIONS;
+		switch (state) {
+		case SYMBOLS_PARSER_STATE_LABELS:
+			label = debugger->labels + debugger->nb_labels;
+			ret = sscanf(line, "%02"SCNx8":%04"SCNx16" %s",
+					&label->bank, &label->address,
+					label->name);
+			if (ret == 3)
+				debugger->nb_labels++;
+			break;
+		default:
+			/* not handled yet */
+			break;
+		}
+	}
+
+	for (i = 0; i < debugger->nb_labels; i++)
+		printf("label %u: bank %"PRIx8", address %"PRIx16", name %s\n",
+				i, debugger->labels[i].bank,
+				debugger->labels[i].address,
+				debugger->labels[i].name);
+}
+
 int console_debugger_init(struct console_debugger *debugger,
 		struct registers *registers, struct memory *memory,
-		struct ae_config *config)
+		struct ae_config *config, const char *file_name)
 {
 	struct editline *el = debugger->editline;
+	char *cleanup(cleanup_string)symbol_file = NULL;
 
+	symbol_file = get_symbol_file(file_name);
 	memset(debugger, 0, sizeof(*debugger));
 	debugger->registers = registers;
 	debugger->memory = memory;
@@ -779,6 +872,7 @@ int console_debugger_init(struct console_debugger *debugger,
 	init_registers_map(debugger);
 	debugger->active = ae_config_get_int(config, CONFIG_DEBUGGER_ACTIVE,
 			CONFIG_DEBUGGER_ACTIVE_DEFAULT);
+	load_symbols(debugger, symbol_file);
 	printf("program's pid is %jd\n", (intmax_t)getpid());
 
 	return 0;

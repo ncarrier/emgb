@@ -29,6 +29,14 @@ enum breakpoint_status {
 	BREAKPOINT_STATUS_DISABLED,
 };
 
+#define MAX_LABEL_NAME_LEN 200
+#define MAX_LABELS 1000
+struct label {
+	uint8_t bank;
+	uint16_t address;
+	char name[MAX_LABEL_NAME_LEN];
+};
+
 struct breakpoint {
 	uint16_t pc;
 	enum breakpoint_status status;
@@ -63,11 +71,13 @@ struct console_debugger {
 		unsigned short columns;
 		unsigned short rows;
 	} terminal;
+	struct label labels[MAX_LABELS];
+	unsigned nb_labels;
 };
 
 int console_debugger_init(struct console_debugger *debugger,
 		struct registers *registers, struct memory *memory,
-		struct ae_config *config);
+		struct ae_config *config, const char *file_name);
 void console_debugger_print_registers(const struct registers *registers);
 int console_debugger_update(struct console_debugger *debugger);
 void console_debugger_cleanup(struct console_debugger *debugger);

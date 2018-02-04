@@ -38,7 +38,7 @@ static void gb_loop(const char *file_name)
 	joypad = &gb->joypad;
 #if EMGB_CONSOLE_DEBUGGER
 	ret = console_debugger_init(&debugger, registers, memory,
-			&gb->config.config);
+			&gb->config.config, file_name);
 	if (ret < 0)
 		ERR("console_debugger_init: %s", strerror(-ret));
 #endif /* EMGB_CONSOLE_DEBUGGER */
@@ -82,15 +82,15 @@ static void gb_loop(const char *file_name)
 
 int main(int ac, char **av)
 {
-	const char *rompath;
+	const char *file_name;
 
 #if EMGB_CONSOLE_DEBUGGER
 	puts("console debugger enabled");
 #endif /* EMGB_CONSOLE_DEBUGGER */
 
-	rompath = ac == 1 ? "-" : av[1];
+	file_name = ac == 1 ? "-" : av[1];
 
-	gb_loop(rompath);
+	gb_loop(file_name);
 
 	return EXIT_SUCCESS;
 }
