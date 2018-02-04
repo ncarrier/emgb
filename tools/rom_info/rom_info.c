@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 		usage(EXIT_FAILURE);
 	}
 
-	filename = argv[1];
+	filename = strcmp(argv[1], "-") == 0 ? "stdin" : argv[1];
 	ret = rom_init(&rom, NULL, NULL, filename);
 	if (ret != 0) {
 		fprintf(stderr, "initRom failed\n");
