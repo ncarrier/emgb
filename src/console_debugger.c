@@ -550,6 +550,11 @@ static void console_debugger_print(struct console_debugger *debugger)
 	}
 }
 
+static void console_debugger_reset(struct console_debugger *debugger)
+{
+	registers_init(debugger->registers);
+}
+
 static void console_debugger_symbols(struct console_debugger *debugger)
 {
 	unsigned i;
@@ -646,6 +651,12 @@ static struct debugger_command commands[] = {
 			"\t\t\texamples: print pc\n"
 			"\t\t\t          print *sp-0x02",
 		.argc = 2,
+	},
+	{
+		.fn = console_debugger_reset,
+		.name = "reset",
+		.help = "Reset registers, thus restarting the rom.",
+		.argc = 1,
 	},
 	{
 		.fn = console_debugger_symbols,
