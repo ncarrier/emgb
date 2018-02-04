@@ -168,22 +168,30 @@ static void console_debugger_assembler(struct console_debugger *debugger)
 
 static void console_debugger_breakpoint(struct console_debugger *debugger)
 {
-	long adress;
+	long address;
 	struct command *command;
 	char *endptr;
-	const char *adress_str;
+	const char *address_str;
 	struct breakpoint *breakpoint;
+	unsigned i;
 
 	command = &debugger->command;
-	adress_str = command->argv[1];
+	address_str = command->argv[1];
 
-	adress = strtol(adress_str, &endptr, 0);
-	if (*adress_str == '\0' || *endptr != '\0') {
-		printf("Invalid pointer adress \"%s\"\n", adress_str);
-		return;
+	address = strtol(address_str, &endptr, 0);
+	if (*address_str == '\0' || *endptr != '\0') {
+		address = -1;
+		/* try to find it in symbols */
+		for (i = 0; i < debugger->nb_labels; i++)
+			if (str_matches(debugger->labels[i].name, address_str))
+				address = debugger->labels[i].address;
+		if (address == -1) {
+			printf("Invalid pointer address \"%s\"\n", address_str);
+			return;
+		}
 	}
-	if (adress < 0 || adress > UINT16_MAX) {
-		printf("Breakpoint adress must be in range [0, %"PRIu16"]\n",
+	if (address < 0 || address > UINT16_MAX) {
+		printf("Breakpoint address must be in range [0, %"PRIu16"]\n",
 				UINT16_MAX);
 		return;
 	}
@@ -193,11 +201,12 @@ static void console_debugger_breakpoint(struct console_debugger *debugger)
 		return;
 	}
 
-	printf("Breakpoint %u set at adress %#lx\n",
-			(unsigned)(breakpoint - debugger->breakpoints), adress);
+	printf("Breakpoint %u set at address %#lx\n",
+			(unsigned) (breakpoint - debugger->breakpoints),
+			address);
 
 	*breakpoint = (struct breakpoint) {
-		.pc = adress,
+		.pc = address,
 		.status = BREAKPOINT_STATUS_ENABLED,
 	};
 }
@@ -562,7 +571,8 @@ static struct debugger_command commands[] = {
 	{
 		.fn = console_debugger_breakpoint,
 		.name = "breakpoint",
-		.help = "Places a breakpoint at the given pc value.",
+		.help = "Places a breakpoint at the given pc value, or symbol "
+				"name.",
 		.argc = 2,
 	},
 	{
@@ -1001,6 +1011,7 @@ static void console_debugger_check_breakpoints(
 		struct console_debugger *debugger)
 {
 	unsigned i;
+	unsigned j;
 	uint16_t pc;
 
 	for (i = 0; i < EMGB_CONSOLE_DEBUGGER_MAX_BREAKPOINTS; i++) {
@@ -1009,7 +1020,12 @@ static void console_debugger_check_breakpoints(
 			continue;
 
 		debugger->active = true;
-		printf("Breakpoint %d hit (pc = %#.04"PRIx16")\n", i, pc);
+		printf("Breakpoint %d hit (pc = %#.04"PRIx16, i, pc);
+		for (j = 0; j < debugger->nb_labels; j++)
+			if (debugger->labels[j].address == pc)
+				printf(", label = %s",
+						debugger->labels[j].name);
+		puts(")");
 		break;
 	}
 }
