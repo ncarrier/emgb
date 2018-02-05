@@ -358,11 +358,16 @@ static struct debugger_command commands[];
 static void console_debugger_help(struct console_debugger *debugger)
 {
 	struct debugger_command *dc;
+	unsigned i;
+	const struct key_action **ka;
 
 	puts("Available commands:");
 	for (dc = commands; dc->name != NULL; dc++)
-		printf("\t%s: %d argument%s\n\t\t%s\n", dc->name, dc->argc,
-				dc->argc > 1 ? "s" : "", dc->help);
+		printf("\t\e[1m%s\e[0m: %d argument%s\n\t\t%s\n", dc->name,
+				dc->argc, dc->argc > 1 ? "s" : "", dc->help);
+	for (i = 0, ka = debugger->key_action; i < KEY_ACTIONS_MAX; i++, ka++)
+		printf("\t\e[1m%s\e[0m: 1 argument\n\t\t%s\n", (*ka)->command,
+				(*ka)->help);
 	puts("\nCommand name can be entered partially, if non ambiguous.");
 }
 
@@ -623,7 +628,7 @@ static struct debugger_command commands[] = {
 	{
 		.fn = console_debugger_layout,
 		.name = "layout",
-		.help = "Toggles display of the HUD.\n",
+		.help = "Toggles display of the HUD.",
 		.argc = 1,
 	},
 	{
