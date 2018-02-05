@@ -569,6 +569,8 @@ static void console_debugger_symbols(struct console_debugger *debugger)
 				debugger->labels[i].name,
 				debugger->labels[i].bank,
 				debugger->labels[i].address);
+	if (debugger->nb_labels == 0)
+		puts("No symbols available.");
 }
 
 static struct debugger_command commands[] = {
@@ -1120,6 +1122,9 @@ static void display_disassembly(struct console_debugger *debugger)
 				printf("%s", value + j);
 			}
 		}
+		for (j = 0; j < debugger->nb_labels; j++)
+			if (debugger->labels[j].address == pc)
+				printf("\e[33G%s", debugger->labels[j].name);
 		puts("");
 		if (i == 0)
 			restore_color();
