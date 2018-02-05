@@ -6,10 +6,8 @@
 #include <SDL2/SDL_events.h>
 
 #include "save.h"
+#include "key_action.h"
 
-#define KEY_ACTIONS_MAX 2
-
-struct key_action;
 struct config;
 struct spec_reg;
 struct joystick_config;

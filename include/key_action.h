@@ -4,6 +4,8 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_events.h>
 
+#define KEY_ACTIONS_MAX 2
+
 struct key_action {
 	const char *command;
 	const char *help;

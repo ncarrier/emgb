@@ -65,10 +65,15 @@ static void gb_restore(const struct key_action *key_action)
 static void register_keys(struct gb *gb)
 {
 	gb->save = (struct key_action) {
+		.command = "save",
+		.help = "Create a save of the current game state, to be "
+				"restored later.",
 		.sym = SDLK_F1,
 		.action = gb_save,
 	};
 	gb->restore = (struct key_action) {
+		.command = "restore",
+		.help = "Restore a game state, previously saved.",
 		.sym = SDLK_F2,
 		.action = gb_restore,
 	};

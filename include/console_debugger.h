@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "config.h"
 #include "registers.h"
+#include "key_action.h"
 
 #define EMGB_CONSOLE_DEBUGGER_PROMPT "egd > "
 #define EMGB_CONSOLE_DEBUGGER_PROMPT2 "... > "
@@ -73,6 +74,7 @@ struct console_debugger {
 	} terminal;
 	struct label labels[MAX_LABELS];
 	unsigned nb_labels;
+	const struct key_action *key_action[KEY_ACTIONS_MAX];
 };
 
 int console_debugger_init(struct console_debugger *debugger,
@@ -80,6 +82,8 @@ int console_debugger_init(struct console_debugger *debugger,
 		struct ae_config *config, const char *file_name);
 void console_debugger_print_registers(const struct registers *registers);
 int console_debugger_update(struct console_debugger *debugger);
+int console_debugger_register_key_action(struct console_debugger *debugger,
+		const struct key_action *key_action);
 void console_debugger_cleanup(struct console_debugger *debugger);
 
 #endif /* CONSOLE_DEBUGGER_H */

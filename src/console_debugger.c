@@ -994,6 +994,9 @@ static int console_debugger_execute(struct console_debugger *debugger)
 		return 0;
 	}
 
+	if (key_action_handle(debugger->key_action, SDLK_UNKNOWN, name))
+		return 0;
+
 	printf("\"%s\": command not found\n", command->argv[0]);
 
 	return 0;
@@ -1278,6 +1281,12 @@ int console_debugger_update(struct console_debugger *debugger)
 	}
 
 	return 0;
+}
+
+int console_debugger_register_key_action(struct console_debugger *debugger,
+		const struct key_action *key_action)
+{
+	return key_action_register(debugger->key_action, key_action);
 }
 
 void console_debugger_cleanup(struct console_debugger *debugger)

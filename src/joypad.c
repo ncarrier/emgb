@@ -89,18 +89,7 @@ void joypad_init(struct joypad *pad, struct config *config,
 int joypad_register_key_action(struct joypad *joypad,
 		const struct key_action *key_action)
 {
-	unsigned i;
-
-	for (i = 0; i < KEY_ACTIONS_MAX; i++)
-		if (joypad->key_action[i] == NULL)
-			break;
-
-	if (i == KEY_ACTIONS_MAX)
-		ERR("No memory left for registering key op %s",
-				SDL_GetKeyName(key_action->sym));
-	joypad->key_action[i] = key_action;
-
-	return 0;
+	return key_action_register(joypad->key_action, key_action);
 }
 
 static void key_down(struct joypad *joypad)
@@ -139,31 +128,12 @@ static void key_down(struct joypad *joypad)
 	}
 }
 
-/* returns true if key was handled, false otherwise */
-static bool handle_key_action(struct joypad *joypad, SDL_Keycode sym)
-{
-	unsigned i;
-	const struct key_action *key_action;
-
-	for (i = 0; i < KEY_ACTIONS_MAX; i++) {
-		key_action = joypad->key_action[i];
-		if (key_action == NULL)
-			break;
-		if (key_action->sym == sym) {
-			key_action->action(key_action);
-			return true;
-		}
-	}
-
-	return false;
-}
-
 static void key_up(struct joypad *joypad)
 {
 	SDL_Keycode sym;
 
 	sym = joypad->event.key.keysym.sym;
-	if (handle_key_action(joypad, sym))
+	if (key_action_handle(joypad->key_action, sym, NULL))
 		return;
 
 	if (sym == joypad->sym_a)

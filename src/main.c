@@ -41,6 +41,8 @@ static void gb_loop(const char *file_name)
 			&gb->config.config, file_name);
 	if (ret < 0)
 		ERR("console_debugger_init: %s", strerror(-ret));
+	console_debugger_register_key_action(&debugger, &gb->save);
+	console_debugger_register_key_action(&debugger, &gb->restore);
 #endif /* EMGB_CONSOLE_DEBUGGER */
 	gb->stopdbg = false;
 #ifdef IMDBG
