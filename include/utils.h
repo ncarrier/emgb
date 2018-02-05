@@ -28,11 +28,17 @@
 
 static inline bool str_matches(const char *s1, const char *s2)
 {
+	if (s1 == NULL || s2 == NULL)
+		return false;
+
 	return strcmp(s1, s2) == 0;
 }
 
 static inline bool str_matches_prefix(const char *s, const char *prefix)
 {
+	if (s == NULL || prefix == NULL)
+		return false;
+
 	return strncmp(s, prefix, strlen(prefix)) == 0;
 }
 
@@ -41,6 +47,9 @@ static inline bool str_matches_suffix(const char *s, const char *suffix)
 	size_t suf_len;
 	size_t str_len;
 	size_t offset;
+
+	if (s == NULL || suffix == NULL)
+		return false;
 
 	suf_len = strlen(suffix);
 	str_len = strlen(s);
