@@ -43,16 +43,16 @@ static void do_save_restore(struct gb *gb, save_action action,
 		action(chunks + i, f);
 };
 
-static void gb_save(const struct key_op *key_op)
+static void gb_save(const struct key_action *key_action)
 {
-	do_save_restore(to_gb_from(key_op, save), save_write_chunk, "wbe");
+	do_save_restore(to_gb_from(key_action, save), save_write_chunk, "wbe");
 };
 
-static void gb_restore(const struct key_op *key_op)
+static void gb_restore(const struct key_action *key_action)
 {
 	struct gb *gb;
 
-	gb = to_gb_from(key_op, restore);
+	gb = to_gb_from(key_action, restore);
 	do_save_restore(gb, save_read_chunk, "rbe");
 
 	/*
@@ -64,16 +64,16 @@ static void gb_restore(const struct key_op *key_op)
 
 static void register_keys(struct gb *gb)
 {
-	gb->save = (struct key_op) {
+	gb->save = (struct key_action) {
 		.sym = SDLK_F1,
 		.action = gb_save,
 	};
-	gb->restore = (struct key_op) {
+	gb->restore = (struct key_action) {
 		.sym = SDLK_F2,
 		.action = gb_restore,
 	};
-	joypad_register_key_op(&gb->joypad, &gb->save);
-	joypad_register_key_op(&gb->joypad, &gb->restore);
+	joypad_register_key_action(&gb->joypad, &gb->save);
+	joypad_register_key_action(&gb->joypad, &gb->restore);
 }
 
 static int init_file_paths(struct gb *gb, const char *file)

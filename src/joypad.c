@@ -6,6 +6,8 @@
 #include "special_registers.h"
 #include "joystick_config.h"
 #include "memory.h"
+
+#include "key_action.h"
 #include "interrupt.h"
 #include "video_common.h"
 #include "utils.h"
@@ -84,18 +86,19 @@ void joypad_init(struct joypad *pad, struct config *config,
 			CONFIG_JOYPAD_0_START_DEFAULT);
 }
 
-int joypad_register_key_op(struct joypad *joypad, const struct key_op *key_op)
+int joypad_register_key_action(struct joypad *joypad,
+		const struct key_action *key_action)
 {
 	unsigned i;
 
-	for (i = 0; i < KEY_OP_MAX; i++)
-		if (joypad->key_op[i] == NULL)
+	for (i = 0; i < KEY_ACTIONS_MAX; i++)
+		if (joypad->key_action[i] == NULL)
 			break;
 
-	if (i == KEY_OP_MAX)
+	if (i == KEY_ACTIONS_MAX)
 		ERR("No memory left for registering key op %s",
-				SDL_GetKeyName(key_op->sym));
-	joypad->key_op[i] = key_op;
+				SDL_GetKeyName(key_action->sym));
+	joypad->key_action[i] = key_action;
 
 	return 0;
 }
@@ -136,24 +139,33 @@ static void key_down(struct joypad *joypad)
 	}
 }
 
-static void key_up(struct joypad *joypad)
+/* returns true if key was handled, false otherwise */
+static bool handle_key_action(struct joypad *joypad, SDL_Keycode sym)
 {
 	unsigned i;
-	SDL_Keycode sym;
-	union SDL_Event *event;
-	const struct key_op *key_op;
+	const struct key_action *key_action;
 
-	event = &joypad->event;
-	sym = event->key.keysym.sym;
-	for (i = 0; i < KEY_OP_MAX; i++) {
-		key_op = joypad->key_op[i];
-		if (key_op == NULL)
+	for (i = 0; i < KEY_ACTIONS_MAX; i++) {
+		key_action = joypad->key_action[i];
+		if (key_action == NULL)
 			break;
-		if (key_op->sym == sym) {
-			key_op->action(key_op);
-			return;
+		if (key_action->sym == sym) {
+			key_action->action(key_action);
+			return true;
 		}
 	}
+
+	return false;
+}
+
+static void key_up(struct joypad *joypad)
+{
+	SDL_Keycode sym;
+
+	sym = joypad->event.key.keysym.sym;
+	if (handle_key_action(joypad, sym))
+		return;
+
 	if (sym == joypad->sym_a)
 		joypad->button_key |= BUTTON_A_FLAG;
 	else if (sym == joypad->sym_b)

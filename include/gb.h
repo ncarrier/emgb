@@ -11,6 +11,7 @@
 #include "cpu.h"
 #include "joystick_config.h"
 #include "config.h"
+#include "key_action.h"
 
 struct gb {
 	struct timer timer;
@@ -25,8 +26,8 @@ struct gb {
 	char *rom_file;
 	char *save_file;
 	bool stopdbg;
-	struct key_op save;
-	struct key_op restore;
+	struct key_action save;
+	struct key_action restore;
 };
 
 struct gb *gb_init(const char *file_name);
