@@ -46,13 +46,18 @@ void interrupt_update(struct interrupts *interrupts)
 	registers = interrupts->registers;
 	if (spec_reg->ifl & INT_JOYPAD)
 		cpu->stopped = false;
-	cpu->halted = false;
-	if (!interrupts->inter_master || !memory->interrupt_enable
-			|| !spec_reg->ifl)
+	if (!interrupts->inter_master && !cpu->halted)
 		return;
-	inter = memory->interrupt_enable & spec_reg->ifl;
-	if (inter != 0)
+	inter = memory->interrupt_enable & spec_reg->ifl & 0x1f;
+	if (inter == 0)
+		return;
+	if (cpu->halted) {
 		cpu->halted = false;
+		registers->pc++;
+		if (!interrupts->inter_master)
+			return;
+	}
+	interrupts->inter_master = false;
 	if (inter & INT_VBLANK) {
 		spec_reg->ifl &= ~INT_VBLANK;
 		interrupt_handle(memory, interrupts, registers, IT_VBLANK);
@@ -64,7 +69,7 @@ void interrupt_update(struct interrupts *interrupts)
 	}
 	if (inter & INT_TIMER) {
 		interrupt_handle(memory, interrupts, registers, IT_TIMER);
-		/*			printf("TIMER interrupt\n"); */
+		printf("TIMER interrupt\n");
 		spec_reg->ifl &= ~INT_TIMER;
 	}
 	if (inter & INT_JOYPAD) {
