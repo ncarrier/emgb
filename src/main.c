@@ -70,6 +70,7 @@ static void gb_loop(const char *file_name)
 		}
 		interrupt_update(&gb->interrupts);
 		timer_update(&gb->timer, cycles);
+		memory_update(&gb->memory, cycles);
 	}
 #ifdef IMDBG
 	if (thr != NULL) {

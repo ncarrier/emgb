@@ -26,6 +26,7 @@ struct memory {
 	struct save_start save_start;
 	uint8_t mbc_rom_bank;
 	bool rom_banking_flag;
+	int div_counter;
 	union {
 		struct {
 			/* TODO rename fields of the two first unions */
@@ -85,6 +86,7 @@ struct memory {
 void memory_init(struct memory *memory, struct timer *timer);
 void write16bit(struct memory *memory, uint16_t addr, uint16_t value);
 uint16_t read16bit(struct memory *memory, uint16_t addr);
+void memory_update(struct memory *mem, unsigned cycles);
 uint8_t read8bit(struct memory *memory, uint16_t addr);
 void write8bit(struct memory *memory, uint16_t addr, uint8_t value);
 void push(struct memory *memory, uint16_t *sp, uint16_t value);

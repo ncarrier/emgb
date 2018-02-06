@@ -49,6 +49,9 @@ void memory_init(struct memory *memory, struct timer *timer)
 	memory->mbc_rom_bank = 1;
 	memory->timer = timer;
 
+	memory->div_counter = 0xff;
+
+	/* TODO rewrite what follows with direct spec_reg writes */
 	write8bit(memory, 0xFF05, 0x00);
 	write8bit(memory, 0xFF06, 0x00);
 	write8bit(memory, 0xFF07, 0x08);
@@ -98,21 +101,26 @@ uint16_t read16bit(struct memory *memory, uint16_t addr)
 	return res;
 }
 
-static void refresh_memory(struct memory *mem, uint16_t addr)
-{
-	if (addr == SPECIAL_REGISTER_DIV)
-		/* TODO, doesn't correspond to the documentation */
-		mem->spec_reg.div = rand();
-}
-
 static bool in_switchable_rom_bank(uint16_t addr)
 {
 	return addr >= 0x4000 && addr < 0x8000;
 }
 
+void memory_update(struct memory *mem, unsigned cycles)
+{
+	if (mem->div_counter < (int)cycles) {
+		if (mem->spec_reg.div == 0xff)
+			mem->spec_reg.div = 0;
+		else
+			mem->spec_reg.div++;
+		mem->div_counter += 0x100 - cycles;
+	} else {
+		mem->div_counter -= cycles;
+	}
+}
+
 uint8_t read8bit(struct memory *mem, uint16_t addr)
 {
-	refresh_memory(mem, addr);
 	if (in_switchable_rom_bank(addr) && mem->mbc_rom_bank != 0)
 		return mem->extra_rom_banks[(mem->mbc_rom_bank - 2)
 				* ROM_BANK_SIZE + addr];
