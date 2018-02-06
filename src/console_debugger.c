@@ -789,7 +789,7 @@ static char *get_symbol_file(const char *file_name)
 
 	len = strlen(file_name);
 	/* + 1 because if ext is .gb, we need an extra char to fit in .sym */
-	res = calloc(len + 1, sizeof(*res));
+	res = calloc(len + 10, sizeof(*res));
 	if (res == NULL)
 		ERR("Cannot allocate symbol file name.");
 	/* 2 == .gb */
@@ -838,10 +838,10 @@ static void load_symbols(struct console_debugger *debugger,
 		}
 		nread = i;
 		/* strip comments */
-		for (i = 0; i < len; i++)
+		for (i = 0; i < nread; i++)
 			if (line[i] == ';')
 				line[i] = '\0';
-		len = i;
+		nread = i;
 		if (str_matches_prefix(line, "[labels]"))
 			state = SYMBOLS_PARSER_STATE_LABELS;
 		else if (str_matches_prefix(line, "[symbols]"))
