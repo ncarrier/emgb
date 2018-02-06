@@ -68,7 +68,6 @@ void interrupt_update(struct interrupts *interrupts)
 		spec_reg->ifl &= ~INT_TIMER;
 	}
 	if (inter & INT_JOYPAD) {
-		cpu->stopped = false;
 		printf("JOYPAD interrupt\n");
 		interrupt_handle(memory, interrupts, registers, IT_JOYPAD);
 		spec_reg->ifl &= ~INT_JOYPAD;
