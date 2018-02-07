@@ -584,7 +584,7 @@ function generate_base_scf_code() {
 
 function generate_base_stop_code() {
 	cat <<here_doc_delim
-	s_gb->cpu.stopped = true;
+	//s_gb->cpu.stopped = true;
 here_doc_delim
 }
 
