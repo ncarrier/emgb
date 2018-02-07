@@ -983,8 +983,8 @@ static int console_debugger_execute(struct console_debugger *debugger)
 	command = &debugger->command;
 	assert(command->argc >= 0);
 
+	name = command->argv[0];
 	for (dc = commands; dc->name != NULL; dc++) {
-		name = command->argv[0];
 		diff_char = str_diff_chr(name, dc->name);
 		if (*diff_char != '\0')
 			continue;
