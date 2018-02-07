@@ -57,6 +57,22 @@ struct lcdc {
 } __attribute__((__packed__));
 #pragma pack(pop)
 
+union interrupt_flags {
+	struct {
+		bool vblank:1;
+		bool lcdstat:1;
+		bool timer:1;
+		bool serial:1;
+		bool joypad:1;
+
+		uint8_t padding_ifl_flags:3;
+	};
+	struct {
+		uint8_t raw:5;
+		uint8_t padding_raw:3;
+	};
+};
+
 #pragma pack(push, 1)
 struct spec_reg {
 	/* joypad state */
@@ -81,7 +97,7 @@ struct spec_reg {
 		};
 	} tac;
 	uint8_t padding_ff08_0e[7];
-	uint8_t ifl; /*  0xff0fu */
+	union interrupt_flags ifl_flags; /* 0xff0fu */
 	uint8_t nr10; /*  0xff10u */
 	uint8_t nr11; /*  0xff11u */
 	uint8_t nr12; /*  0xff12u */

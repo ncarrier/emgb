@@ -5,12 +5,6 @@
 
 #include "save.h"
 
-#define INT_VBLANK (1 << 0)
-#define INT_LCDSTAT (1 << 1)
-#define INT_TIMER (1 << 2)
-#define INT_SERIAL (1 << 3)
-#define INT_JOYPAD (1 << 4)
-
 struct memory;
 struct cpu;
 struct spec_reg;

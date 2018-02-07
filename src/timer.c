@@ -37,7 +37,7 @@ void timer_update(struct timer *timer, unsigned cycles)
 	timer->timer_count -= period;
 	if (timer->spec_reg->tima == 0xffu) {
 		timer->spec_reg->tima = timer->spec_reg->tma;
-		timer->spec_reg->ifl |= INT_TIMER;
+		timer->spec_reg->ifl_flags.timer = true;
 	} else {
 		timer->spec_reg->tima++;
 	}

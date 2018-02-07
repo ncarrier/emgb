@@ -102,28 +102,28 @@ static void key_down(struct joypad *joypad)
 	if (sym == SDLK_ESCAPE) {
 		joypad->running = false;
 	} else if (sym == joypad->sym_a) {
-		spec_reg->ifl |= INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = true;
 		joypad->button_key &= ~BUTTON_A_FLAG;
 	} else if (sym == joypad->sym_b) {
-		spec_reg->ifl |= INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = true;
 		joypad->button_key &= ~BUTTON_B_FLAG;
 	} else if (sym == joypad->sym_select) {
-		spec_reg->ifl |= INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = true;
 		joypad->button_key &= ~BUTTON_SELECT_FLAG;
 	} else if (sym == joypad->sym_start) {
-		spec_reg->ifl |= INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = true;
 		joypad->button_key &= ~BUTTON_START_FLAG;
 	} else if (sym == joypad->sym_down) {
-		spec_reg->ifl |= INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = true;
 		joypad->button_dir &= ~BUTTON_DOWN_FLAG;
 	} else if (sym == joypad->sym_up) {
-		spec_reg->ifl |= INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = true;
 		joypad->button_dir &= ~BUTTON_UP_FLAG;
 	} else if (sym == joypad->sym_left) {
-		spec_reg->ifl |= INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = true;
 		joypad->button_dir &= ~BUTTON_LEFT_FLAG;
 	} else if (sym == joypad->sym_right) {
-		spec_reg->ifl |= INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = true;
 		joypad->button_dir &= ~BUTTON_RIGHT_FLAG;
 	}
 }
@@ -201,7 +201,7 @@ static void joy_device_removed(struct joypad *joypad)
 
 static void button_down(struct joypad *joypad, enum gb_button button)
 {
-	joypad->spec_reg->ifl |= INT_JOYPAD;
+	joypad->spec_reg->ifl_flags.joypad = true;
 	if (BUTTON_IS_KEY(button))
 		joypad->button_key &= ~BUTTON_TO_KEY(button);
 	else

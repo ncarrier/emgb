@@ -24,7 +24,7 @@ void interrupt_init(struct interrupts *interrupts, struct memory *memory,
 
 void interrupt_update(struct interrupts *interrupts)
 {
-	unsigned char inter;
+	union interrupt_flags inter;
 	struct memory *memory;
 	struct cpu *cpu;
 	struct spec_reg *spec_reg;
@@ -34,12 +34,12 @@ void interrupt_update(struct interrupts *interrupts)
 	cpu = interrupts->cpu;
 	spec_reg = interrupts->spec_reg;
 	registers = interrupts->registers;
-	if (spec_reg->ifl & INT_JOYPAD)
+	if (spec_reg->ifl_flags.joypad)
 		cpu->stopped = false;
 	if (!interrupts->inter_master && !cpu->halted)
 		return;
-	inter = memory->interrupt_enable & spec_reg->ifl & 0x1f;
-	if (inter == 0)
+	inter.raw = memory->interrupt_enable & spec_reg->ifl_flags.raw;
+	if (inter.raw == 0)
 		return;
 	if (cpu->halted) {
 		cpu->halted = false;
@@ -49,27 +49,27 @@ void interrupt_update(struct interrupts *interrupts)
 	}
 	push(memory, &registers->sp, registers->pc);
 	interrupts->inter_master = false;
-	if (inter & INT_VBLANK) {
+	if (inter.vblank) {
+		spec_reg->ifl_flags.vblank = false;
 		registers->pc = IT_VBLANK;
-		spec_reg->ifl &= ~INT_VBLANK;
 	}
-	if (inter & INT_LCDSTAT) {
+	if (inter.lcdstat) {
 		printf("LCD interrupt\n");
-		spec_reg->ifl &= ~INT_LCDSTAT;
+		spec_reg->ifl_flags.lcdstat = false;
 		registers->pc = IT_LCD;
 	}
-	if (inter & INT_TIMER) {
-		spec_reg->ifl &= ~INT_TIMER;
+	if (inter.timer) {
+		spec_reg->ifl_flags.timer = false;
 		registers->pc = IT_TIMER;
 	}
-	if (inter & INT_JOYPAD) {
+	if (inter.joypad) {
 		printf("JOYPAD interrupt\n");
-		spec_reg->ifl &= ~INT_JOYPAD;
+		spec_reg->ifl_flags.joypad = false;
 		registers->pc = IT_JOYPAD;
 	}
-	if (inter & INT_SERIAL) {
+	if (inter.serial) {
 		printf("serial interrupt\n");
-		spec_reg->ifl &= ~INT_SERIAL;
+		spec_reg->ifl_flags.serial = false;
 		registers->pc = IT_SERIAL;
 	}
 }

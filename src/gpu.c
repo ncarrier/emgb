@@ -363,7 +363,7 @@ void gpu_update(struct gpu *gpu)
 			gpu_rendering(gpu, memory);
 		spec_reg->ly++;
 		if (spec_reg->ly >= GB_H) {
-			spec_reg->ifl |= INT_VBLANK;
+			spec_reg->ifl_flags.vblank = true;
 			gpu->mode = VBLANK;
 		}
 
