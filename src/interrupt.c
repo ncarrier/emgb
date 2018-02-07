@@ -12,16 +12,6 @@
 #define IT_SERIAL 0x58
 #define IT_JOYPAD 0x60
 
-static void interrupt_handle(struct memory *memory,
-		struct interrupts *interrupts, struct registers *registers,
-		uint16_t address)
-{
-	interrupts->inter_master = false;
-	registers->sp -= 2;
-	write16bit(memory, registers->sp, registers->pc);
-	registers->pc = address;
-}
-
 void interrupt_init(struct interrupts *interrupts, struct memory *memory,
 		struct cpu *cpu, struct spec_reg *spec_reg,
 		struct registers *registers)
@@ -57,29 +47,29 @@ void interrupt_update(struct interrupts *interrupts)
 		if (!interrupts->inter_master)
 			return;
 	}
+	push(memory, &registers->sp, registers->pc);
 	interrupts->inter_master = false;
 	if (inter & INT_VBLANK) {
+		registers->pc = IT_VBLANK;
 		spec_reg->ifl &= ~INT_VBLANK;
-		interrupt_handle(memory, interrupts, registers, IT_VBLANK);
 	}
 	if (inter & INT_LCDSTAT) {
 		printf("LCD interrupt\n");
 		spec_reg->ifl &= ~INT_LCDSTAT;
-		interrupt_handle(memory, interrupts, registers, IT_LCD);
+		registers->pc = IT_LCD;
 	}
 	if (inter & INT_TIMER) {
-		interrupt_handle(memory, interrupts, registers, IT_TIMER);
-		printf("TIMER interrupt\n");
 		spec_reg->ifl &= ~INT_TIMER;
+		registers->pc = IT_TIMER;
 	}
 	if (inter & INT_JOYPAD) {
 		printf("JOYPAD interrupt\n");
-		interrupt_handle(memory, interrupts, registers, IT_JOYPAD);
 		spec_reg->ifl &= ~INT_JOYPAD;
+		registers->pc = IT_JOYPAD;
 	}
 	if (inter & INT_SERIAL) {
 		printf("serial interrupt\n");
-		interrupt_handle(memory, interrupts, registers, IT_SERIAL);
 		spec_reg->ifl &= ~INT_SERIAL;
+		registers->pc = IT_SERIAL;
 	}
 }
