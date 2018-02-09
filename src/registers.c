@@ -9,7 +9,7 @@ void registers_init(struct registers *registers)
 	registers->bc = 0x0013;
 	registers->de = 0x00D8;
 	registers->hl = 0x014D;
-	registers->pc = 0x0100;
+	registers->pc = 0x0000;
 	registers->sp = 0xFFFA;
 
 	/* test bit fields order */

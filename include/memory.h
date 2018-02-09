@@ -15,6 +15,7 @@
 #define MEMORY_ADDRESS_SPACE 0x10000
 #define TOTAL_MEMORY (BIGGEST_ROM_SIZE + MEMORY_ADDRESS_SPACE - ROM_BANK_SIZE)
 #define EXTRA_ROM_BANKS_SIZE (TOTAL_MEMORY - MEMORY_ADDRESS_SPACE)
+#define BIOS_SIZE 0x100
 
 struct timer;
 
@@ -24,9 +25,11 @@ struct memory {
 	struct timer *timer;
 
 	struct save_start save_start;
+	bool bios_finished;
 	uint8_t mbc_rom_bank;
 	bool rom_banking_flag;
 	int div_counter;
+	uint8_t bios[BIOS_SIZE];
 	union {
 		struct {
 			/* TODO rename fields of the two first unions */
