@@ -50,25 +50,27 @@ void interrupt_update(struct interrupts *interrupts)
 	push(memory, &registers->sp, registers->pc);
 	interrupts->inter_master = false;
 	if (inter.vblank) {
+/*		printf("VBLANK interrupt\n"); */
 		spec_reg->ifl_flags.vblank = false;
 		registers->pc = IT_VBLANK;
 	}
 	if (inter.lcdstat) {
-		printf("LCD interrupt\n");
+/*		printf("LCD interrupt\n"); */
 		spec_reg->ifl_flags.lcdstat = false;
 		registers->pc = IT_LCD;
 	}
 	if (inter.timer) {
+/*		printf("TIMER interrupt\n"); */
 		spec_reg->ifl_flags.timer = false;
 		registers->pc = IT_TIMER;
 	}
 	if (inter.joypad) {
-		printf("JOYPAD interrupt\n");
+/*		printf("JOYPAD interrupt\n"); */
 		spec_reg->ifl_flags.joypad = false;
 		registers->pc = IT_JOYPAD;
 	}
 	if (inter.serial) {
-		printf("serial interrupt\n");
+/*		printf("SERIAL interrupt\n"); */
 		spec_reg->ifl_flags.serial = false;
 		registers->pc = IT_SERIAL;
 	}

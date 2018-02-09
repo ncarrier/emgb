@@ -130,7 +130,7 @@ struct gb *gb_init(const char *file)
 	cpu_init(&gb->cpu);
 	interrupt_init(&gb->interrupts, &gb->memory, &gb->cpu,
 			&gb->memory.spec_reg, &gb->registers);
-	gpu_init(&gb->gpu, &gb->cpu, &gb->memory, &gb->config.config);
+	gpu_init(&gb->gpu, &gb->memory, &gb->config.config);
 	timer_init(&gb->timer, &gb->memory.spec_reg);
 
 	reset_joystick_config(&gb->joystick_config);

@@ -66,7 +66,7 @@ static void gb_loop(const char *file_name)
 				cpu->total_tick += cycles;
 				registers->pc += instruction->size;
 			}
-			gpu_update(&gb->gpu);
+			gpu_update(&gb->gpu, cycles);
 		}
 		interrupt_update(&gb->interrupts);
 		timer_update(&gb->timer, cycles);

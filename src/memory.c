@@ -205,7 +205,10 @@ void write8bit(struct memory *memory, uint16_t addr, uint8_t value)
 		memory->bios_finished = true;
 	}
 
-	memory->raw[addr] = value;
+	if (addr == 0xFF44)
+		memory->raw[addr] = 0;
+	else
+		memory->raw[addr] = value;
 }
 
 void push(struct memory *memory, uint16_t *sp, uint16_t value)

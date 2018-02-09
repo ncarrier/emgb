@@ -15,18 +15,11 @@
 #define G 0x0000ff00
 #define B 0x000000ff
 
-enum gpu_mode {
-	HBLANK = 0,
-	VBLANK = 1,
-	OAM = 2,
-	VRAM = 3,
-};
-
-struct cpu;
 struct memory;
+struct spec_reg;
 struct gpu {
-	struct cpu *cpu;
 	struct memory *memory;
+	struct spec_reg *spec_reg;
 	SDL_Window *window;
 	SDL_Surface *surface;
 	SDL_Texture *texture;
@@ -48,14 +41,13 @@ struct gpu {
 	uint32_t last_tick;
 	uint32_t tick;
 	uint32_t pixels[GB_SURF];
-	enum gpu_mode mode;
 	struct save_end save_end;
 };
 
 struct ae_config;
-void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
+void gpu_init(struct gpu *gpu, struct memory *memory,
 		struct ae_config *conf);
-void gpu_update(struct gpu *gpu);
+void gpu_update(struct gpu *gpu, unsigned cycles);
 void gpu_cleanup(struct gpu *gpu);
 
 #endif

@@ -71,7 +71,24 @@ union interrupt_flags {
 		uint8_t raw:5;
 		uint8_t padding_raw:3;
 	};
+} __attribute__((__packed__));
+
+enum gpu_mode {
+	HBLANK = 0,
+	VBLANK = 1,
+	OAM = 2,
+	VRAM = 3,
 };
+
+struct stat {
+	enum gpu_mode mode:2;
+	bool lyc_equals_lcdc_ly:1;
+	bool mode_00_hblank:1;
+	bool mode_01_vblank:1;
+	bool mode_10_oam:1;
+	bool mode_lyc_equal_ly:1;
+	uint8_t stat_padding:1;
+} __attribute__((__packed__));
 
 #pragma pack(push, 1)
 struct spec_reg {
@@ -127,7 +144,7 @@ struct spec_reg {
 		uint8_t raw; /*  0xff40u */
 		struct lcdc lcdc;
 	};
-	uint8_t stat; /*  0xff41u */
+	struct stat stat; /*  0xff41u */
 	uint8_t scy; /*  0xff42u */
 	uint8_t scx; /*  0xff43u */
 	uint8_t ly; /*  0xff44u */

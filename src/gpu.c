@@ -1,5 +1,4 @@
 #include "gpu.h"
-#include "cpu.h"
 #include "memory.h"
 #include "ae_config.h"
 #include "io.h"
@@ -324,16 +323,14 @@ static void gpu_display(struct gpu *gpu)
 	/* SDL_RenderPresent(s_gb->gb_gpu.renderer_d); */
 }
 
-void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
-		struct ae_config *conf)
+void gpu_init(struct gpu *gpu, struct memory *memory, struct ae_config *conf)
 {
 	gpu_init_display(gpu, conf);
 
-	gpu->cpu = cpu;
 	gpu->memory = memory;
-	gpu->mode = HBLANK;
+	gpu->spec_reg = &memory->spec_reg;
+	gpu->spec_reg->stat.mode = HBLANK;
 	gpu->tick = 0;
-	gpu->last_tick = 0;
 	gpu->color_0 = ae_config_get_int(conf, CONFIG_COLOR_0,
 			CONFIG_COLOR_0_DEFAULT);
 	gpu->color_1 = ae_config_get_int(conf, CONFIG_COLOR_1,
@@ -344,27 +341,37 @@ void gpu_init(struct gpu *gpu, struct cpu *cpu, struct memory *memory,
 			CONFIG_COLOR_3_DEFAULT);
 }
 
-void gpu_update(struct gpu *gpu)
+void gpu_update(struct gpu *gpu, unsigned cycles)
 {
 	struct memory *memory;
 	struct spec_reg *spec_reg;
+	struct stat *stat;
 
 	memory = gpu->memory;
-	spec_reg = &memory->spec_reg;
-	gpu->tick += gpu->cpu->total_tick - gpu->last_tick;
-	gpu->last_tick = gpu->cpu->total_tick;
+	spec_reg = gpu->spec_reg;
+	stat = &spec_reg->stat;
 
-	switch (gpu->mode) {
+	if (!spec_reg->lcdc.enable_lcd) {
+		gpu->tick = 0;
+		stat->mode = VBLANK;
+		spec_reg->ly = 0;
+		return;
+	}
+	gpu->tick += cycles;
+
+	switch (stat->mode) {
 	case HBLANK:
 		if (gpu->tick < 204)
 			break;
 
-		if (spec_reg->lcdc.enable_lcd && spec_reg->ly < GB_H)
+		if (spec_reg->ly < GB_H)
 			gpu_rendering(gpu, memory);
 		spec_reg->ly++;
 		if (spec_reg->ly >= GB_H) {
 			spec_reg->ifl_flags.vblank = true;
-			gpu->mode = VBLANK;
+			stat->mode = VBLANK;
+			if (stat->mode_01_vblank)
+				spec_reg->ifl_flags.lcdstat = true;
 		}
 
 		gpu->tick -= 204;
@@ -376,10 +383,12 @@ void gpu_update(struct gpu *gpu)
 		spec_reg->ly++;
 		if (spec_reg->ly >= 153) {
 			spec_reg->ly = 0;
-			gpu->mode = OAM;
+			stat->mode = OAM;
+			if (stat->mode_10_oam)
+				spec_reg->ifl_flags.lcdstat = true;
 		}
 		gpu->tick -= 456;
-		if (spec_reg->lcdc.enable_lcd && spec_reg->ly == GB_H + 1)
+		if (spec_reg->ly == GB_H + 1)
 			gpu_display(gpu);
 		break;
 	case OAM:
@@ -387,17 +396,22 @@ void gpu_update(struct gpu *gpu)
 			break;
 
 		spec_reg->ly = 0;
-		gpu->mode = VRAM;
+		stat->mode = VRAM;
 		gpu->tick -= 80;
 		break;
 	case VRAM:
 		if (gpu->tick < 172)
 			break;
 
-		gpu->mode = HBLANK;
+		stat->mode = HBLANK;
+		if (stat->mode_00_hblank)
+			spec_reg->ifl_flags.lcdstat = true;
 		gpu->tick -= 172;
 		break;
 	}
+	stat->lyc_equals_lcdc_ly = spec_reg->ly == spec_reg->lyc;
+	if (stat->mode_lyc_equal_ly && stat->lyc_equals_lcdc_ly)
+		spec_reg->ifl_flags.lcdstat = true;
 }
 
 void gpu_cleanup(struct gpu *gpu)
